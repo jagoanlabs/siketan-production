@@ -1,0 +1,41 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { PrimeReactProvider } from "primereact/api";
+
+import App from "./App.tsx";
+import { Provider } from "./provider.tsx";
+import "@/styles/globals.css";
+import { AuthProvider } from "./context/AuthContext.tsx";
+import AppLayout from "./layouts/AppLayout.tsx";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import "primereact/resources/themes/lara-light-cyan/theme.css";
+
+import { ThemeProvider } from "./context/ThemeContext.tsx";
+import { AppWrapper } from "./layouts/PageMeta.tsx";
+
+const queryClient = new QueryClient();
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <AuthProvider>
+      <BrowserRouter>
+        <Provider>
+          <QueryClientProvider client={queryClient}>
+            <AppLayout>
+              <ThemeProvider>
+                <PrimeReactProvider>
+                  <AppWrapper>
+                    <App />
+                  </AppWrapper>
+                </PrimeReactProvider>
+              </ThemeProvider>
+            </AppLayout>
+          </QueryClientProvider>
+        </Provider>
+      </BrowserRouter>
+    </AuthProvider>
+  </React.StrictMode>,
+);
