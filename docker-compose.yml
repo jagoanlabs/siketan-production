@@ -7,14 +7,6 @@ services:
     container_name: siketan_backend
     ports:
       - "5000"
-    environment:
-      DB_HOST: host.docker.internal
-      DB_PORT: 3306
-      DB_NAME: siketan_be
-      DB_USER: root
-      DB_PASSWORD: 
-      APP_PORT: 5000
-      SECRET_KEY: qojdnmsjdiahdmnedjkwhe98e7y3289qhnduq732y8er9duihu7389y
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -29,8 +21,6 @@ services:
     container_name: siketan_frontend
     ports:
       - "3000"
-    environment:
-      - REACT_APP_API_URL=http://backend:5000
     depends_on:
       - backend
     restart: unless-stopped
