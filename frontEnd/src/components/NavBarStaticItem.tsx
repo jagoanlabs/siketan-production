@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { IoIosNotificationsOutline, IoMdClose, IoMdMenu } from "react-icons/io";
+import { IoMdClose, IoMdMenu } from "react-icons/io";
 
 import { DropdownDashboard } from "./DropdownDashboard";
 
@@ -107,7 +107,7 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
             <div className="flex items-center gap-3 xl:gap-4">
               {/* Notification */}
               <button className="relative p-2 transition rounded-full hover:bg-gray-100">
-                <IoIosNotificationsOutline size={24} />
+                
                 <span className="absolute w-2 h-2 bg-red-500 rounded-full top-1 right-1 animate-pulse" />
               </button>
 
@@ -147,12 +147,6 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
 
         {/* Mobile Menu Button & Notification */}
         <div className="flex items-center gap-2 lg:hidden">
-          {isAuthenticated && (
-            <button className="relative p-2 transition rounded-full hover:bg-gray-100">
-              <IoIosNotificationsOutline size={22} />
-              <span className="absolute w-2 h-2 bg-red-500 rounded-full top-1 right-1 animate-pulse" />
-            </button>
-          )}
 
           <button
             aria-label="Toggle menu"

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { IoIosNotificationsOutline, IoMdClose, IoMdMenu } from "react-icons/io";
+import {IoMdClose, IoMdMenu } from "react-icons/io";
 
 import { DropdownDashboard } from "./DropdownDashboard";
 
@@ -116,12 +116,6 @@ export const Navbar: React.FC<{ index: number | null }> = ({
         <div className="hidden lg:block">
           {isAuthenticated ? (
             <div className="flex items-center gap-3 xl:gap-4">
-              {/* Notifikasi */}
-              <button className="relative p-2 transition rounded-full hover:bg-gray-100">
-                <IoIosNotificationsOutline size={24} />
-                {/* Optional: badge notif */}
-                <span className="absolute w-2 h-2 bg-red-500 rounded-full top-1 right-1 animate-pulse" />
-              </button>
 
               {/* Profile Info */}
               <div className="flex items-center gap-2 xl:gap-3">
@@ -159,13 +153,7 @@ export const Navbar: React.FC<{ index: number | null }> = ({
 
         {/* Mobile Menu Button & Notification for Authenticated Users */}
         <div className="flex items-center gap-2 lg:hidden">
-          {isAuthenticated && (
-            <button className="relative p-2 transition rounded-full hover:bg-gray-100">
-              <IoIosNotificationsOutline size={22} />
-              <span className="absolute w-2 h-2 bg-red-500 rounded-full top-1 right-1 animate-pulse" />
-            </button>
-          )}
-
+          
           <button
             aria-label="Toggle menu"
             className="p-2 transition-colors rounded-lg hover:bg-gray-100"
