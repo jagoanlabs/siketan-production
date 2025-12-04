@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {IoMdClose, IoMdMenu } from "react-icons/io";
+import { IoMdClose, IoMdMenu } from "react-icons/io";
 
 import { DropdownDashboard } from "./DropdownDashboard";
 
@@ -77,9 +77,8 @@ export const Navbar: React.FC<{ index: number | null }> = ({
       <div
         className={`fixed z-11 flex items-center justify-between w-[95%] md:w-[90%] lg:w-full 
         px-4 md:px-5 lg:px-6 py-3 md:py-3.5 lg:py-4 -translate-x-1/2 bg-white shadow-md 
-        transition-all duration-300 ${
-          isScrolled ? "top-2 md:top-4" : "top-4 md:top-6 lg:top-10"
-        } left-1/2 rounded-xl md:rounded-2xl max-w-7xl`}
+        transition-all duration-300 ${isScrolled ? "top-2 md:top-4" : "top-4 md:top-6 lg:top-10"
+          } left-1/2 rounded-xl md:rounded-2xl max-w-7xl`}
       >
         {/* Logo */}
         <Link className="flex-shrink-0" to="/">
@@ -95,11 +94,10 @@ export const Navbar: React.FC<{ index: number | null }> = ({
           {navItems.map((item, i) => (
             <li key={item.id}>
               <Link
-                className={`relative px-2.5 xl:px-3 py-2 transition-colors duration-300 hover:cursor-pointer ${
-                  activeMenu === i
-                    ? "text-[#1167B1] font-semibold"
-                    : "text-gray-700 hover:text-[#1167B1]"
-                }`}
+                className={`relative px-2.5 xl:px-3 py-2 transition-colors duration-300 hover:cursor-pointer ${activeMenu === i
+                  ? "text-[#1167B1] font-semibold"
+                  : "text-gray-700 hover:text-[#1167B1]"
+                  }`}
                 to={item.link}
                 onClick={() => setActiveMenu(i)}
               >
@@ -153,7 +151,8 @@ export const Navbar: React.FC<{ index: number | null }> = ({
 
         {/* Mobile Menu Button & Notification for Authenticated Users */}
         <div className="flex items-center gap-2 lg:hidden">
-          
+
+
           <button
             aria-label="Toggle menu"
             className="p-2 transition-colors rounded-lg hover:bg-gray-100"
@@ -170,20 +169,18 @@ export const Navbar: React.FC<{ index: number | null }> = ({
 
       {/* Mobile Menu Overlay */}
       <button
-        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${
-          isMobileMenuOpen
-            ? "opacity-100 visible"
-            : "opacity-0 invisible pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen
+          ? "opacity-100 visible"
+          : "opacity-0 invisible pointer-events-none"
+          }`}
         onClick={toggleMobileMenu}
       />
 
       {/* Mobile Menu Drawer */}
       <div
         className={`fixed top-0 right-0 h-full w-[85%] sm:w-[75%] md:w-[60%] max-w-sm bg-white z-40 lg:hidden 
-        transform transition-transform duration-300 ease-out shadow-xl ${
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        transform transition-transform duration-300 ease-out shadow-xl ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Mobile Menu Header */}
         <div className="p-4 border-b border-gray-200">
@@ -230,11 +227,10 @@ export const Navbar: React.FC<{ index: number | null }> = ({
             {navItems.map((item, i) => (
               <li key={item.id}>
                 <Link
-                  className={`block px-4 py-3 rounded-lg transition-all duration-200 ${
-                    activeMenu === i
-                      ? "bg-[#1167B1] text-white font-semibold shadow-md"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`block px-4 py-3 rounded-lg transition-all duration-200 ${activeMenu === i
+                    ? "bg-[#1167B1] text-white font-semibold shadow-md"
+                    : "text-gray-700 hover:bg-gray-100"
+                    }`}
                   to={
                     item.link
                   }
@@ -270,15 +266,13 @@ export const Navbar: React.FC<{ index: number | null }> = ({
               <Link
                 className="block px-4 py-3 text-gray-700 transition-colors rounded-lg hover:bg-white"
                 to={
-                  user?.peran === "petani"
-                    ? "/laporan-petani"
-                    : "/laporan-penyuluh"
+                  "dashboard-admin"
                 }
                 onClick={toggleMobileMenu}
               >
                 <span className="flex items-center gap-3">
-                  <span className="text-gray-500">📝</span>
-                  Isi Formulir Laporan
+                  <span className="text-gray-500">📊</span>
+                  Dashboard Admin
                 </span>
               </Link>
 

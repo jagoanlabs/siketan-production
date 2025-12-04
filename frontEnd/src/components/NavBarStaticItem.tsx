@@ -83,8 +83,8 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
             <li key={item.id}>
               <Link
                 className={`relative px-2.5 xl:px-3 py-2 transition-colors duration-300 hover:cursor-pointer ${activeMenu === i
-                    ? "text-[#1167B1] font-semibold"
-                    : "text-gray-700 hover:text-[#1167B1]"
+                  ? "text-[#1167B1] font-semibold"
+                  : "text-gray-700 hover:text-[#1167B1]"
                   }`}
                 to={
                   item.link
@@ -105,11 +105,7 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
         <div className="hidden lg:block">
           {isAuthenticated ? (
             <div className="flex items-center gap-3 xl:gap-4">
-              {/* Notification */}
-              <button className="relative p-2 transition rounded-full hover:bg-gray-100">
-                
-                <span className="absolute w-2 h-2 bg-red-500 rounded-full top-1 right-1 animate-pulse" />
-              </button>
+
 
               {/* Profile Info */}
               <div className="flex items-center gap-2 xl:gap-3">
@@ -165,8 +161,8 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
       {/* Mobile Menu Overlay */}
       <button
         className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen
-            ? "opacity-100 visible"
-            : "opacity-0 invisible pointer-events-none"
+          ? "opacity-100 visible"
+          : "opacity-0 invisible pointer-events-none"
           }`}
         onClick={toggleMobileMenu}
       />
@@ -180,19 +176,18 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
         {/* Mobile Menu Header */}
         <div className="p-4 border-b border-gray-200">
           {isAuthenticated ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center  gap-3">
               <div className="w-12 h-12 overflow-hidden border-2 border-gray-300 rounded-full">
                 <img
                   alt="Profile"
                   className="object-cover w-full -full"
                   src={
-                    (user && "defaultPicture" in user
-                      ? (user as any).defaultPicture
-                      : undefined) || assets.defaultPicture
+                    (user && user.foto ? user.foto : undefined) ||
+                    assets.defaultPicture
                   }
                 />
               </div>
-              <div className="flex-1">
+              <div className="flex flex-col items-start">
                 <h1 className="font-medium text-gray-900">
                   Halo, {user?.nama}
                 </h1>
@@ -224,8 +219,8 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
               <li key={item.id}>
                 <Link
                   className={`block px-4 py-3 rounded-lg transition-all duration-200 ${activeMenu === i
-                      ? "bg-[#1167B1] text-white font-semibold shadow-md"
-                      : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-[#1167B1] text-white font-semibold shadow-md"
+                    : "text-gray-700 hover:bg-gray-100"
                     }`}
                   to={item.link}
                   onClick={() => handleMenuClick(i)}
@@ -260,15 +255,13 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
               <Link
                 className="block px-4 py-3 text-gray-700 transition-colors rounded-lg hover:bg-white"
                 to={
-                  user?.peran === "petani"
-                    ? "/laporan-petani"
-                    : "/laporan-penyuluh"
+                  "/dashboard-admin"
                 }
                 onClick={toggleMobileMenu}
               >
                 <span className="flex items-center gap-3">
-                  <span className="text-gray-500">📝</span>
-                  Isi Formulir Laporan
+                  <span className="text-gray-500">📊</span>
+                  Dashboard Admin
                 </span>
               </Link>
 
