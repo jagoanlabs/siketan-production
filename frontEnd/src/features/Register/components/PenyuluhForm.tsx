@@ -5,6 +5,7 @@ import { Button } from "@heroui/button";
 import { Link } from "react-router-dom";
 import { Select, SelectItem } from "@heroui/select";
 import { Input, Textarea } from "@heroui/input";
+import { Checkbox } from "@heroui/checkbox";
 import { GoHomeFill } from "react-icons/go";
 import {
   FiCheck,
@@ -55,6 +56,7 @@ export function PenyuluhForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   // API Hooks - Updated to match CreatePenyuluh
   // const registerMutation = useRegister();
@@ -488,15 +490,14 @@ export function PenyuluhForm() {
                       {[1, 2, 3, 4, 5].map((level) => (
                         <div
                           key={level}
-                          className={`flex-1 h-1 rounded-full ${
-                            passwordStrength.strength >= level
+                          className={`flex-1 h-1 rounded-full ${passwordStrength.strength >= level
                               ? passwordStrength.strength <= 2
                                 ? "bg-red-500"
                                 : passwordStrength.strength <= 3
                                   ? "bg-yellow-500"
                                   : "bg-green-500"
                               : "bg-gray-200"
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
@@ -511,7 +512,7 @@ export function PenyuluhForm() {
                       </div>
                       <div className="flex items-center gap-1">
                         {passwordStrength.checks.uppercase &&
-                        passwordStrength.checks.lowercase ? (
+                          passwordStrength.checks.lowercase ? (
                           <FiCheck className="text-green-500" size={12} />
                         ) : (
                           <FiX className="text-red-500" size={12} />
@@ -854,10 +855,30 @@ export function PenyuluhForm() {
         </div>
       </div>
 
+      {/* Privacy Policy Checkbox */}
+      <div className="mt-6 mb-4">
+        <Checkbox
+          color="success"
+          isSelected={privacyAccepted}
+          onValueChange={setPrivacyAccepted}
+        >
+          <span className="text-sm text-gray-600">
+            Saya menyetujui{" "}
+            <Link
+              className="text-green-600 hover:underline font-medium"
+              target="_blank"
+              to="/privacy-policy"
+            >
+              Kebijakan Privasi
+            </Link>
+          </span>
+        </Checkbox>
+      </div>
+
       {/* Submit Button */}
       <Button
-        className="w-full mt-6 py-5 sm:py-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
-        isDisabled={registerMutation.isPending}
+        className="w-full py-5 sm:py-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
+        isDisabled={registerMutation.isPending || !privacyAccepted}
         isLoading={registerMutation.isPending}
         type="submit"
       >

@@ -154,8 +154,11 @@ export const Footer = () => {
               <Link className="transition-colors hover:text-gray-200" to="#">
                 Term of Use
               </Link>
-              <Link className="transition-colors hover:text-gray-200" to="#">
+              <Link className="transition-colors hover:text-gray-200" to="/privacy-policy">
                 Privacy Policy
+              </Link>
+              <Link className="transition-colors hover:text-gray-200" to="/delete-account">
+                Delete Account
               </Link>
               <Link className="transition-colors hover:text-gray-200" to="#">
                 About Us
@@ -306,8 +309,11 @@ export const FooterMobileFirst = () => {
             <Link className="hover:underline" to="#">
               FAQ
             </Link>
-            <Link className="hover:underline" to="#">
+            <Link className="hover:underline" to="/privacy-policy">
               Privacy
+            </Link>
+            <Link className="hover:underline" to="/delete-account">
+              Delete Account
             </Link>
             <Link className="hover:underline" to="#">
               About

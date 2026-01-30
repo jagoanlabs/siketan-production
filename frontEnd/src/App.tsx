@@ -58,6 +58,9 @@ import HomePage from "@/features/Home/page/HomePage";
 import SearchPage from "@/features/Search/page/SearchPage";
 import RegisterPage from "./features/Register/page/RegisterPage";
 import { ProfilePage } from "./features/Profile/page/ProfilePage";
+import { PrivacyPolicyPage } from "./features/Legal/pages/PrivacyPolicyPage";
+import { DeleteAccountPage } from "./features/Legal/pages/DeleteAccountPage";
+import { DeleteAccountView } from "./features/Legal/components/DeleteAccountView";
 
 function App() {
   // const { user } = useAuth();
@@ -88,6 +91,9 @@ function App() {
         <Route element={<SetPasswordPage />} path="/set-password" />
         <Route element={<ProfilePage />} path="/profile" />
         <Route element={<ResultCekNIK />} path="/cek-NIK" />
+
+        <Route element={<PrivacyPolicyPage />} path="/privacy-policy" />
+        <Route element={<DeleteAccountPage />} path="/delete-account" />
 
         <Route element={<UnauthorizedPage />} path="/unauthorized" />
 
@@ -224,6 +230,11 @@ function App() {
             <Route
               element={<ProfileDashboard />}
               path="/dashboard-admin/profile"
+            />
+
+            <Route
+              element={<DeleteAccountView isDashboard />}
+              path="/dashboard-admin/delete-account"
             />
 
             {/* Hak Akses User */}

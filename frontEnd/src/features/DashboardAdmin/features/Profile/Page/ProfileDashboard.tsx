@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@heroui/button";
 import { Avatar } from "@heroui/avatar";
 import { Card, CardBody, CardHeader } from "@heroui/card";
@@ -295,6 +296,18 @@ export const ProfileDashboard = () => {
                         {user?.accountID}
                       </span>
                     </div>
+                  </div>
+
+                  <div className="w-full mt-6">
+                    <Button
+                      as={Link}
+                      className="w-full font-medium"
+                      color="danger"
+                      to="/dashboard-admin/delete-account"
+                      variant="flat"
+                    >
+                      Kebijakan Hapus Akun
+                    </Button>
                   </div>
                 </div>
               </CardBody>
@@ -621,7 +634,7 @@ export const ProfileDashboard = () => {
                       {passwordData.newPassword &&
                         passwordData.confirmPassword &&
                         passwordData.newPassword !==
-                          passwordData.confirmPassword && (
+                        passwordData.confirmPassword && (
                           <p className="text-red-500 text-sm mt-2">
                             Password baru dan konfirmasi password tidak cocok
                           </p>
