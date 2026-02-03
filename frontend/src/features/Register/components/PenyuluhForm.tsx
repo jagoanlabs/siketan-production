@@ -6,6 +6,13 @@ import { Link } from "react-router-dom";
 import { Select, SelectItem } from "@heroui/select";
 import { Input, Textarea } from "@heroui/input";
 import { Checkbox } from "@heroui/checkbox";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@heroui/modal";
 import { GoHomeFill } from "react-icons/go";
 import {
   FiCheck,
@@ -18,6 +25,10 @@ import {
   FiUsers,
 } from "react-icons/fi";
 import { toast } from "sonner";
+
+// @ts-ignore
+import privacyPolicyContent from "@/assets/privacy-policy.md?raw";
+import { MarkdownViewer } from "../../Legal/components/MarkdownViewer";
 
 import { useRegisterPenyuluh } from "@/hook/useAuthApi";
 import {
@@ -57,6 +68,7 @@ export function PenyuluhForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   // API Hooks - Updated to match CreatePenyuluh
   // const registerMutation = useRegister();
@@ -491,12 +503,12 @@ export function PenyuluhForm() {
                         <div
                           key={level}
                           className={`flex-1 h-1 rounded-full ${passwordStrength.strength >= level
-                              ? passwordStrength.strength <= 2
-                                ? "bg-red-500"
-                                : passwordStrength.strength <= 3
-                                  ? "bg-yellow-500"
-                                  : "bg-green-500"
-                              : "bg-gray-200"
+                            ? passwordStrength.strength <= 2
+                              ? "bg-red-500"
+                              : passwordStrength.strength <= 3
+                                ? "bg-yellow-500"
+                                : "bg-green-500"
+                            : "bg-gray-200"
                             }`}
                         />
                       ))}
@@ -862,18 +874,56 @@ export function PenyuluhForm() {
           isSelected={privacyAccepted}
           onValueChange={setPrivacyAccepted}
         >
-          <span className="text-sm text-gray-600">
-            Saya menyetujui{" "}
-            <Link
-              className="text-green-600 hover:underline font-medium"
-              target="_blank"
-              to="/privacy-policy"
-            >
-              Kebijakan Privasi
-            </Link>
-          </span>
         </Checkbox>
+        <span className="text-sm text-gray-600">
+          Saya menyetujui{" "}
+          <span
+            className="text-green-600 hover:underline font-medium cursor-pointer"
+            onClick={() => setIsPrivacyModalOpen(true)}
+          >
+            Kebijakan Privasi
+          </span>
+        </span>
       </div>
+
+      {/* Privacy Policy Modal */}
+      <Modal
+        backdrop="blur"
+        isOpen={isPrivacyModalOpen}
+        scrollBehavior="inside"
+        size="2xl"
+        onClose={() => setIsPrivacyModalOpen(false)}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Kebijakan Privasi
+              </ModalHeader>
+              <ModalBody>
+                <div className="prose prose-sm max-w-none">
+                  <MarkdownViewer content={privacyPolicyContent} />
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Tutup
+                </Button>
+                <Button
+                  className="text-white"
+                  color="success"
+                  onPress={() => {
+                    setPrivacyAccepted(true);
+                    onClose();
+                  }}
+                >
+                  Setuju
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
       {/* Submit Button */}
       <Button
