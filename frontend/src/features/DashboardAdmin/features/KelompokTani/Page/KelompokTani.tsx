@@ -299,7 +299,7 @@ export const KelompokTani = () => {
       },
       {
         key: "id",
-        title: "ID",
+        title: "ID Kelompok",
         render: (item) => (
           <span className="font-medium text-gray-900 dark:text-white">
             {item.id}
