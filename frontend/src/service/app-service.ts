@@ -3,7 +3,8 @@ import axios from "axios";
 import { toast } from "sonner";
 
 export const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  // baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: "https://backend-siketan.jagoansatudata.com",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
