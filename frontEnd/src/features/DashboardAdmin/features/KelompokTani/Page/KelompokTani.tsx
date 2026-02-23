@@ -298,6 +298,17 @@ export const KelompokTani = () => {
         align: "center",
       },
       {
+        key: "id",
+        title: "ID",
+        render: (item) => (
+          <span className="font-medium text-gray-900 dark:text-white">
+            {item.id}
+          </span>
+        ),
+        width: "120px",
+        align: "center",
+      },
+      {
         key: "gapoktan",
         title: "Gapoktan",
         render: (item) => (
