@@ -18,7 +18,7 @@ dotenv.config();
 
 const getAllTanamanPetani = async (req, res) => {
   const { peran } = req.user || {};
-  const { page, limit, petaniId, isExport } = req.query;
+  const { page, limit, petaniId, isExport, search } = req.query;
 
   try {
     if (peran === 'petani') {
@@ -42,22 +42,33 @@ const getAllTanamanPetani = async (req, res) => {
       query.where = { fk_petaniId: petaniId };
     }
 
+    if (search) {
+      query.where = {
+        ...query.where,
+        [Op.or]: [
+          { kategori: { [Op.like]: `%${search}%` } },
+          { komoditas: { [Op.like]: `%${search}%` } }
+        ]
+      };
+    }
+
     const data = await tanamanPetani.findAll(
       isExportFilter
         ? {
-            include: [
-              {
-                model: dataPetani,
-                as: 'dataPetani',
-                include: [
-                  { model: kelompok },
-                  { model: kecamatan, as: 'kecamatanData' },
-                  { model: desa, as: 'desaData' }
-                ]
-              }
-            ],
-            order: [['createdAt', 'DESC']]
-          }
+          where: query.where,
+          include: [
+            {
+              model: dataPetani,
+              as: 'dataPetani',
+              include: [
+                { model: kelompok },
+                { model: kecamatan, as: 'kecamatanData' },
+                { model: desa, as: 'desaData' }
+              ]
+            }
+          ],
+          order: [['createdAt', 'DESC']]
+        }
         : { ...query }
     );
     const total = await tanamanPetani.count({ ...query });

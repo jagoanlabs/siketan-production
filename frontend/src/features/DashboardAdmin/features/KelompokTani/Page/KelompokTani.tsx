@@ -417,21 +417,6 @@ export const KelompokTani = () => {
       to: 0,
     };
 
-  // Client-side filtering for search (since backend doesn't have search yet)
-  const filteredData = useMemo(() => {
-    if (!searchTerm.trim()) return tableData;
-
-    return tableData.filter(
-      (item) =>
-        item.gapoktan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.namaKelompok.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.desaData.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.kecamatanData.nama
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()),
-    );
-  }, [tableData, searchTerm]);
-
   // Header actions with selection counter
   const headerActions = (
     <div className="flex items-center gap-2 flex-wrap">
@@ -629,7 +614,7 @@ export const KelompokTani = () => {
       <ReusableTable<KelompokTaniData>
         // Data & Loading
         currentPage={currentPage}
-        data={filteredData}
+        data={tableData}
         error={error}
 
         // Columns Configuration
@@ -642,11 +627,11 @@ export const KelompokTani = () => {
         getItemId={(item) => item.id}
         searchPlaceholder="Cari gapoktan, kelompok, desa, atau kecamatan..."
 
-        // Pagination (disable pagination for client-side filtering)
+        // Pagination
         headerActions={headerActions}
         loading={isLoading}
-        paginationInfo={searchTerm ? undefined : paginationInfo}
-        showPagination={!searchTerm}
+        paginationInfo={paginationInfo}
+        showPagination={true}
 
         // Multiple Selection - NEW
         searchTerm={searchTerm}

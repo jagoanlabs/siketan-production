@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tooltip } from "@heroui/tooltip";
 import { FaPlus, FaFileExcel, FaRegTrashAlt } from "react-icons/fa";
@@ -84,6 +84,15 @@ export const DataTanamanPage = () => {
   const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Selection state for bulk actions
   const [selectedItems, setSelectedItems] = useState<DataTanaman[]>([]);
@@ -348,16 +357,12 @@ export const DataTanamanPage = () => {
   // Handle search change
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    setDebouncedSearchTerm(value);
-    setCurrentPage(1);
     setSelectedItems([]); // Clear selection when search changes
   };
 
   // Clear search function
   const handleClearSearch = () => {
     setSearchTerm("");
-    setDebouncedSearchTerm("");
-    setCurrentPage(1);
     setSelectedItems([]);
   };
 
@@ -430,7 +435,7 @@ export const DataTanamanPage = () => {
           toast.error("Gagal menghapus data tanaman");
         }
       },
-      reject: () => {},
+      reject: () => { },
     });
   };
 
@@ -480,19 +485,19 @@ export const DataTanamanPage = () => {
   const tableData = data?.data || [];
   const paginationInfo: PaginationInfo = data
     ? {
-        total: data.total,
-        currentPages: data.currentPages,
-        maxPages: data.maxPages,
-        from: data.from,
-        to: data.to,
-      }
+      total: data.total,
+      currentPages: data.currentPages,
+      maxPages: data.maxPages,
+      from: data.from,
+      to: data.to,
+    }
     : {
-        total: 0,
-        currentPages: 1,
-        maxPages: 1,
-        from: 1,
-        to: 0,
-      };
+      total: 0,
+      currentPages: 1,
+      maxPages: 1,
+      from: 1,
+      to: 0,
+    };
 
   // Header actions with selection counter
   const headerActions = (
@@ -579,7 +584,7 @@ export const DataTanamanPage = () => {
         emptyStateMessage="Tidak ada data tanaman yang ditemukan"
         enableMultiSelect={true}
         getItemId={(item) => item.id}
-        searchPlaceholder="Cari kategori, komoditas, atau nama petani..."
+        searchPlaceholder="Cari kategori atau komoditas..."
 
         // Pagination
         headerActions={headerActions}
@@ -616,7 +621,7 @@ export const DataTanamanPage = () => {
                   <Chip
                     color={
                       selectedTanaman?.statusKepemilikanLahan ===
-                      "MILIK SENDIRI"
+                        "MILIK SENDIRI"
                         ? "success"
                         : "warning"
                     }
@@ -675,7 +680,7 @@ export const DataTanamanPage = () => {
                             <Chip
                               color={
                                 selectedTanaman.statusKepemilikanLahan ===
-                                "MILIK SENDIRI"
+                                  "MILIK SENDIRI"
                                   ? "success"
                                   : "warning"
                               }
