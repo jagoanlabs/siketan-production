@@ -452,7 +452,7 @@ export const CreateDataPetaniPage: React.FC = () => {
               </Card>
 
               {/* Informasi Tambahan */}
-              <Card shadow="sm">
+              <Card shadow="sm" className="mb-30">
                 <CardHeader className="pb-3">
                   <h3 className="text-lg font-semibold text-gray-900">
                     Informasi Tambahan
@@ -460,6 +460,14 @@ export const CreateDataPetaniPage: React.FC = () => {
                 </CardHeader>
                 <CardBody className="space-y-4">
                   <Select
+                    disableAnimation
+                    popoverProps={{
+                      shouldBlockScroll: false,
+                      shouldCloseOnScroll: false,
+                    }}
+                    listboxProps={{
+                      style: { maxHeight: "200px", overflowY: "auto" },
+                    }}
                     isRequired
                     isLoading={isLoadingPenyuluh}
                     label="Penyuluh"
@@ -511,6 +519,14 @@ export const CreateDataPetaniPage: React.FC = () => {
                   {!isManualGapoktan ? (
                     <div className="space-y-3">
                       <Select
+                        disableAnimation
+                        popoverProps={{
+                          shouldBlockScroll: false,
+                          shouldCloseOnScroll: false,
+                        }}
+                        listboxProps={{
+                          style: { maxHeight: "200px", overflowY: "auto" },
+                        }}
                         isRequired
                         isDisabled={!formData.desaId}
                         isLoading={isLoadingGapoktan}
@@ -548,18 +564,18 @@ export const CreateDataPetaniPage: React.FC = () => {
                             </SelectItem>
                           )),
                           ...(gapoktanList.length === 0 &&
-                          formData.desaId &&
-                          !isLoadingGapoktan
+                            formData.desaId &&
+                            !isLoadingGapoktan
                             ? [
-                                <SelectItem
-                                  key="manual"
-                                  textValue="Input manual"
-                                >
-                                  <span className="text-small text-primary">
-                                    Tidak ada nama kelompok, input manual
-                                  </span>
-                                </SelectItem>,
-                              ]
+                              <SelectItem
+                                key="manual"
+                                textValue="Input manual"
+                              >
+                                <span className="text-small text-primary">
+                                  Tidak ada nama kelompok, input manual
+                                </span>
+                              </SelectItem>,
+                            ]
                             : []),
                         ]}
                       </Select>
