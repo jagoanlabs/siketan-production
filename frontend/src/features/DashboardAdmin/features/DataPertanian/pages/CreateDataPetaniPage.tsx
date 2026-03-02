@@ -452,13 +452,14 @@ export const CreateDataPetaniPage: React.FC = () => {
               </Card>
 
               {/* Informasi Tambahan */}
-              <Card shadow="sm" className="mb-30">
+              <Card shadow="sm">
                 <CardHeader className="pb-3">
                   <h3 className="text-lg font-semibold text-gray-900">
                     Informasi Tambahan
                   </h3>
                 </CardHeader>
                 <CardBody className="space-y-4">
+
                   <Select
                     disableAnimation
                     popoverProps={{
@@ -613,6 +614,28 @@ export const CreateDataPetaniPage: React.FC = () => {
                       onValueChange={handleManualGapoktanChange}
                     />
                   )}
+                </CardBody>
+              </Card>
+              <Card className="bg-blue-50 border-blue-200 border md:mb-20" shadow="none">
+                <CardBody className="p-3 text-sm">
+                  <div className="flex gap-2 text-blue-800">
+                    <svg
+                      className="w-5 h-5 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                    <p>
+                      <strong>Catatan:</strong> Untuk memilih kelompok, Anda perlu memasukkan data Kecamatan, Desa, dan memilih Penyuluh terlebih dahulu.
+                    </p>
+                  </div>
                 </CardBody>
               </Card>
             </div>
