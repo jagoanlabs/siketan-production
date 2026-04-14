@@ -8,6 +8,7 @@ import {
   CreateStatistikaFormData,
   CreateStatistikaPayload,
 } from "@/types/Statistika/statistika.d";
+import * as XLSX from "xlsx";
 
 interface UseStatistikaDataParams {
   poktanId: number | null;
@@ -194,24 +195,39 @@ export const useExportStatistika = () => {
       }
 
       const response = await axiosClient.get(
-        `/statistik?${params.toString()}`,
-        {
-          responseType: "blob",
-        },
+        `/statistik?${params.toString()}`
       );
 
       return response.data;
     },
-    onSuccess: (data) => {
-      // Create blob dan download file
-      const blob = new Blob([data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
+    onSuccess: (responseBody) => {
+      const rawData = responseBody?.data?.data || [];
+      
+      if (rawData.length === 0) {
+        toast.error("Tidak ada data untuk diexport");
+        return;
+      }
+      
+      const formattedData = rawData.map((item: any) => ({
+        "Gapoktan": item.kelompok?.gapoktan || "-",
+        "Nama Kelompok": item.kelompok?.namaKelompok || "-",
+        "Desa": item.kelompok?.desa || "-",
+        "Kecamatan": item.kelompok?.kecamatan || "-",
+        "Kategori": item.kategori || "-",
+        "Komoditas": item.komoditas || "-",
+        "Periode Tanam": item.periodeTanam || "-",
+        "Luas Lahan": item.luasLahan || "-",
+        "Prakiraan Luas Panen": item.prakiraanLuasPanen || "-",
+        "Prakiraan Hasil Panen": item.prakiraanHasilPanen || "-",
+        "Prakiraan Bulan Panen": item.prakiraanBulanPanen || "-",
+        "Realisasi Luas Panen": item.realisasiLuasPanen ?? "-",
+        "Realisasi Hasil Panen": item.realisasiHasilPanen ?? "-",
+        "Realisasi Bulan Panen": item.realisasiBulanPanen || "-",
+      }));
 
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = url;
+      const worksheet = XLSX.utils.json_to_sheet(formattedData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Statistika");
 
       // Generate filename dengan timestamp
       const timestamp = new Date()
@@ -219,14 +235,7 @@ export const useExportStatistika = () => {
         .slice(0, 19)
         .replace(/:/g, "-");
 
-      link.download = `data-statistika-${timestamp}.xlsx`;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Cleanup URL
-      window.URL.revokeObjectURL(url);
+      XLSX.writeFile(workbook, `data-statistika-${timestamp}.xlsx`);
 
       toast.success("Data berhasil diexport!");
     },
