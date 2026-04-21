@@ -202,30 +202,122 @@ export const useExportStatistika = () => {
     },
     onSuccess: (responseBody) => {
       const rawData = responseBody?.data?.data || [];
-      
+
       if (rawData.length === 0) {
         toast.error("Tidak ada data untuk diexport");
         return;
       }
-      
-      const formattedData = rawData.map((item: any) => ({
-        "Gapoktan": item.kelompok?.gapoktan || "-",
-        "Nama Kelompok": item.kelompok?.namaKelompok || "-",
-        "Desa": item.kelompok?.desa || "-",
-        "Kecamatan": item.kelompok?.kecamatan || "-",
-        "Kategori": item.kategori || "-",
-        "Komoditas": item.komoditas || "-",
-        "Periode Tanam": item.periodeTanam || "-",
-        "Luas Lahan": item.luasLahan || "-",
-        "Prakiraan Luas Panen": item.prakiraanLuasPanen || "-",
-        "Prakiraan Hasil Panen": item.prakiraanHasilPanen || "-",
-        "Prakiraan Bulan Panen": item.prakiraanBulanPanen || "-",
-        "Realisasi Luas Panen": item.realisasiLuasPanen ?? "-",
-        "Realisasi Hasil Panen": item.realisasiHasilPanen ?? "-",
-        "Realisasi Bulan Panen": item.realisasiBulanPanen || "-",
-      }));
 
-      const worksheet = XLSX.utils.json_to_sheet(formattedData);
+      const headerRow1 = [
+        "NO POKTAN", "KECAMATAN", "DESA", "LAHAN BAKU", "GAPOKTAN", "NAMA POKTAN",
+        "TANAMAN PANGAN", "", "", "", "", "", "", "",
+        "TANAMAN PERKEBUNAN SEMUSIM", "", "", "", "", "", "", "",
+        "TANAMAN PERKEBUNAN TAHUNAN", "", "", "", "", "", "", "",
+        "TANAMAN HORTIKULTURA SEMUSIM", "", "", "", "", "", "", "",
+        "TANAMAN HORTIKULTURA TAHUNAN", "", "", "", "", "", "", ""
+      ];
+
+      const sectionFields = [
+        "KOMODITAS", "LUAS LAHAN(HA)", "BULAN TANAM", "PRAKIRAAN BULAN PANEN",
+        "PRAKIRAAN LUAS PANEN (HA)", "PRAKIRAAN HASIL PANEN (TON)",
+        "REALISASI LUAS PANEN (HA)", "REALISASI PRODUKSI PANEN (TON)"
+      ];
+
+      const headerRow2 = [
+        "", "", "", "", "", "",
+        ...sectionFields,
+        ...sectionFields,
+        ...sectionFields,
+        ...sectionFields,
+        ...sectionFields
+      ];
+
+      const aoaData: any[][] = [headerRow1, headerRow2];
+
+      rawData.forEach((item: any) => {
+        let sectionIndex = -1;
+        const kat = item.kategori?.toLowerCase() || "";
+        const komoditas = item.komoditas || "";
+
+        if (kat === "pangan") {
+          sectionIndex = 0;
+        } else if (kat === "perkebunan") {
+          const semusimList = ["Kopi", "Kakao", "Cengkeh", "Teh", "Karet", "Kelapa"];
+          const tahunanList = ["Perkebunan Tembakau", "Perkebunan Tebu"];
+
+          if (semusimList.includes(komoditas)) {
+            sectionIndex = 1;
+          } else if (tahunanList.includes(komoditas)) {
+            sectionIndex = 2;
+          } else {
+            sectionIndex = 1; // Default
+          }
+        } else if (kat === "buah" || kat === "sayur") {
+          const semusimList = [
+            "Melon", "Semangka", "Pisang", "Blewah",
+            "Cabe Kecil", "Cabe Besar", "Bawang Merah", "Tomat", "Terong",
+            "Pare", "Gambas", "Bayam", "Kangkung", "Sawi", "Kacang Panjang", "Timun"
+          ];
+          const tahunanList = [
+            "Mangga", "Durian", "Manggis", "Alpukat", "Rambutan", "Jeruk Lemon",
+            "Jeruk Nipis", "Jeruk Keprok", "Jeruk Besar", "Nangka", "Jambu Biji",
+            "Jambu Air", "Sukun", "Sirsak", "Sawo", "Duku"
+          ];
+
+          if (semusimList.includes(komoditas)) {
+            sectionIndex = 3;
+          } else if (tahunanList.includes(komoditas)) {
+            sectionIndex = 4;
+          } else {
+            sectionIndex = 3; // Default
+          }
+        }
+
+        const row = [
+          item.kelompok?.id || "-",
+          item.kelompok?.kecamatan || "-",
+          item.kelompok?.desa || "-",
+          item.luasLahan || "-",
+          item.kelompok?.gapoktan || "-",
+          item.kelompok?.namaKelompok || "-"
+        ];
+
+        for (let i = 0; i < 5; i++) {
+          if (i === sectionIndex) {
+            row.push(
+              item.komoditas || "-",
+              item.luasLahan || "-",
+              item.periodeTanam || "-",
+              item.prakiraanBulanPanen || "-",
+              item.prakiraanLuasPanen || "-",
+              item.prakiraanHasilPanen || "-",
+              item.realisasiLuasPanen ?? "-",
+              item.realisasiHasilPanen ?? "-"
+            );
+          } else {
+            row.push("-", "-", "-", "-", "-", "-", "-", "-");
+          }
+        }
+
+        aoaData.push(row);
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(aoaData);
+
+      worksheet["!merges"] = [
+        { s: { r: 0, c: 6 }, e: { r: 0, c: 13 } },
+        { s: { r: 0, c: 14 }, e: { r: 0, c: 21 } },
+        { s: { r: 0, c: 22 }, e: { r: 0, c: 29 } },
+        { s: { r: 0, c: 30 }, e: { r: 0, c: 37 } },
+        { s: { r: 0, c: 38 }, e: { r: 0, c: 45 } },
+        { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },
+        { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } },
+        { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } },
+        { s: { r: 0, c: 3 }, e: { r: 1, c: 3 } },
+        { s: { r: 0, c: 4 }, e: { r: 1, c: 4 } },
+        { s: { r: 0, c: 5 }, e: { r: 1, c: 5 } }
+      ];
+
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Statistika");
 
