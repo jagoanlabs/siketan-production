@@ -333,7 +333,7 @@ export const DashboardStatistika = () => {
                     {item.kategori === "jenis_sayur"
                       ? "Jenis Sayur"
                       : item.kategori.charAt(0).toUpperCase() +
-                        item.kategori.slice(1)}
+                      item.kategori.slice(1)}
                   </Chip>
                 </div>
               </div>
@@ -375,7 +375,7 @@ export const DashboardStatistika = () => {
           console.error("Delete failed:", error);
         }
       },
-      reject: () => {},
+      reject: () => { },
       acceptLabel: "Ya, Hapus Data",
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger p-button-text p-button-sm",
@@ -454,6 +454,15 @@ export const DashboardStatistika = () => {
         }
 
         return index + 1;
+      },
+    },
+    {
+      key: "id",
+      title: "No. Poktan",
+      align: "center",
+      width: "60px",
+      render: (item) => {
+        return item.kelompok.id;
       },
     },
     {
@@ -598,19 +607,19 @@ export const DashboardStatistika = () => {
   const tableData = tanamanResponse?.data.data || [];
   const paginationInfo: PaginationInfo = tanamanResponse?.data
     ? {
-        total: tanamanResponse.data.total,
-        currentPages: tanamanResponse.data.currentPages,
-        maxPages: tanamanResponse.data.maxPages,
-        from: tanamanResponse.data.from,
-        to: tanamanResponse.data.to,
-      }
+      total: tanamanResponse.data.total,
+      currentPages: tanamanResponse.data.currentPages,
+      maxPages: tanamanResponse.data.maxPages,
+      from: tanamanResponse.data.from,
+      to: tanamanResponse.data.to,
+    }
     : {
-        total: 0,
-        currentPages: 1,
-        maxPages: 1,
-        from: 1,
-        to: 0,
-      };
+      total: 0,
+      currentPages: 1,
+      maxPages: 1,
+      from: 1,
+      to: 0,
+    };
 
   // Header actions with selection counter
   const headerActions = (
