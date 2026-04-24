@@ -355,7 +355,7 @@ export const useImportStatistika = () => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        timeout: 60000, // 60 detik khusus untuk upload file Excel
+        timeout: 120000, // 60 detik khusus untuk upload file Excel
       });
 
       return response.data;
