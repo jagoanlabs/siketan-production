@@ -369,7 +369,7 @@ const uploadDataTanaman = async (req, res) => {
       }
 
       const fk_kelompokId = row.getCell(1).value;
-      const kategori = row.getCell(2).value;
+      let kategori = row.getCell(2).value;
       const komoditas = row.getCell(3).value;
       const periodeTanam = row.getCell(4).value;
       const luasLahan = row.getCell(5).value;
@@ -380,8 +380,12 @@ const uploadDataTanaman = async (req, res) => {
       const realisasiHasilPanen = row.getCell(10).value;
       const realisasiBulanPanen = row.getCell(11).value;
 
+      if (typeof kategori === 'string') kategori = kategori.toLowerCase().trim();
       if (!['pangan', 'perkebunan', 'sayur', 'buah'].includes(kategori))
-        throw new ApiError(400, 'Kategori tidak valid.');
+        throw new ApiError(
+          400,
+          `Kategori (${kategori}) tidak valid. Data ke-${i - 1} (baris ${i})`
+        );
       if (
         !tanamanPangan
           .concat(tanamanPerkebunan)
