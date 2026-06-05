@@ -25,7 +25,8 @@ const {
   getDetailedDataTanamanPetani,
   deleteDatatanamanPetani,
   editDataTanamanPetani,
-  uploadDataTanamanPetani
+  uploadDataTanamanPetani,
+  getTanamanPetaniYears
   // deleteTanamanPetaniById,
 } = require('../controllers/tanamanPetani');
 const { getAllDataTanaman } = require('../controllers/dataTanaman');
@@ -71,6 +72,12 @@ router.get(
   auth,
   hasPermission(PERMISSIONS.TANAMAN_PETANI_INDEX),
   getAllTanamanPetani
+);
+router.get(
+  '/list-tanaman/years',
+  auth,
+  hasPermission(PERMISSIONS.TANAMAN_PETANI_INDEX),
+  getTanamanPetaniYears
 );
 router.put(
   '/list-tanaman/:id',

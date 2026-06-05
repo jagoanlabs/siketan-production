@@ -184,7 +184,13 @@ export const useDeleteStatistika = (isBulkAction?: boolean) => {
 
 export const useExportStatistika = () => {
   return useMutation({
-    mutationFn: async (poktanId?: number | null) => {
+    mutationFn: async ({
+      poktanId,
+      tahun,
+    }: {
+      poktanId?: number | null;
+      tahun?: string | null;
+    } = {}) => {
       const params = new URLSearchParams({
         isExport: "true",
       });
@@ -194,13 +200,18 @@ export const useExportStatistika = () => {
         params.append("poktan_id", poktanId.toString());
       }
 
+      // Tambahkan tahun jika ada filter tahun
+      if (tahun) {
+        params.append("tahun", tahun);
+      }
+
       const response = await axiosClient.get(
         `/statistik?${params.toString()}`
       );
 
       return response.data;
     },
-    onSuccess: (responseBody) => {
+    onSuccess: (responseBody, variables) => {
       const rawData = responseBody?.data?.data || [];
 
       if (rawData.length === 0) {
@@ -327,7 +338,8 @@ export const useExportStatistika = () => {
         .slice(0, 19)
         .replace(/:/g, "-");
 
-      XLSX.writeFile(workbook, `data-statistika-${timestamp}.xlsx`);
+      const yearSuffix = variables?.tahun ? `-${variables.tahun}` : "";
+      XLSX.writeFile(workbook, `data-statistika${yearSuffix}-${timestamp}.xlsx`);
 
       toast.success("Data berhasil diexport!");
     },
@@ -381,3 +393,15 @@ export const useImportStatistika = () => {
     },
   });
 };
+
+export const useStatistikaYears = () => {
+  return useQuery({
+    queryKey: ["statistika-years"],
+    queryFn: async (): Promise<string[]> => {
+      const response = await axiosClient.get("/statistik/years");
+      return (response.data.data || []).map((year: any) => year.toString());
+    },
+    staleTime: 300000, // 5 minutes cache
+  });
+};
+

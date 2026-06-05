@@ -92,17 +92,23 @@ const formatBulanTanam = (dateString: string | null): string => {
 };
 
 // Main export function
-export const exportAllDataToExcel = async () => {
+export const exportAllDataToExcel = async (tahun?: string | null) => {
   try {
     const toastId = toast.loading("Mengunduh data tanaman...");
 
+    const params: any = {
+      page: 1,
+      limit: 9999, // Get all data
+      isExport: true,
+    };
+
+    if (tahun) {
+      params.tahun = tahun;
+    }
+
     // Fetch all data without pagination
     const response = await axiosClient.get("/list-tanaman", {
-      params: {
-        page: 1,
-        limit: 9999, // Get all data
-        isExport: true,
-      },
+      params,
     });
 
     const allData: DataTanaman[] = response.data.data;
@@ -227,7 +233,8 @@ export const exportAllDataToExcel = async () => {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
-    const fileName = `Data_Tanaman_Petani_${new Date().toISOString().split("T")[0]}.xlsx`;
+    const yearSuffix = tahun ? `_${tahun}` : "";
+    const fileName = `Data_Tanaman_Petani${yearSuffix}_${new Date().toISOString().split("T")[0]}.xlsx`;
 
     saveAs(blob, fileName);
 

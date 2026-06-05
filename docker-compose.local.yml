@@ -11,3 +11,8 @@ services:
     ports:
       - "8089:80"
       - "8443:443"
+
+  phpmyadmin:
+    ports:
+      - "8080:80"
+

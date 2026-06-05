@@ -12,6 +12,7 @@ import {
   ModalBody,
   ModalFooter,
 } from "@heroui/modal";
+import { Select, SelectItem } from "@heroui/select";
 import { confirmDialog } from "primereact/confirmdialog";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
@@ -101,6 +102,26 @@ export const DataTanamanPage = () => {
   const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // Export Modal states
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportType, setExportType] = useState<"all" | "year">("all");
+  const [selectedExportYear, setSelectedExportYear] = useState<string>("");
+
+  const { data: availableYears = [] } = useQuery<string[]>({
+    queryKey: ["tanamanPetaniYears"],
+    queryFn: async () => {
+      const response = await axiosClient.get("/list-tanaman/years");
+      return (response.data.data || []).map((year: any) => year.toString());
+    },
+    staleTime: 300000,
+  });
+
+  useEffect(() => {
+    if (availableYears.length > 0 && !selectedExportYear) {
+      setSelectedExportYear(availableYears[0]);
+    }
+  }, [availableYears, selectedExportYear]);
 
   // Modal state
   const [selectedTanaman, setSelectedTanaman] = useState<DataTanaman | null>(
@@ -381,7 +402,16 @@ export const DataTanamanPage = () => {
   };
 
   const handleDownload = () => {
-    exportAllDataToExcel();
+    setIsExportModalOpen(true);
+  };
+
+  const executeExport = async () => {
+    setIsExportModalOpen(false);
+    try {
+      await exportAllDataToExcel(exportType === "year" ? selectedExportYear : null);
+    } catch (error) {
+      console.error("Export error:", error);
+    }
   };
 
   const handleDelete = (item: DataTanaman) => {
@@ -825,6 +855,74 @@ export const DataTanamanPage = () => {
                     </Button>
                   </PermissionWrapper>
                 )}
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/* Export Options Modal */}
+      <Modal isOpen={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Export Data Tanaman</ModalHeader>
+              <ModalBody className="space-y-4">
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Pilih tipe export:
+                  </p>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="exportType"
+                        checked={exportType === "all"}
+                        onChange={() => setExportType("all")}
+                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Keseluruhan</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="exportType"
+                        checked={exportType === "year"}
+                        onChange={() => setExportType("year")}
+                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Berdasarkan Tahun</span>
+                    </label>
+                  </div>
+                </div>
+
+                {exportType === "year" && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Pilih Tahun:
+                    </p>
+                    <Select
+                      placeholder="Pilih tahun..."
+                      selectedKeys={[selectedExportYear]}
+                      variant="bordered"
+                      onChange={(e) => setSelectedExportYear(e.target.value)}
+                    >
+                      {availableYears.map((year) => (
+                        <SelectItem key={year}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                  </div>
+                )}
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Batal
+                </Button>
+                <Button className="text-gray-100" color="success" onPress={executeExport}>
+                  Export ke Excel
+                </Button>
               </ModalFooter>
             </>
           )}

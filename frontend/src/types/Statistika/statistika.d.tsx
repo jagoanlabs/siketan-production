@@ -133,9 +133,15 @@ export const KOMODITAS_OPTIONS = {
       "Sawi",
       "Kacang Panjang",
       "Timun",
+      "Cabe Kecil",
+      "Cabe Besar",
+      "Bawang Merah",
+      "Tomat",
+      "Terong",
     ],
   },
 };
+
 
 export const BULAN_OPTIONS = [
   "Januari",

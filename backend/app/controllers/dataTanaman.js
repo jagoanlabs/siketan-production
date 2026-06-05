@@ -2,7 +2,7 @@ const { dataTanaman, kelompok } = require('../models');
 
 const ApiError = require('../../utils/ApiError');
 const dotenv = require('dotenv');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const ExcelJS = require('exceljs');
 const { postActivity } = require('./logActivity');
 const {
@@ -17,7 +17,7 @@ dotenv.config();
 
 const getAllDataTanaman = async (req, res) => {
   const { peran } = req.user || {};
-  const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas } =
+  const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas, tahun } =
     req.query;
 
   try {
@@ -45,6 +45,19 @@ const getAllDataTanaman = async (req, res) => {
     // filter komoditas
     if (komoditas && komoditas !== 'undefined') {
       whereClause.komoditas = { [Op.like]: `%${komoditas}%` };
+    }
+
+    // filter tahun (created at)
+    if (tahun && tahun !== 'undefined') {
+      const yearNum = Number(tahun);
+      if (!isNaN(yearNum)) {
+        whereClause.createdAt = {
+          [Op.and]: [
+            { [Op.gte]: `${yearNum}-01-01 00:00:00` },
+            { [Op.lte]: `${yearNum}-12-31 23:59:59` }
+          ]
+        };
+      }
     }
 
     // pencarian umum (kategori / komoditas / periodeTanam / kelompok.namaKelompok)
@@ -443,6 +456,32 @@ const uploadDataTanaman = async (req, res) => {
   }
 };
 
+const getStatistikYears = async (req, res) => {
+  const { peran } = req.user || {};
+  try {
+    if (peran === 'petani') {
+      throw new ApiError(403, 'Anda tidak memiliki akses.');
+    }
+
+    const data = await dataTanaman.findAll({
+      attributes: [
+        [Sequelize.fn('YEAR', Sequelize.col('createdAt')), 'year']
+      ],
+      group: [Sequelize.fn('YEAR', Sequelize.col('createdAt'))],
+      raw: true
+    });
+
+    const years = data.map((item) => item.year).filter(Boolean).sort((a, b) => b - a);
+
+    res.status(200).json({
+      message: 'Daftar tahun berhasil didapatkan.',
+      data: years
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   tambahDataTanaman,
   getAllDataTanaman,
@@ -451,5 +490,6 @@ module.exports = {
   hapusDataTanaman,
   uploadDataTanaman,
   fixKategori,
-  fixKomoditas
+  fixKomoditas,
+  getStatistikYears
 };

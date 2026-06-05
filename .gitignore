@@ -6,3 +6,4 @@ nginx/ssl/*
 *.p12
 *.jks
 *.ca-bundle
+.env

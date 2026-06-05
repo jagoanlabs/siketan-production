@@ -18,7 +18,7 @@ dotenv.config();
 
 const getAllTanamanPetani = async (req, res) => {
   const { peran } = req.user || {};
-  const { page, limit, petaniId, isExport, search } = req.query;
+  const { page, limit, petaniId, isExport, search, tahun } = req.query;
 
   try {
     if (peran === 'petani') {
@@ -50,6 +50,21 @@ const getAllTanamanPetani = async (req, res) => {
           { komoditas: { [Op.like]: `%${search}%` } }
         ]
       };
+    }
+
+    if (tahun && tahun !== 'undefined') {
+      const yearNum = Number(tahun);
+      if (!isNaN(yearNum)) {
+        query.where = {
+          ...query.where,
+          createdAt: {
+            [Op.and]: [
+              { [Op.gte]: `${yearNum}-01-01 00:00:00` },
+              { [Op.lte]: `${yearNum}-12-31 23:59:59` }
+            ]
+          }
+        };
+      }
     }
 
     const data = await tanamanPetani.findAll(
@@ -569,6 +584,32 @@ const uploadDataTanamanPetani = async (req, res) => {
   }
 };
 
+const getTanamanPetaniYears = async (req, res) => {
+  const { peran } = req.user || {};
+  try {
+    if (peran === 'petani') {
+      throw new ApiError(403, 'Anda tidak memiliki akses.');
+    }
+
+    const data = await tanamanPetani.findAll({
+      attributes: [
+        [Sequelize.fn('YEAR', Sequelize.col('createdAt')), 'year']
+      ],
+      group: [Sequelize.fn('YEAR', Sequelize.col('createdAt'))],
+      raw: true
+    });
+
+    const years = data.map((item) => item.year).filter(Boolean).sort((a, b) => b - a);
+
+    res.status(200).json({
+      message: 'Daftar tahun berhasil didapatkan.',
+      data: years
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getAllTanamanPetani,
   getTopTanamanPetani,
@@ -580,5 +621,6 @@ module.exports = {
   deleteDatatanamanPetani,
   getDetailedDataTanamanPetani,
   uploadDataTanamanPetani,
-  getAllTanamanPetaniByPenyuluh
+  getAllTanamanPetaniByPenyuluh,
+  getTanamanPetaniYears
 };
