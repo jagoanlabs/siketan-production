@@ -29,17 +29,6 @@ services:
     networks:
       - siketan-network
 
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: siketan_phpmyadmin
-    restart: unless-stopped
-    environment:
-      - PMA_HOST=${DB_HOST}
-      - PMA_PORT=${DB_PORT}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - siketan-network
 
 networks:
   siketan-network:
