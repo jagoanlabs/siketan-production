@@ -246,7 +246,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
         >
           <Radio value="pangan">Tanaman Pangan</Radio>
           <Radio value="perkebunan">Perkebunan</Radio>
-          <Radio value="jenis_sayur">Jenis Sayur</Radio>
+          <Radio value="jenis_sayur">Sayur</Radio>
           <Radio value="buah">Buah</Radio>
         </RadioGroup>
         {errors.kategoriTanaman && (
@@ -287,7 +287,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
             </Select>
             {formData.kategoriTanaman === "jenis_sayur" && (
               <p className="text-yellow-600 text-sm mt-1">
-                Jenis sayur tidak tersedia untuk kategori semusim
+                sayur tidak tersedia untuk kategori semusim
               </p>
             )}
           </div>
