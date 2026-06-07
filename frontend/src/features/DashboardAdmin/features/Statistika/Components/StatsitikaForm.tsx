@@ -41,13 +41,14 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
   // Initialize form data based on mode
   const getInitialFormData = (): CreateStatistikaFormData => {
     if (isEdit && initialData) {
+      const normalizedKategori = initialData.kategori === "sayur" ? "jenis_sayur" : initialData.kategori;
       const jenisTanaman = determineJenisTanaman(
-        initialData.kategori,
+        normalizedKategori,
         initialData.komoditas,
       );
 
       return {
-        kategoriTanaman: initialData.kategori as
+        kategoriTanaman: normalizedKategori as
           | "pangan"
           | "perkebunan"
           | "jenis_sayur"

@@ -231,14 +231,14 @@ export const DetailStatistika = () => {
                             ? "success"
                             : statistika.kategori === "perkebunan"
                               ? "warning"
-                              : statistika.kategori === "jenis_sayur"
+                              : statistika.kategori === "jenis_sayur" || statistika.kategori === "sayur"
                                 ? "secondary"
                                 : "primary"
                         }
                         variant="flat"
                       >
-                        {statistika.kategori === "jenis_sayur"
-                          ? "Jenis Sayur"
+                        {statistika.kategori === "jenis_sayur" || statistika.kategori === "sayur"
+                          ? "Sayur"
                           : statistika.kategori.charAt(0).toUpperCase() +
                             statistika.kategori.slice(1)}
                       </Chip>

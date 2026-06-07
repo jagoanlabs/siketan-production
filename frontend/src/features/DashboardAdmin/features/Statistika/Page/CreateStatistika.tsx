@@ -149,15 +149,15 @@ export const CreateStatistika = () => {
               ? "success"
               : item.kategori === "perkebunan"
                 ? "warning"
-                : item.kategori === "jenis_sayur"
+                : item.kategori === "jenis_sayur" || item.kategori === "sayur"
                   ? "secondary"
                   : "primary"
           }
           size="sm"
           variant="flat"
         >
-          {item.kategori === "jenis_sayur"
-            ? "Jenis Sayur"
+          {item.kategori === "jenis_sayur" || item.kategori === "sayur"
+            ? "Sayur"
             : item.kategori.charAt(0).toUpperCase() + item.kategori.slice(1)}
         </Chip>
       ),

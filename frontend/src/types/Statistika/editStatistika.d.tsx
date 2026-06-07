@@ -119,6 +119,7 @@ export const determineJenisTanaman = (
   kategori: string,
   komoditas: string,
 ): "semusim" | "tahunan" => {
+  const normalizedKategori = kategori === "sayur" ? "jenis_sayur" : kategori;
   const KOMODITAS_MAPPING = {
     pangan: {
       semusim: [
@@ -183,7 +184,7 @@ export const determineJenisTanaman = (
     },
   };
 
-  const mapping = KOMODITAS_MAPPING[kategori as keyof typeof KOMODITAS_MAPPING];
+  const mapping = KOMODITAS_MAPPING[normalizedKategori as keyof typeof KOMODITAS_MAPPING];
 
   if (!mapping) return "semusim";
 
