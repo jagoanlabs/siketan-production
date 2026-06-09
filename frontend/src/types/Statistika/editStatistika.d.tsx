@@ -1,4 +1,6 @@
 // types/Statistika/editStatistika.d.ts
+import { KOMODITAS_OPTIONS } from "./statistika.d";
+
 export interface StatistikaDetailData {
   id: number;
   kategori: string;
@@ -120,71 +122,7 @@ export const determineJenisTanaman = (
   komoditas: string,
 ): "semusim" | "tahunan" => {
   const normalizedKategori = kategori === "sayur" ? "jenis_sayur" : kategori;
-  const KOMODITAS_MAPPING = {
-    pangan: {
-      semusim: [
-        "Padi Konvensional",
-        "Padi Ramah Lingkungan",
-        "Padi Organik",
-        "Jagung",
-        "Kedelai",
-        "Ubi Jalar",
-        "Ubi Kayu",
-        "Kacang Tanah",
-        "Kacang Hijau",
-      ],
-      tahunan: [
-        "Padi Konvensional",
-        "Padi Ramah Lingkungan",
-        "Padi Organik",
-        "Jagung",
-        "Kedelai",
-        "Ubi Jalar",
-        "Ubi Kayu",
-        "Kacang Tanah",
-        "Kacang Hijau",
-      ],
-    },
-    perkebunan: {
-      semusim: ["Kopi", "Kakao", "Cengkeh", "Teh", "Karet", "Kelapa"],
-      tahunan: ["Tembakau", "Tebu", "Perkebunan Tembakau", "Perkebunan Tebu"],
-    },
-    buah: {
-      semusim: ["Melon", "Semangka", "Pisang", "Blewah"],
-      tahunan: [
-        "Mangga",
-        "Durian",
-        "Manggis",
-        "Alpukat",
-        "Rambutan",
-        "Jeruk Lemon",
-        "Jeruk Nipis",
-        "Jeruk Keprok",
-        "Jeruk Besar",
-        "Nangka",
-        "Jambu Biji",
-        "Jambu Air",
-        "Sukun",
-        "Sirsak",
-        "Sawo",
-        "Duku",
-      ],
-    },
-    jenis_sayur: {
-      semusim: [],
-      tahunan: [
-        "Pare",
-        "Gambas",
-        "Bayam",
-        "Kangkung",
-        "Sawi",
-        "Kacang Panjang",
-        "Timun",
-      ],
-    },
-  };
-
-  const mapping = KOMODITAS_MAPPING[normalizedKategori as keyof typeof KOMODITAS_MAPPING];
+  const mapping = KOMODITAS_OPTIONS[normalizedKategori as keyof typeof KOMODITAS_OPTIONS];
 
   if (!mapping) return "semusim";
 

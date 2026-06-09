@@ -101,16 +101,6 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
     }
   }, [selectedPoktanId]);
 
-  // Reset komoditas ketika kategori atau jenis tanaman berubah
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      komoditasSemusim:
-        prev.jenisTanaman === "tahunan" ? "" : prev.komoditasSemusim,
-      komoditasTahunan:
-        prev.jenisTanaman === "semusim" ? "" : prev.komoditasTahunan,
-    }));
-  }, [formData.kategoriTanaman, formData.jenisTanaman]);
 
   const handleInputChange = (
     field: keyof CreateStatistikaFormData,
@@ -243,7 +233,22 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           className="gap-4"
           orientation="horizontal"
           value={formData.kategoriTanaman}
-          onValueChange={(value) => handleInputChange("kategoriTanaman", value)}
+          onValueChange={(value) => {
+            const val = value as "pangan" | "perkebunan" | "jenis_sayur" | "buah";
+            const defaultJenis = val === "jenis_sayur" ? "tahunan" : "semusim";
+            setFormData((prev) => ({
+              ...prev,
+              kategoriTanaman: val,
+              jenisTanaman: defaultJenis,
+              komoditasSemusim: "",
+              komoditasTahunan: "",
+            }));
+            // Clear errors for fields that were reset
+            setErrors((prev) => {
+              const { kategoriTanaman, komoditasSemusim, komoditasTahunan, ...rest } = prev;
+              return rest;
+            });
+          }}
         >
           <Radio value="pangan">Tanaman Pangan</Radio>
           <Radio value="perkebunan">Perkebunan</Radio>
@@ -277,7 +282,17 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
               onSelectionChange={(keys) => {
                 const selected = Array.from(keys)[0] as string;
 
-                handleInputChange("komoditasSemusim", selected);
+                setFormData((prev) => ({
+                  ...prev,
+                  komoditasSemusim: selected,
+                  komoditasTahunan: "",
+                  jenisTanaman: "semusim",
+                }));
+                // Clear errors
+                setErrors((prev) => {
+                  const { komoditasSemusim, komoditasTahunan, ...rest } = prev;
+                  return rest;
+                });
               }}
             >
               {getKomoditasSemusimOptions().map((option) => (
@@ -307,7 +322,17 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
               onSelectionChange={(keys) => {
                 const selected = Array.from(keys)[0] as string;
 
-                handleInputChange("komoditasTahunan", selected);
+                setFormData((prev) => ({
+                  ...prev,
+                  komoditasTahunan: selected,
+                  komoditasSemusim: "",
+                  jenisTanaman: "tahunan",
+                }));
+                // Clear errors
+                setErrors((prev) => {
+                  const { komoditasSemusim, komoditasTahunan, ...rest } = prev;
+                  return rest;
+                });
               }}
             >
               {getKomoditasTahunanOptions().map((option) => (
