@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.belongsTo(models.kelompok, { foreignKey: 'fk_kelompokId' });
+      this.belongsTo(models.riwayatImport, {
+        foreignKey: 'fk_importHistoryId',
+        as: 'riwayatImport'
+      });
     }
   }
   DataTanaman.init(

@@ -1,5 +1,5 @@
 // pages/CreateStatistika.tsx
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import ReactSelect from "react-select";
@@ -12,7 +12,7 @@ import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
 import { useDashboardDataPotkan } from "@/hook/dashboard/useDashboardDataPotkan";
 import { DashoardDataPotkan } from "@/types/dashboard/searchPoktan";
-import { debounce } from "@/utils/debounce";
+
 import { ColumnConfig, PaginationInfo } from "@/types/table";
 import { Kelompok, StatistikaData } from "@/types/Statistika/statistika.d";
 import { ReusableTable } from "@/components/Table/ReusableTable";

@@ -66,7 +66,7 @@ module.exports = {
           is_active: true,
           createdAt: now,
           updatedAt: now
-        },
+        }
       ],
       { returning: true }
     );

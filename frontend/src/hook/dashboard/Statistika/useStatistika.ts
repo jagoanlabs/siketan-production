@@ -7,6 +7,7 @@ import {
   StatistikaResponse,
   CreateStatistikaFormData,
   CreateStatistikaPayload,
+  RiwayatImportResponse,
 } from "@/types/Statistika/statistika.d";
 import * as XLSX from "xlsx";
 
@@ -409,4 +410,49 @@ export const useStatistikaYears = () => {
     staleTime: 300000, // 5 minutes cache
   });
 };
+
+export const useRiwayatImport = () => {
+  return useQuery({
+    queryKey: ["statistika-riwayat-import"],
+    queryFn: async (): Promise<RiwayatImportResponse> => {
+      const response = await axiosClient.get("/statistik/riwayat");
+      return response.data;
+    },
+  });
+};
+
+export const useUploadRealisasi = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: number; file: File }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await axiosClient.post(
+        `/statistik/riwayat/${id}/upload-realisasi`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 120000,
+        }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Data realisasi berhasil diperbarui secara massal!");
+      queryClient.invalidateQueries({ queryKey: ["statistika-riwayat-import"] });
+      queryClient.invalidateQueries({ queryKey: ["statistika-data"] });
+    },
+    onError: (error: any) => {
+      const message =
+        error.response?.data?.message || "Gagal mengunggah data realisasi";
+      toast.error(message);
+      console.error("Upload realisasi error:", error);
+    },
+  });
+};
+
 

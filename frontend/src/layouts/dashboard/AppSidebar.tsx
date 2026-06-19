@@ -58,6 +58,12 @@ const navItems: NavItem[] = [
         pro: false,
         permission: PERMISSIONS.STATISTIC_INDEX,
       },
+      {
+        name: "Riwayat Realisasi Massal",
+        path: "/dashboard-admin/statistik-pertanian/riwayat",
+        pro: false,
+        permission: PERMISSIONS.STATISTIC_INDEX,
+      },
     ],
   },
   {

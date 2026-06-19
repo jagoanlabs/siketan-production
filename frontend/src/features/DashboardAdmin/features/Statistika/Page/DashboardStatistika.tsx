@@ -1,5 +1,4 @@
-// pages/DashboardStatistika.tsx - Enhanced dengan bulk actions
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ReactSelect from "react-select";
 import { Tooltip } from "@heroui/tooltip";
 import { Button } from "@heroui/button";
@@ -32,6 +31,7 @@ import {
   useExportStatistika,
   useStatistikaYears,
 } from "@/hook/dashboard/Statistika/useStatistika";
+import { axiosClient } from "@/service/app-service";
 import { DashoardDataPotkan } from "@/types/dashboard/searchPoktan";
 import {
   DataTanaman,
@@ -49,6 +49,12 @@ export const DashboardStatistika = () => {
 
   // AsyncSelect state
   const [selectedOption, setSelectedOption] = useState<any>(null);
+
+
+
+  // Import Success Modal states
+  const [isImportSuccessOpen, setIsImportSuccessOpen] = useState(false);
+  const [importSuccessData, setImportSuccessData] = useState<{ id: number; count: number } | null>(null);
 
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
@@ -85,6 +91,28 @@ export const DashboardStatistika = () => {
   const bulkDeleteMutation = useDeleteStatistika(true); // isBulkAction = true
   const importMutation = useImportStatistika();
   const exportMutation = useExportStatistika();
+
+  const handleDownloadTemplate = async (id: number, filename: string) => {
+    try {
+      toast.info("Sedang menyiapkan template realisasi...");
+      const response = await axiosClient.get(`/statistik/riwayat/${id}/download-template`, {
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || `formulir_realisasi_${id}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success("Template realisasi berhasil diunduh!");
+    } catch (error) {
+      toast.error("Gagal mengunduh template realisasi");
+      console.error("Download template error:", error);
+    }
+  };
 
   // Debounce functions
   const debouncedSetTableSearch = useMemo(
@@ -416,8 +444,12 @@ export const DashboardStatistika = () => {
         setLoadingMessage(`Mengupload file ${file.name}...`);
 
         try {
-          await importMutation.mutateAsync(file);
+          const result = await importMutation.mutateAsync(file);
           await refetchTanamanData();
+          if (result?.riwayatId && result?.imported_count) {
+            setImportSuccessData({ id: result.riwayatId, count: result.imported_count });
+            setIsImportSuccessOpen(true);
+          }
         } finally {
           setShowLoadingModal(false);
         }
@@ -690,6 +722,7 @@ export const DashboardStatistika = () => {
         type="processing"
       />
 
+
       {/* Poktan Select Filter */}
       <div className="mb-6">
         <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -833,6 +866,51 @@ export const DashboardStatistika = () => {
                 </Button>
                 <Button className="text-gray-100" color="success" onPress={executeExport}>
                   Export ke Excel
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/* Import Success Modal - Offering direct template download */}
+      <Modal isOpen={isImportSuccessOpen} onOpenChange={setIsImportSuccessOpen} size="md">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex gap-2 items-center text-success">
+                <IoIosCheckmarkCircleOutline className="w-6 h-6 text-success animate-bounce" />
+                <span>Impor Data Sukses!</span>
+              </ModalHeader>
+              <ModalBody className="space-y-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Sebanyak <strong>{importSuccessData?.count}</strong> data tanaman berhasil diimpor ke sistem.
+                </p>
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl flex flex-col gap-2">
+                  <p className="text-xs text-blue-750 dark:text-blue-300 font-semibold">
+                    TIPS REALISASI MASSAL:
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    Anda dapat langsung mengunduh Formulir Realisasi untuk baris data yang baru saja diimpor ini, membagikannya kepada kelompok tani/petani, lalu mengunggahnya kembali nanti untuk memperbarui data realisasi secara massal.
+                  </p>
+                </div>
+              </ModalBody>
+              <ModalFooter className="flex gap-2">
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Tutup
+                </Button>
+                <Button
+                  color="primary"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  startContent={<BsFiletypeXlsx className="w-4 h-4" />}
+                  onPress={() => {
+                    if (importSuccessData?.id) {
+                      handleDownloadTemplate(importSuccessData.id, `formulir_realisasi_langsung_${importSuccessData.id}.xlsx`);
+                    }
+                    onClose();
+                  }}
+                >
+                  Unduh Formulir Realisasi
                 </Button>
               </ModalFooter>
             </>

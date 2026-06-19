@@ -31,7 +31,7 @@ router.post('/set-petani-password', setPetaniPassword);
 router.post('/petani-register', upload.single('foto'), registerPetani); //register tani
 router.get('/populate-penyuluh', opsiPenyuluh);
 router.get('/populate-poktan', opsiPoktan);
-router.get('/profile', getProfile); 
+router.get('/profile', getProfile);
 router.get('/detailprofile', auth, getDetailProfile); // -> get detail profile
 router.post('/updateprofile', auth, isOwner, upload.single('foto'), updateDetailProfile); //update detail profile
 router.get('/verify', getUserNotVerify); // -> get user not verify

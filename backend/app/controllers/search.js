@@ -551,13 +551,13 @@ const searchGlobal = async (req, res) => {
     if (type !== 'all') {
       const sectionData =
         results.data[
-        type === 'toko'
-          ? 'tokos'
-          : type === 'berita'
-            ? 'berita'
-            : type === 'event'
-              ? 'events'
-              : 'products'
+          type === 'toko'
+            ? 'tokos'
+            : type === 'berita'
+              ? 'berita'
+              : type === 'event'
+                ? 'events'
+                : 'products'
         ];
 
       if (sectionData) {
@@ -585,19 +585,20 @@ const searchGlobal = async (req, res) => {
       };
       const sectionData =
         results.data[
-        type === 'toko'
-          ? 'tokos'
-          : type === 'berita'
-            ? 'berita'
-            : type === 'event'
-              ? 'events'
-              : 'products'
+          type === 'toko'
+            ? 'tokos'
+            : type === 'berita'
+              ? 'berita'
+              : type === 'event'
+                ? 'events'
+                : 'products'
         ];
       message = `Ditemukan ${sectionData?.total || 0} ${typeNames[type]} untuk pencarian "${searchQuery}"`;
     }
 
-    message += ` (diurutkan berdasarkan ${sortBy === 'relevance' ? 'relevansi' : sortBy === 'date' ? 'tanggal' : 'nama'
-      })`;
+    message += ` (diurutkan berdasarkan ${
+      sortBy === 'relevance' ? 'relevansi' : sortBy === 'date' ? 'tanggal' : 'nama'
+    })`;
 
     res.status(200).json({
       message: message,

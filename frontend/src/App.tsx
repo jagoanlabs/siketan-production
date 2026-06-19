@@ -46,6 +46,7 @@ import { RealisasiStatistika } from "./features/DashboardAdmin/features/Statisti
 import { EditTanamanPage } from "./features/DashboardAdmin/features/DataPertanian/pages/EditTanamanPage";
 import { CreateTanamanPage } from "./features/DashboardAdmin/features/DataPertanian/pages/CreateTanamanPage";
 import { EditStatistika } from "./features/DashboardAdmin/features/Statistika/Page/EditStatistika";
+import { RiwayatRealisasi } from "./features/DashboardAdmin/features/Statistika/Page/RiwayatRealisasi";
 import SetPasswordPage from "./features/SetPassword/page/SetPasswordPage";
 import UnauthorizedPage from "./components/UnauthorizedPage";
 import { Chatbot } from "./features/DashboardAdmin/features/Chatbot/page/Chatbot";
@@ -171,6 +172,19 @@ function App() {
               <Route
                 element={<DashboardStatistika />}
                 path="/dashboard-admin/statistik-pertanian"
+              />
+            </Route>
+            {/* riwayat realisasi massal */}
+            <Route
+              element={
+                <ProtectedRoute
+                  requiredPermissions={[PERMISSIONS.STATISTIC_INDEX]}
+                />
+              }
+            >
+              <Route
+                element={<RiwayatRealisasi />}
+                path="/dashboard-admin/statistik-pertanian/riwayat"
               />
             </Route>
             {/* Data Create Statistika Pertanian */}

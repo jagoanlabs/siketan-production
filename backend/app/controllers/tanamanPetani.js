@@ -70,20 +70,20 @@ const getAllTanamanPetani = async (req, res) => {
     const data = await tanamanPetani.findAll(
       isExportFilter
         ? {
-          where: query.where,
-          include: [
-            {
-              model: dataPetani,
-              as: 'dataPetani',
-              include: [
-                { model: kelompok },
-                { model: kecamatan, as: 'kecamatanData' },
-                { model: desa, as: 'desaData' }
-              ]
-            }
-          ],
-          order: [['createdAt', 'DESC']]
-        }
+            where: query.where,
+            include: [
+              {
+                model: dataPetani,
+                as: 'dataPetani',
+                include: [
+                  { model: kelompok },
+                  { model: kecamatan, as: 'kecamatanData' },
+                  { model: desa, as: 'desaData' }
+                ]
+              }
+            ],
+            order: [['createdAt', 'DESC']]
+          }
         : { ...query }
     );
     const total = await tanamanPetani.count({ ...query });
@@ -592,14 +592,15 @@ const getTanamanPetaniYears = async (req, res) => {
     }
 
     const data = await tanamanPetani.findAll({
-      attributes: [
-        [Sequelize.fn('YEAR', Sequelize.col('createdAt')), 'year']
-      ],
+      attributes: [[Sequelize.fn('YEAR', Sequelize.col('createdAt')), 'year']],
       group: [Sequelize.fn('YEAR', Sequelize.col('createdAt'))],
       raw: true
     });
 
-    const years = data.map((item) => item.year).filter(Boolean).sort((a, b) => b - a);
+    const years = data
+      .map((item) => item.year)
+      .filter(Boolean)
+      .sort((a, b) => b - a);
 
     res.status(200).json({
       message: 'Daftar tahun berhasil didapatkan.',

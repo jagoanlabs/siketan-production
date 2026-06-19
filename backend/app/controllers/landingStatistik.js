@@ -136,22 +136,20 @@ const getLandingStatistik = async (req, res) => {
       return monthData;
     });
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: 'Data statistik landing page berhasil diambil',
-        data: {
-          ringkasan: {
-            jumlahPetani: jumlahPetani || 0,
-            jumlahGapoktan: jumlahGapoktan || 0,
-            jumlahPenyuluh: jumlahPenyuluh || 0,
-            areaPertanian: areaPertanian ? parseFloat(areaPertanian) : 0,
-            jumlahKomoditas: jumlahKomoditas || 0
-          },
-          commodityData: commodityData
-        }
-      });
+    res.status(200).json({
+      success: true,
+      message: 'Data statistik landing page berhasil diambil',
+      data: {
+        ringkasan: {
+          jumlahPetani: jumlahPetani || 0,
+          jumlahGapoktan: jumlahGapoktan || 0,
+          jumlahPenyuluh: jumlahPenyuluh || 0,
+          areaPertanian: areaPertanian ? parseFloat(areaPertanian) : 0,
+          jumlahKomoditas: jumlahKomoditas || 0
+        },
+        commodityData: commodityData
+      }
+    });
   } catch (error) {
     console.error('Error getting landing statistics:', error);
     res

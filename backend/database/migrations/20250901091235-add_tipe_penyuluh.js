@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     // 1. Tambahkan kolom yang bisa NULL dulu
     await queryInterface.addColumn('dataPenyuluhs', 'tipe', {
       type: Sequelize.ENUM('reguler', 'swadaya'),
@@ -22,7 +22,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     await queryInterface.removeColumn('dataPenyuluhs', 'tipe');
   }
 };

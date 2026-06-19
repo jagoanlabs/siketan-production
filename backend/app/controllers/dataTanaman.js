@@ -1,4 +1,4 @@
-const { dataTanaman, kelompok } = require('../models');
+const { dataTanaman, kelompok, riwayatImport, tbl_akun, sequelize } = require('../models');
 
 const ApiError = require('../../utils/ApiError');
 const dotenv = require('dotenv');
@@ -331,7 +331,7 @@ const hapusDataTanaman = async (req, res) => {
 };
 
 const uploadDataTanaman = async (req, res) => {
-  const { peran } = req.user || {};
+  const { peran, id: userId } = req.user || {};
 
   try {
     if (peran === 'petani') {
@@ -366,6 +366,8 @@ const uploadDataTanaman = async (req, res) => {
 
     const rowCount = worksheet.rowCount;
     if (rowCount < 2) throw new ApiError(400, 'Data tidak ditemukan.');
+
+    const validatedRows = [];
 
     for (let i = 2; i <= rowCount; i++) {
       const row = worksheet.getRow(i);
@@ -435,22 +437,67 @@ const uploadDataTanaman = async (req, res) => {
           400,
           `Kelompok (${fk_kelompokId}) tidak ditemukan.  Data ke-${i - 1} (baris ${i})`
         );
-      await dataTanaman.create({
+
+      validatedRows.push({
         fk_kelompokId,
         kategori,
         komoditas,
         periodeTanam,
-        luasLahan,
-        prakiraanLuasPanen,
-        prakiraanHasilPanen,
-        prakiraanBulanPanen,
-        realisasiLuasPanen,
-        realisasiHasilPanen,
-        realisasiBulanPanen
+        luasLahan: Number(luasLahan),
+        prakiraanLuasPanen: Number(prakiraanLuasPanen),
+        prakiraanHasilPanen: Number(prakiraanHasilPanen),
+        prakiraanBulanPanen: prakiraanBulanPanen || null,
+        realisasiLuasPanen: realisasiLuasPanen ? Number(realisasiLuasPanen) : null,
+        realisasiHasilPanen: realisasiHasilPanen ? Number(realisasiHasilPanen) : null,
+        realisasiBulanPanen: realisasiBulanPanen || null
       });
     }
 
-    res.status(201).json({ message: 'Data berhasil ditambahkan.' });
+    if (validatedRows.length === 0) {
+      throw new ApiError(400, 'Tidak ada data valid untuk diimport.');
+    }
+
+    const transaction = await sequelize.transaction();
+    try {
+      // Create riwayat import record
+      const riwayat = await riwayatImport.create(
+        {
+          namaFile: file.originalname,
+          jumlahData: validatedRows.length,
+          statusRealisasi: 'belum',
+          fk_akunId: userId
+        },
+        { transaction }
+      );
+
+      // Create dataTanaman records linked to this import session
+      for (const rowData of validatedRows) {
+        await dataTanaman.create(
+          {
+            ...rowData,
+            fk_importHistoryId: riwayat.id
+          },
+          { transaction }
+        );
+      }
+
+      await transaction.commit();
+      postActivity({
+        user_id: userId,
+        activity: 'IMPORT',
+        type: 'DATA TANAMAN',
+        detail_id: riwayat.id
+      });
+
+      res.status(201).json({
+        message: 'Data berhasil ditambahkan.',
+        imported_count: validatedRows.length,
+        riwayatId: riwayat.id
+      });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
@@ -464,19 +511,302 @@ const getStatistikYears = async (req, res) => {
     }
 
     const data = await dataTanaman.findAll({
-      attributes: [
-        [Sequelize.fn('YEAR', Sequelize.col('createdAt')), 'year']
-      ],
+      attributes: [[Sequelize.fn('YEAR', Sequelize.col('createdAt')), 'year']],
       group: [Sequelize.fn('YEAR', Sequelize.col('createdAt'))],
       raw: true
     });
 
-    const years = data.map((item) => item.year).filter(Boolean).sort((a, b) => b - a);
+    const years = data
+      .map((item) => item.year)
+      .filter(Boolean)
+      .sort((a, b) => b - a);
 
     res.status(200).json({
       message: 'Daftar tahun berhasil didapatkan.',
       data: years
     });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};
+
+const getRiwayatImport = async (req, res) => {
+  const { peran, id: userId } = req.user || {};
+  try {
+    if (peran === 'petani') {
+      throw new ApiError(403, 'Anda tidak memiliki akses.');
+    }
+
+    const whereClause = {};
+    if (peran !== 'operator super admin' && peran !== 'super admin') {
+      whereClause.fk_akunId = userId;
+    }
+
+    const data = await riwayatImport.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: tbl_akun,
+          as: 'uploader',
+          attributes: ['id', 'nama', 'peran']
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({
+      message: 'Daftar riwayat import berhasil diperoleh.',
+      data
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};
+
+const downloadRealisasiTemplate = async (req, res) => {
+  const { id } = req.params;
+  const { peran, id: userId } = req.user || {};
+
+  try {
+    if (peran === 'petani') {
+      throw new ApiError(403, 'Anda tidak memiliki akses.');
+    }
+
+    const riwayat = await riwayatImport.findByPk(id);
+    if (!riwayat) {
+      throw new ApiError(404, 'Sesi riwayat import tidak ditemukan.');
+    }
+
+    // Access check: non-admins can only download their own session's template
+    if (
+      peran !== 'operator super admin' &&
+      peran !== 'super admin' &&
+      riwayat.fk_akunId !== userId
+    ) {
+      throw new ApiError(403, 'Anda tidak memiliki akses untuk mengunduh template ini.');
+    }
+
+    const listData = await dataTanaman.findAll({
+      where: { fk_importHistoryId: id },
+      include: [{ model: kelompok, as: 'kelompok' }],
+      order: [['id', 'ASC']]
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Formulir Realisasi');
+
+    // Headers config
+    worksheet.columns = [
+      { header: 'ID Data', key: 'id', width: 12 },
+      { header: 'Nama Kelompok', key: 'kelompok', width: 25 },
+      { header: 'Kategori', key: 'kategori', width: 15 },
+      { header: 'Komoditas', key: 'komoditas', width: 25 },
+      { header: 'Luas Lahan (Ha)', key: 'luasLahan', width: 18 },
+      { header: 'Periode Tanam', key: 'periodeTanam', width: 18 },
+      { header: 'Prakiraan Luas Panen (Ha)', key: 'prakiraanLuasPanen', width: 25 },
+      { header: 'Prakiraan Hasil Panen (Ton)', key: 'prakiraanHasilPanen', width: 25 },
+      { header: 'Prakiraan Bulan Panen', key: 'prakiraanBulanPanen', width: 22 },
+      { header: 'Realisasi Luas Panen (Ha)', key: 'realisasiLuasPanen', width: 25 },
+      { header: 'Realisasi Hasil Panen (Ton)', key: 'realisasiHasilPanen', width: 25 },
+      { header: 'Realisasi Bulan Panen', key: 'realisasiBulanPanen', width: 22 }
+    ];
+
+    // Style headers row
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1F497D' } // Dark blue
+    };
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    // Fill data rows
+    listData.forEach((item) => {
+      const row = worksheet.addRow({
+        id: item.id,
+        kelompok: item.kelompok ? `${item.kelompok.gapoktan} - ${item.kelompok.namaKelompok}` : '',
+        kategori: item.kategori,
+        komoditas: item.komoditas,
+        luasLahan: item.luasLahan,
+        periodeTanam: item.periodeTanam,
+        prakiraanLuasPanen: item.prakiraanLuasPanen,
+        prakiraanHasilPanen: item.prakiraanHasilPanen,
+        prakiraanBulanPanen: item.prakiraanBulanPanen,
+        realisasiLuasPanen: item.realisasiLuasPanen !== null ? item.realisasiLuasPanen : '',
+        realisasiHasilPanen: item.realisasiHasilPanen !== null ? item.realisasiHasilPanen : '',
+        realisasiBulanPanen: item.realisasiBulanPanen || ''
+      });
+
+      // Locked reference cells styling (A to I)
+      for (let c = 1; c <= 9; c++) {
+        const cell = row.getCell(c);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF2F2F2' } // Light gray
+        };
+        cell.protection = { locked: true };
+      }
+
+      // Unlocked inputs styling (J to L)
+      for (let c = 10; c <= 12; c++) {
+        const cell = row.getCell(c);
+        cell.protection = { locked: false };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE2EFDA' } // Light green tint
+        };
+      }
+    });
+
+    // Protect sheet with dummy password, allowing selection of both locked and unlocked cells
+    await worksheet.protect('siketan_protect', {
+      selectLockedCells: true,
+      selectUnlockedCells: true
+    });
+
+    // Write file to buffer and stream response
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=formulir_realisasi_${riwayat.id}.xlsx`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};
+
+const uploadRealisasiData = async (req, res) => {
+  const { id } = req.params;
+  const { peran, id: userId } = req.user || {};
+
+  try {
+    if (peran === 'petani') {
+      throw new ApiError(403, 'Anda tidak memiliki akses.');
+    }
+
+    const riwayat = await riwayatImport.findByPk(id);
+    if (!riwayat) {
+      throw new ApiError(404, 'Sesi riwayat import tidak ditemukan.');
+    }
+
+    // Access check: non-admins can only upload to their own session
+    if (
+      peran !== 'operator super admin' &&
+      peran !== 'super admin' &&
+      riwayat.fk_akunId !== userId
+    ) {
+      throw new ApiError(403, 'Anda tidak memiliki akses untuk memperbarui realisasi sesi ini.');
+    }
+
+    const { file } = req;
+    if (!file) throw new ApiError(400, 'File tidak ditemukan.');
+
+    const workbook = new ExcelJS.Workbook();
+    try {
+      await workbook.xlsx.load(file.buffer);
+    } catch (error) {
+      throw new ApiError(
+        400,
+        'File Excel tidak valid atau rusak. Pastikan file dalam format .xlsx yang benar.'
+      );
+    }
+    const worksheet = workbook.getWorksheet(1);
+
+    const rowCount = worksheet.rowCount;
+    if (rowCount < 2) throw new ApiError(400, 'Data tidak ditemukan.');
+
+    const updates = [];
+
+    // Parse & Validate Excel Rows
+    for (let i = 2; i <= rowCount; i++) {
+      const row = worksheet.getRow(i);
+
+      let isRowEmpty = true;
+      for (let j = 1; j <= 12; j++) {
+        if (row.getCell(j).value) {
+          isRowEmpty = false;
+          break;
+        }
+      }
+      if (isRowEmpty) {
+        continue;
+      }
+
+      const idData = row.getCell(1).value;
+      const realisasiLuasPanen = row.getCell(10).value;
+      const realisasiHasilPanen = row.getCell(11).value;
+      const realisasiBulanPanen = row.getCell(12).value;
+
+      if (!idData || isNaN(idData)) {
+        throw new ApiError(400, `ID Data tidak valid pada baris ${i}`);
+      }
+
+      // Check if record exists and belongs to this batch
+      const item = await dataTanaman.findOne({
+        where: { id: idData, fk_importHistoryId: id }
+      });
+
+      if (!item) {
+        throw new ApiError(
+          400,
+          `Data Tanaman dengan ID ${idData} pada baris ${i} tidak terikat dengan sesi import ini.`
+        );
+      }
+
+      // Validate inputs if provided
+      if (realisasiLuasPanen && isNaN(realisasiLuasPanen)) {
+        throw new ApiError(400, `Realisasi luas panen tidak valid pada baris ${i}`);
+      }
+      if (realisasiHasilPanen && isNaN(realisasiHasilPanen)) {
+        throw new ApiError(400, `Realisasi hasil panen tidak valid pada baris ${i}`);
+      }
+      if (realisasiBulanPanen && !monthOrder.includes(realisasiBulanPanen)) {
+        throw new ApiError(400, `Realisasi bulan panen tidak valid pada baris ${i}`);
+      }
+
+      updates.push({
+        id: idData,
+        item,
+        realisasiLuasPanen: realisasiLuasPanen ? Number(realisasiLuasPanen) : null,
+        realisasiHasilPanen: realisasiHasilPanen ? Number(realisasiHasilPanen) : null,
+        realisasiBulanPanen: realisasiBulanPanen || null
+      });
+    }
+
+    // Execute bulk updates inside transaction
+    const transaction = await sequelize.transaction();
+    try {
+      for (const update of updates) {
+        await update.item.update(
+          {
+            realisasiLuasPanen: update.realisasiLuasPanen,
+            realisasiHasilPanen: update.realisasiHasilPanen,
+            realisasiBulanPanen: update.realisasiBulanPanen
+          },
+          { transaction }
+        );
+      }
+
+      // Update import history status to 'sudah'
+      await riwayat.update({ statusRealisasi: 'sudah' }, { transaction });
+
+      await transaction.commit();
+      postActivity({ user_id: userId, activity: 'REALISASI', type: 'DATA TANAMAN', detail_id: id });
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
+
+    res.status(200).json({ message: 'Realisasi massal berhasil diperbarui.' });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
@@ -491,5 +821,8 @@ module.exports = {
   uploadDataTanaman,
   fixKategori,
   fixKomoditas,
-  getStatistikYears
+  getStatistikYears,
+  getRiwayatImport,
+  downloadRealisasiTemplate,
+  uploadRealisasiData
 };

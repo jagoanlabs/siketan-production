@@ -157,3 +157,26 @@ export const BULAN_OPTIONS = [
   "November",
   "Desember",
 ];
+
+export interface Uploader {
+  id: number;
+  nama: string;
+  peran: string;
+}
+
+export interface RiwayatImportData {
+  id: number;
+  namaFile: string;
+  jumlahData: number;
+  statusRealisasi: "belum" | "sudah";
+  fk_akunId: number;
+  createdAt: string;
+  updatedAt: string;
+  uploader?: Uploader;
+}
+
+export interface RiwayatImportResponse {
+  message: string;
+  data: RiwayatImportData[];
+}
+

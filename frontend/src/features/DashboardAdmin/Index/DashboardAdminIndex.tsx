@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ReactSelect from "react-select";
 
 import { DashboardCardAdmin } from "./components/DashboardCardAdmin";
