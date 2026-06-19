@@ -247,6 +247,19 @@ export const DataTanamanPage = () => {
       },
     },
     {
+      key: "dataId",
+      title: "ID Data",
+      align: "center",
+      width: "80px",
+      render: (item) => (
+        <Tooltip content="ID unik data ini, diperlukan untuk realisasi langsung">
+          <span className="font-semibold text-gray-700 dark:text-gray-300 cursor-help underline decoration-dotted">
+            {item.id}
+          </span>
+        </Tooltip>
+      ),
+    },
+    {
       key: "kategori",
       title: "Kategori Tanaman",
       sortable: true,

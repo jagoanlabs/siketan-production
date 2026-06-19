@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import AsyncSelect from "react-select/async";
+import ReactSelect from "react-select";
 
 import { DashboardCardAdmin } from "./components/DashboardCardAdmin";
 
@@ -19,7 +19,6 @@ import { ColumnConfig, PaginationInfo } from "@/types/table";
 export const DashboardAdminIndex = () => {
   // AsyncSelect state
   const [selectedOption, setSelectedOption] = useState<any>(null);
-  const [poktanSearchTerm, setPoktanSearchTerm] = useState("");
 
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,7 +65,7 @@ export const DashboardAdminIndex = () => {
     data: dataPotkan,
     isLoading: isPotkanLoading,
     error: potkanError,
-  } = useDashboardDataPotkan(poktanSearchTerm);
+  } = useDashboardDataPotkan("all");
 
   const {
     data: tanamanResponse,
@@ -74,53 +73,10 @@ export const DashboardAdminIndex = () => {
     error: tanamanError,
   } = useTanamanData(tanamanParams);
 
-  // Debounced search untuk poktan
-  const debouncedSetPoktanSearch = useMemo(
-    () => debounce((value: string) => setPoktanSearchTerm(value), 500),
-    [],
-  );
-
-  // AsyncSelect load options
-  const loadOptions = useCallback(
-    (inputValue: string, callback: (options: any[]) => void) => {
-      debouncedSetPoktanSearch(inputValue);
-
-      if (!inputValue || inputValue === poktanSearchTerm) {
-        if (dataPotkan) {
-          const options = dataPotkan.map((item: DashoardDataPotkan) => ({
-            value: item.id,
-            label: item.gapoktan + " - " + item.namaKelompok,
-            data: item,
-          }));
-
-          callback(options);
-        } else {
-          callback([]);
-        }
-      } else {
-        setTimeout(() => {
-          if (dataPotkan) {
-            const options = dataPotkan.map((item: DashoardDataPotkan) => ({
-              value: item.id,
-              label: item.gapoktan + " - " + item.namaKelompok,
-              data: item,
-            }));
-
-            callback(options);
-          } else {
-            callback([]);
-          }
-        }, 600);
-      }
-    },
-    [dataPotkan, debouncedSetPoktanSearch, poktanSearchTerm],
-  );
-
-  // Default options untuk AsyncSelect
-  const { data: defaultData } = useDashboardDataPotkan("");
-  const defaultOptions = useMemo(() => {
-    if (defaultData) {
-      return defaultData.slice(0, 10).map((item: DashoardDataPotkan) => ({
+  // Options for ReactSelect (all poktans)
+  const poktanOptions = useMemo(() => {
+    if (dataPotkan) {
+      return dataPotkan.map((item: DashoardDataPotkan) => ({
         value: item.id,
         label: item.gapoktan + " - " + item.namaKelompok,
         data: item,
@@ -128,7 +84,7 @@ export const DashboardAdminIndex = () => {
     }
 
     return [];
-  }, [defaultData]);
+  }, [dataPotkan]);
 
   // Handle poktan selection change
   const handlePoktanChange = (option: any) => {
@@ -270,19 +226,17 @@ export const DashboardAdminIndex = () => {
         <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
           Filter berdasarkan Poktan
         </p>
-        <AsyncSelect
-          cacheOptions
+        <ReactSelect
           isClearable
           classNames={{
             control: () => "w-full px-1 py-1 border border-gray-300 rounded",
           }}
-          defaultOptions={defaultOptions}
+          options={poktanOptions}
           isLoading={isPotkanLoading}
-          loadOptions={loadOptions}
           noOptionsMessage={({ inputValue }) =>
             inputValue
               ? `Tidak ada hasil untuk "${inputValue}"`
-              : "Ketik untuk mencari..."
+              : "Data Poktan tidak ditemukan"
           }
           placeholder="Pilih atau cari poktan..."
           value={selectedOption}

@@ -225,7 +225,8 @@ export const useExportStatistika = () => {
         "TANAMAN PERKEBUNAN SEMUSIM", "", "", "", "", "", "", "",
         "TANAMAN PERKEBUNAN TAHUNAN", "", "", "", "", "", "", "",
         "TANAMAN HORTIKULTURA SEMUSIM", "", "", "", "", "", "", "",
-        "TANAMAN HORTIKULTURA TAHUNAN", "", "", "", "", "", "", ""
+        "TANAMAN HORTIKULTURA TAHUNAN", "", "", "", "", "", "", "",
+        "TANGGAL DIBUAT"
       ];
 
       const sectionFields = [
@@ -240,7 +241,8 @@ export const useExportStatistika = () => {
         ...sectionFields,
         ...sectionFields,
         ...sectionFields,
-        ...sectionFields
+        ...sectionFields,
+        ""
       ];
 
       const aoaData: any[][] = [headerRow1, headerRow2];
@@ -310,6 +312,8 @@ export const useExportStatistika = () => {
           }
         }
 
+        row.push(item.createdAt ? new Date(item.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-");
+
         aoaData.push(row);
       });
 
@@ -326,7 +330,8 @@ export const useExportStatistika = () => {
         { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } },
         { s: { r: 0, c: 3 }, e: { r: 1, c: 3 } },
         { s: { r: 0, c: 4 }, e: { r: 1, c: 4 } },
-        { s: { r: 0, c: 5 }, e: { r: 1, c: 5 } }
+        { s: { r: 0, c: 5 }, e: { r: 1, c: 5 } },
+        { s: { r: 0, c: 46 }, e: { r: 1, c: 46 } }
       ];
 
       const workbook = XLSX.utils.book_new();

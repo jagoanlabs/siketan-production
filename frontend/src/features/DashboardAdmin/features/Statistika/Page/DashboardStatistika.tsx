@@ -1,6 +1,6 @@
 // pages/DashboardStatistika.tsx - Enhanced dengan bulk actions
 import { useCallback, useEffect, useMemo, useState } from "react";
-import AsyncSelect from "react-select/async";
+import ReactSelect from "react-select";
 import { Tooltip } from "@heroui/tooltip";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -49,7 +49,6 @@ export const DashboardStatistika = () => {
 
   // AsyncSelect state
   const [selectedOption, setSelectedOption] = useState<any>(null);
-  const [poktanSearchTerm, setPoktanSearchTerm] = useState("");
 
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
@@ -93,11 +92,6 @@ export const DashboardStatistika = () => {
     [],
   );
 
-  const debouncedSetPoktanSearch = useMemo(
-    () => debounce((value: string) => setPoktanSearchTerm(value), 500),
-    [],
-  );
-
   // Update debounced search
   useEffect(() => {
     debouncedSetTableSearch(tableSearchTerm);
@@ -127,7 +121,7 @@ export const DashboardStatistika = () => {
     data: dataPotkan,
     isLoading: isPotkanLoading,
     error: potkanError,
-  } = useDashboardDataPotkan(poktanSearchTerm);
+  } = useDashboardDataPotkan("all");
 
   const {
     data: tanamanResponse,
@@ -136,8 +130,6 @@ export const DashboardStatistika = () => {
     error: tanamanError,
     refetch: refetchTanamanData,
   } = useTanamanData(tanamanParams);
-
-  const { data: defaultData } = useDashboardDataPotkan("");
 
   // Define bulk actions
   const selectionActions: SelectionAction[] = [
@@ -218,10 +210,10 @@ export const DashboardStatistika = () => {
     },
   ];
 
-  // Default options for AsyncSelect
-  const defaultOptions = useMemo(() => {
-    if (defaultData) {
-      return defaultData.slice(0, 10).map((item: DashoardDataPotkan) => ({
+  // Options for ReactSelect (all poktans)
+  const poktanOptions = useMemo(() => {
+    if (dataPotkan) {
+      return dataPotkan.map((item: DashoardDataPotkan) => ({
         value: item.id,
         label: item.gapoktan + " - " + item.namaKelompok,
         data: item,
@@ -229,43 +221,7 @@ export const DashboardStatistika = () => {
     }
 
     return [];
-  }, [defaultData]);
-
-  // AsyncSelect load options
-  const loadOptions = useCallback(
-    (inputValue: string, callback: (options: any[]) => void) => {
-      debouncedSetPoktanSearch(inputValue);
-
-      if (!inputValue || inputValue === poktanSearchTerm) {
-        if (dataPotkan) {
-          const options = dataPotkan.map((item: DashoardDataPotkan) => ({
-            value: item.id,
-            label: item.gapoktan + " - " + item.namaKelompok,
-            data: item,
-          }));
-
-          callback(options);
-        } else {
-          callback([]);
-        }
-      } else {
-        setTimeout(() => {
-          if (dataPotkan) {
-            const options = dataPotkan.map((item: DashoardDataPotkan) => ({
-              value: item.id,
-              label: item.gapoktan + " - " + item.namaKelompok,
-              data: item,
-            }));
-
-            callback(options);
-          } else {
-            callback([]);
-          }
-        }, 600);
-      }
-    },
-    [dataPotkan, debouncedSetPoktanSearch, poktanSearchTerm],
-  );
+  }, [dataPotkan]);
 
   // Handler functions
   const handlePoktanChange = (option: any) => {
@@ -484,6 +440,19 @@ export const DashboardStatistika = () => {
 
         return index + 1;
       },
+    },
+    {
+      key: "dataId",
+      title: "ID Data",
+      align: "center",
+      width: "80px",
+      render: (item) => (
+        <Tooltip content="ID unik data ini, diperlukan untuk realisasi langsung">
+          <span className="font-semibold text-gray-700 dark:text-gray-300 cursor-help underline decoration-dotted">
+            {item.id}
+          </span>
+        </Tooltip>
+      ),
     },
     {
       key: "id",
@@ -726,8 +695,7 @@ export const DashboardStatistika = () => {
         <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Filter berdasarkan Poktan
         </p>
-        <AsyncSelect
-          cacheOptions
+        <ReactSelect
           isClearable
           classNames={{
             control: () =>
@@ -735,16 +703,15 @@ export const DashboardStatistika = () => {
             menu: () => "z-[9999]",
             menuPortal: () => "z-[9999]",
           }}
-          defaultOptions={defaultOptions}
+          options={poktanOptions}
           isLoading={isPotkanLoading}
-          loadOptions={loadOptions}
           menuPlacement="auto"
           menuPortalTarget={document.body}
           menuPosition="fixed"
           noOptionsMessage={({ inputValue }) =>
             inputValue
               ? `Tidak ada hasil untuk "${inputValue}"`
-              : "Ketik untuk mencari..."
+              : "Data Poktan tidak ditemukan"
           }
           placeholder="Pilih atau cari poktan..."
           styles={{

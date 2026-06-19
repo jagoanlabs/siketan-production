@@ -214,8 +214,11 @@ const updateAccount = async (req, res) => {
 const searchPoktan = async (req, res) => {
   const { search } = req.query;
   try {
-    const data = await kelompok.findAll({
-      where: {
+    let whereCondition = {};
+    let limitOption = { limit: 10 };
+
+    if (search && search !== 'all') {
+      whereCondition = {
         [Op.or]: [
           {
             gapoktan: {
@@ -228,8 +231,15 @@ const searchPoktan = async (req, res) => {
             }
           }
         ]
-      },
-      limit: 10,
+      };
+    } else if (search === 'all') {
+      whereCondition = {};
+      limitOption = {};
+    }
+
+    const data = await kelompok.findAll({
+      where: whereCondition,
+      ...limitOption,
       include: [
         {
           model: kecamatan,

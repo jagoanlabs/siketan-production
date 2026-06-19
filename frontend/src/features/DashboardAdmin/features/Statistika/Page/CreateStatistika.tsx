@@ -2,7 +2,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
-import AsyncSelect from "react-select/async";
+import ReactSelect from "react-select";
 import { useNavigate } from "react-router-dom";
 
 import { GapoktanInfo } from "../Components/GapoktanInfo";
@@ -20,7 +20,6 @@ import { useStatistikaData } from "@/hook/dashboard/Statistika/useStatistika";
 
 export const CreateStatistika = () => {
   const [selectedOption, setSelectedOption] = useState<any>(null);
-  const [poktanSearchTerm, setPoktanSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -34,7 +33,7 @@ export const CreateStatistika = () => {
     data: dataPotkan,
     isLoading: isPotkanLoading,
     error: potkanError,
-  } = useDashboardDataPotkan(poktanSearchTerm);
+  } = useDashboardDataPotkan("all");
 
   const {
     data: statistikaData,
@@ -50,11 +49,10 @@ export const CreateStatistika = () => {
     search: searchTerm,
   });
 
-  // Default options untuk AsyncSelect
-  const { data: defaultData } = useDashboardDataPotkan("");
-  const defaultOptions = useMemo(() => {
-    if (defaultData) {
-      return defaultData.slice(0, 10).map((item: DashoardDataPotkan) => ({
+  // Options for ReactSelect (all poktans)
+  const poktanOptions = useMemo(() => {
+    if (dataPotkan) {
+      return dataPotkan.map((item: DashoardDataPotkan) => ({
         value: item.id,
         label: item.gapoktan + " - " + item.namaKelompok,
         data: item,
@@ -62,13 +60,7 @@ export const CreateStatistika = () => {
     }
 
     return [];
-  }, [defaultData]);
-
-  // Debounced search untuk poktan
-  const debouncedSetPoktanSearch = useMemo(
-    () => debounce((value: string) => setPoktanSearchTerm(value), 500),
-    [],
-  );
+  }, [dataPotkan]);
 
   // Handle poktan selection change
   const handlePoktanChange = (option: any) => {
@@ -76,42 +68,6 @@ export const CreateStatistika = () => {
     setCurrentPage(1);
     setSearchTerm("");
   };
-
-  // AsyncSelect load options
-  const loadOptions = useCallback(
-    (inputValue: string, callback: (options: any[]) => void) => {
-      debouncedSetPoktanSearch(inputValue);
-
-      if (!inputValue || inputValue === poktanSearchTerm) {
-        if (dataPotkan) {
-          const options = dataPotkan.map((item: DashoardDataPotkan) => ({
-            value: item.id,
-            label: item.gapoktan + " - " + item.namaKelompok,
-            data: item,
-          }));
-
-          callback(options);
-        } else {
-          callback([]);
-        }
-      } else {
-        setTimeout(() => {
-          if (dataPotkan) {
-            const options = dataPotkan.map((item: DashoardDataPotkan) => ({
-              value: item.id,
-              label: item.gapoktan + " - " + item.namaKelompok,
-              data: item,
-            }));
-
-            callback(options);
-          } else {
-            callback([]);
-          }
-        }, 600);
-      }
-    },
-    [dataPotkan, debouncedSetPoktanSearch, poktanSearchTerm],
-  );
 
   // Table columns
   const columns: ColumnConfig<StatistikaData>[] = [
@@ -276,8 +232,7 @@ export const CreateStatistika = () => {
             <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Filter berdasarkan Poktan <span className="text-red-500">*</span>
             </p>
-            <AsyncSelect
-              cacheOptions
+            <ReactSelect
               isClearable
               classNames={{
                 control: () =>
@@ -285,16 +240,15 @@ export const CreateStatistika = () => {
                 menu: () => "z-[9999]",
                 menuPortal: () => "z-[9999]",
               }}
-              defaultOptions={defaultOptions}
+              options={poktanOptions}
               isLoading={isPotkanLoading}
-              loadOptions={loadOptions}
               menuPlacement="auto"
               menuPortalTarget={document.body}
               menuPosition="fixed"
               noOptionsMessage={({ inputValue }) =>
                 inputValue
                   ? `Tidak ada hasil untuk "${inputValue}"`
-                  : "Ketik untuk mencari..."
+                  : "Data Poktan tidak ditemukan"
               }
               placeholder="Pilih atau cari poktan..."
               styles={{
