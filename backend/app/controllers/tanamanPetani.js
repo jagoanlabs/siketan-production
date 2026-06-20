@@ -18,7 +18,7 @@ dotenv.config();
 
 const getAllTanamanPetani = async (req, res) => {
   const { peran } = req.user || {};
-  const { page, limit, petaniId, isExport, search, tahun } = req.query;
+  const { page, limit, petaniId, isExport, search, tahun, bulan } = req.query;
 
   try {
     if (peran === 'petani') {
@@ -55,15 +55,32 @@ const getAllTanamanPetani = async (req, res) => {
     if (tahun && tahun !== 'undefined') {
       const yearNum = Number(tahun);
       if (!isNaN(yearNum)) {
-        query.where = {
-          ...query.where,
-          createdAt: {
-            [Op.and]: [
-              { [Op.gte]: `${yearNum}-01-01 00:00:00` },
-              { [Op.lte]: `${yearNum}-12-31 23:59:59` }
-            ]
+        if (bulan && bulan !== 'undefined') {
+          const monthNum = Number(bulan);
+          if (!isNaN(monthNum) && monthNum >= 1 && monthNum <= 12) {
+            const monthStr = monthNum < 10 ? `0${monthNum}` : `${monthNum}`;
+            const lastDay = new Date(yearNum, monthNum, 0).getDate();
+            query.where = {
+              ...query.where,
+              createdAt: {
+                [Op.and]: [
+                  { [Op.gte]: `${yearNum}-${monthStr}-01 00:00:00` },
+                  { [Op.lte]: `${yearNum}-${monthStr}-${lastDay} 23:59:59` }
+                ]
+              }
+            };
           }
-        };
+        } else {
+          query.where = {
+            ...query.where,
+            createdAt: {
+              [Op.and]: [
+                { [Op.gte]: `${yearNum}-01-01 00:00:00` },
+                { [Op.lte]: `${yearNum}-12-31 23:59:59` }
+              ]
+            }
+          };
+        }
       }
     }
 

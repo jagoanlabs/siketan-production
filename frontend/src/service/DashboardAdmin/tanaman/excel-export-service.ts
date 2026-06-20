@@ -92,7 +92,7 @@ const formatBulanTanam = (dateString: string | null): string => {
 };
 
 // Main export function
-export const exportAllDataToExcel = async (tahun?: string | null) => {
+export const exportAllDataToExcel = async (tahun?: string | null, bulan?: string | null) => {
   try {
     const toastId = toast.loading("Mengunduh data tanaman...");
 
@@ -104,6 +104,10 @@ export const exportAllDataToExcel = async (tahun?: string | null) => {
 
     if (tahun) {
       params.tahun = tahun;
+    }
+
+    if (bulan) {
+      params.bulan = bulan;
     }
 
     // Fetch all data without pagination
@@ -236,7 +240,12 @@ export const exportAllDataToExcel = async (tahun?: string | null) => {
     });
 
     const yearSuffix = tahun ? `_${tahun}` : "";
-    const fileName = `Data_Tanaman_Petani${yearSuffix}_${new Date().toISOString().split("T")[0]}.xlsx`;
+    const monthNames = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    const monthSuffix = (bulan && Number(bulan) >= 1 && Number(bulan) <= 12) ? `_${monthNames[Number(bulan) - 1]}` : "";
+    const fileName = `Data_Tanaman_Petani${yearSuffix}${monthSuffix}_${new Date().toISOString().split("T")[0]}.xlsx`;
 
     saveAs(blob, fileName);
 

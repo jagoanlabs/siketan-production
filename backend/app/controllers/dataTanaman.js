@@ -17,7 +17,7 @@ dotenv.config();
 
 const getAllDataTanaman = async (req, res) => {
   const { peran } = req.user || {};
-  const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas, tahun } =
+  const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas, tahun, bulan } =
     req.query;
 
   try {
@@ -47,16 +47,30 @@ const getAllDataTanaman = async (req, res) => {
       whereClause.komoditas = { [Op.like]: `%${komoditas}%` };
     }
 
-    // filter tahun (created at)
+    // filter tahun (created at) dan bulan
     if (tahun && tahun !== 'undefined') {
       const yearNum = Number(tahun);
       if (!isNaN(yearNum)) {
-        whereClause.createdAt = {
-          [Op.and]: [
-            { [Op.gte]: `${yearNum}-01-01 00:00:00` },
-            { [Op.lte]: `${yearNum}-12-31 23:59:59` }
-          ]
-        };
+        if (bulan && bulan !== 'undefined') {
+          const monthNum = Number(bulan);
+          if (!isNaN(monthNum) && monthNum >= 1 && monthNum <= 12) {
+            const monthStr = monthNum < 10 ? `0${monthNum}` : `${monthNum}`;
+            const lastDay = new Date(yearNum, monthNum, 0).getDate();
+            whereClause.createdAt = {
+              [Op.and]: [
+                { [Op.gte]: `${yearNum}-${monthStr}-01 00:00:00` },
+                { [Op.lte]: `${yearNum}-${monthStr}-${lastDay} 23:59:59` }
+              ]
+            };
+          }
+        } else {
+          whereClause.createdAt = {
+            [Op.and]: [
+              { [Op.gte]: `${yearNum}-01-01 00:00:00` },
+              { [Op.lte]: `${yearNum}-12-31 23:59:59` }
+            ]
+          };
+        }
       }
     }
 

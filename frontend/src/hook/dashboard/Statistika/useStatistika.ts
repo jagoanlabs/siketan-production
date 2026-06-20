@@ -187,9 +187,11 @@ export const useExportStatistika = () => {
     mutationFn: async ({
       poktanId,
       tahun,
+      bulan,
     }: {
       poktanId?: number | null;
       tahun?: string | null;
+      bulan?: string | null;
     } = {}) => {
       const params = new URLSearchParams({
         isExport: "true",
@@ -203,6 +205,11 @@ export const useExportStatistika = () => {
       // Tambahkan tahun jika ada filter tahun
       if (tahun) {
         params.append("tahun", tahun);
+      }
+
+      // Tambahkan bulan jika ada filter bulan
+      if (bulan) {
+        params.append("bulan", bulan);
       }
 
       const response = await axiosClient.get(
@@ -344,7 +351,14 @@ export const useExportStatistika = () => {
         .replace(/:/g, "-");
 
       const yearSuffix = variables?.tahun ? `-${variables.tahun}` : "";
-      XLSX.writeFile(workbook, `data-statistika${yearSuffix}-${timestamp}.xlsx`);
+      const monthNames = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      const monthSuffix = (variables?.bulan && Number(variables.bulan) >= 1 && Number(variables.bulan) <= 12)
+        ? `-${monthNames[Number(variables.bulan) - 1]}`
+        : "";
+      XLSX.writeFile(workbook, `data-statistika${yearSuffix}${monthSuffix}-${timestamp}.xlsx`);
 
       toast.success("Data berhasil diexport!");
     },
