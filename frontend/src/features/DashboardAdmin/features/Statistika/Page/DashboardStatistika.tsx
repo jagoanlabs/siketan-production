@@ -78,6 +78,7 @@ export const DashboardStatistika = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportType, setExportType] = useState<"all" | "year">("all");
   const [selectedExportYear, setSelectedExportYear] = useState<string>("");
+  const [selectedExportMonth, setSelectedExportMonth] = useState<string>("all");
   const { data: availableYears = [] } = useStatistikaYears();
 
   useEffect(() => {
@@ -406,6 +407,7 @@ export const DashboardStatistika = () => {
       await exportMutation.mutateAsync({
         poktanId: selectedOption?.value || null,
         tahun: exportType === "year" ? selectedExportYear : null,
+        bulan: exportType === "year" && selectedExportMonth && selectedExportMonth !== "all" ? selectedExportMonth : null,
       });
     } finally {
       setShowLoadingModal(false);
@@ -806,7 +808,7 @@ export const DashboardStatistika = () => {
       />
 
       {/* Export Options Modal */}
-      <Modal isOpen={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
+      <Modal isOpen={isExportModalOpen} onOpenChange={setIsExportModalOpen} placement="center">
         <ModalContent>
           {(onClose) => (
             <>
@@ -822,7 +824,10 @@ export const DashboardStatistika = () => {
                         type="radio"
                         name="exportType"
                         checked={exportType === "all"}
-                        onChange={() => setExportType("all")}
+                        onChange={() => {
+                          setExportType("all");
+                          setSelectedExportMonth("all");
+                        }}
                         className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                       />
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Keseluruhan</span>
@@ -841,22 +846,66 @@ export const DashboardStatistika = () => {
                 </div>
 
                 {exportType === "year" && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Pilih Tahun:
-                    </p>
-                    <Select
-                      placeholder="Pilih tahun..."
-                      selectedKeys={[selectedExportYear]}
-                      variant="bordered"
-                      onChange={(e) => setSelectedExportYear(e.target.value)}
-                    >
-                      {availableYears.map((year) => (
-                        <SelectItem key={year}>
-                          {year}
-                        </SelectItem>
-                      ))}
-                    </Select>
+                  <div className="flex flex-col gap-4">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Pilih Tahun:
+                      </p>
+                      <Select
+                        disableAnimation
+                        popoverProps={{
+                          shouldBlockScroll: false,
+                          shouldCloseOnScroll: false,
+                        }}
+                        listboxProps={{
+                          style: { maxHeight: "200px", overflowY: "auto" },
+                        }}
+                        placeholder="Pilih tahun..."
+                        selectedKeys={[selectedExportYear]}
+                        variant="bordered"
+                        onChange={(e) => setSelectedExportYear(e.target.value)}
+                      >
+                        {availableYears.map((year) => (
+                          <SelectItem key={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Pilih Bulan:
+                      </p>
+                      <Select
+                        disableAnimation
+                        popoverProps={{
+                          shouldBlockScroll: false,
+                          shouldCloseOnScroll: false,
+                        }}
+                        listboxProps={{
+                          style: { maxHeight: "200px", overflowY: "auto" },
+                        }}
+                        placeholder="Semua Bulan"
+                        selectedKeys={[selectedExportMonth]}
+                        variant="bordered"
+                        onChange={(e) => setSelectedExportMonth(e.target.value)}
+                      >
+                        <SelectItem key="all">Semua Bulan</SelectItem>
+                        <SelectItem key="1">Januari</SelectItem>
+                        <SelectItem key="2">Februari</SelectItem>
+                        <SelectItem key="3">Maret</SelectItem>
+                        <SelectItem key="4">April</SelectItem>
+                        <SelectItem key="5">Mei</SelectItem>
+                        <SelectItem key="6">Juni</SelectItem>
+                        <SelectItem key="7">Juli</SelectItem>
+                        <SelectItem key="8">Agustus</SelectItem>
+                        <SelectItem key="9">September</SelectItem>
+                        <SelectItem key="10">Oktober</SelectItem>
+                        <SelectItem key="11">November</SelectItem>
+                        <SelectItem key="12">Desember</SelectItem>
+                      </Select>
+                    </div>
                   </div>
                 )}
               </ModalBody>
