@@ -459,20 +459,19 @@ export const CreateDataPetaniPage: React.FC = () => {
                   </h3>
                 </CardHeader>
                 <CardBody className="space-y-4">
-
                   <Select
                     disableAnimation
+                    isRequired
+                    isLoading={isLoadingPenyuluh}
+                    label="Penyuluh"
+                    listboxProps={{
+                      style: { maxHeight: "200px", overflowY: "auto" },
+                    }}
+                    placeholder="Pilih penyuluh"
                     popoverProps={{
                       shouldBlockScroll: false,
                       shouldCloseOnScroll: false,
                     }}
-                    listboxProps={{
-                      style: { maxHeight: "200px", overflowY: "auto" },
-                    }}
-                    isRequired
-                    isLoading={isLoadingPenyuluh}
-                    label="Penyuluh"
-                    placeholder="Pilih penyuluh"
                     selectedKeys={
                       formData.fk_penyuluhId
                         ? [formData.fk_penyuluhId.toString()]
@@ -521,22 +520,22 @@ export const CreateDataPetaniPage: React.FC = () => {
                     <div className="space-y-3">
                       <Select
                         disableAnimation
-                        popoverProps={{
-                          shouldBlockScroll: false,
-                          shouldCloseOnScroll: false,
-                        }}
-                        listboxProps={{
-                          style: { maxHeight: "200px", overflowY: "auto" },
-                        }}
                         isRequired
                         isDisabled={!formData.desaId}
                         isLoading={isLoadingGapoktan}
                         label="Nama Kelompok"
+                        listboxProps={{
+                          style: { maxHeight: "200px", overflowY: "auto" },
+                        }}
                         placeholder={
                           formData.desaId
                             ? "Pilih kelompok"
                             : "Pilih desa terlebih dahulu"
                         }
+                        popoverProps={{
+                          shouldBlockScroll: false,
+                          shouldCloseOnScroll: false,
+                        }}
                         selectedKeys={
                           formData.fk_kelompokId
                             ? [formData.fk_kelompokId.toString()]
@@ -565,18 +564,18 @@ export const CreateDataPetaniPage: React.FC = () => {
                             </SelectItem>
                           )),
                           ...(gapoktanList.length === 0 &&
-                            formData.desaId &&
-                            !isLoadingGapoktan
+                          formData.desaId &&
+                          !isLoadingGapoktan
                             ? [
-                              <SelectItem
-                                key="manual"
-                                textValue="Input manual"
-                              >
-                                <span className="text-small text-primary">
-                                  Tidak ada nama kelompok, input manual
-                                </span>
-                              </SelectItem>,
-                            ]
+                                <SelectItem
+                                  key="manual"
+                                  textValue="Input manual"
+                                >
+                                  <span className="text-small text-primary">
+                                    Tidak ada nama kelompok, input manual
+                                  </span>
+                                </SelectItem>,
+                              ]
                             : []),
                         ]}
                       </Select>
@@ -616,7 +615,10 @@ export const CreateDataPetaniPage: React.FC = () => {
                   )}
                 </CardBody>
               </Card>
-              <Card className="bg-blue-50 border-blue-200 border md:mb-20" shadow="none">
+              <Card
+                className="bg-blue-50 border-blue-200 border md:mb-20"
+                shadow="none"
+              >
                 <CardBody className="p-3 text-sm">
                   <div className="flex gap-2 text-blue-800">
                     <svg
@@ -633,7 +635,9 @@ export const CreateDataPetaniPage: React.FC = () => {
                       />
                     </svg>
                     <p>
-                      <strong>Catatan:</strong> Untuk memilih kelompok, Anda perlu memasukkan data Kecamatan, Desa, dan memilih Penyuluh terlebih dahulu.
+                      <strong>Catatan:</strong> Untuk memilih kelompok, Anda
+                      perlu memasukkan data Kecamatan, Desa, dan memilih
+                      Penyuluh terlebih dahulu.
                     </p>
                   </div>
                 </CardBody>

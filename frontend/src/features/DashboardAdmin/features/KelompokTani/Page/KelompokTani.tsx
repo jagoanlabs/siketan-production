@@ -355,7 +355,14 @@ export const KelompokTani = () => {
           <div className="flex space-x-1">
             <PermissionWrapper permissions={[PERMISSIONS.DATA_KELOMPOK_EDIT]}>
               <Tooltip content="Edit kelompok">
-                <Button as={Link} to={`/dashboard-admin/data-kelompok/edit/${item.id}`} isIconOnly color="warning" size="sm" variant="light">
+                <Button
+                  isIconOnly
+                  as={Link}
+                  color="warning"
+                  size="sm"
+                  to={`/dashboard-admin/data-kelompok/edit/${item.id}`}
+                  variant="light"
+                >
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -403,19 +410,19 @@ export const KelompokTani = () => {
   const tableData = kelompokTaniResponse?.data || [];
   const paginationInfo: PaginationInfo = kelompokTaniResponse
     ? {
-      total: kelompokTaniResponse.total,
-      currentPages: parseInt(kelompokTaniResponse.currentPages),
-      maxPages: kelompokTaniResponse.maxPages,
-      from: kelompokTaniResponse.from,
-      to: kelompokTaniResponse.to,
-    }
+        total: kelompokTaniResponse.total,
+        currentPages: parseInt(kelompokTaniResponse.currentPages),
+        maxPages: kelompokTaniResponse.maxPages,
+        from: kelompokTaniResponse.from,
+        to: kelompokTaniResponse.to,
+      }
     : {
-      total: 0,
-      currentPages: 1,
-      maxPages: 1,
-      from: 1,
-      to: 0,
-    };
+        total: 0,
+        currentPages: 1,
+        maxPages: 1,
+        from: 1,
+        to: 0,
+      };
 
   // Header actions with selection counter
   const headerActions = (

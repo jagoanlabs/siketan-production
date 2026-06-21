@@ -119,8 +119,11 @@ export const DetailProductPage = () => {
   // Helper function to get seller data based on profesiPenjual
   const getSellerData = () => {
     if (!productData) return null;
-    
-    if (productData.profesiPenjual === "petani" && productData.tbl_akun.petani) {
+
+    if (
+      productData.profesiPenjual === "petani" &&
+      productData.tbl_akun.petani
+    ) {
       return {
         nama: productData.tbl_akun.petani.nama,
         email: productData.tbl_akun.petani.email || productData.tbl_akun.email,
@@ -130,7 +133,10 @@ export const DetailProductPage = () => {
         accountID: productData.tbl_akun.petani.accountID,
         alamat: productData.tbl_akun.petani.alamat,
       };
-    } else if (productData.profesiPenjual === "penyuluh" && productData.tbl_akun.penyuluh) {
+    } else if (
+      productData.profesiPenjual === "penyuluh" &&
+      productData.tbl_akun.penyuluh
+    ) {
       return {
         nama: productData.tbl_akun.penyuluh.nama,
         email: productData.tbl_akun.penyuluh.email,
@@ -141,7 +147,7 @@ export const DetailProductPage = () => {
         alamat: productData.tbl_akun.penyuluh.alamat || "",
       };
     }
-    
+
     // Fallback to tbl_akun data if specific role data is not available
     return {
       nama: productData.tbl_akun.nama,
@@ -263,7 +269,8 @@ export const DetailProductPage = () => {
                     </span>
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        productData.status === "Ready stock" || productData.status === "Tersedia"
+                        productData.status === "Ready stock" ||
+                        productData.status === "Tersedia"
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }`}

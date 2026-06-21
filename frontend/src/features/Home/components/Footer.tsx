@@ -154,10 +154,16 @@ export const Footer = () => {
               <Link className="transition-colors hover:text-gray-200" to="#">
                 Term of Use
               </Link>
-              <Link className="transition-colors hover:text-gray-200" to="/privacy-policy">
+              <Link
+                className="transition-colors hover:text-gray-200"
+                to="/privacy-policy"
+              >
                 Privacy Policy
               </Link>
-              <Link className="transition-colors hover:text-gray-200" to="/delete-account">
+              <Link
+                className="transition-colors hover:text-gray-200"
+                to="/delete-account"
+              >
                 Delete Account
               </Link>
               <Link className="transition-colors hover:text-gray-200" to="#">

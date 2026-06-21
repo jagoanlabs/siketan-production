@@ -142,7 +142,6 @@ export const KOMODITAS_OPTIONS = {
   },
 };
 
-
 export const BULAN_OPTIONS = [
   "Januari",
   "Februari",
@@ -179,4 +178,3 @@ export interface RiwayatImportResponse {
   message: string;
   data: RiwayatImportData[];
 }
-

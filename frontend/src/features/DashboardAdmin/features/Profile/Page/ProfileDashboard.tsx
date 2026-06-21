@@ -634,7 +634,7 @@ export const ProfileDashboard = () => {
                       {passwordData.newPassword &&
                         passwordData.confirmPassword &&
                         passwordData.newPassword !==
-                        passwordData.confirmPassword && (
+                          passwordData.confirmPassword && (
                           <p className="text-red-500 text-sm mt-2">
                             Password baru dan konfirmasi password tidak cocok
                           </p>

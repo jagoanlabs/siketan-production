@@ -41,7 +41,8 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
   // Initialize form data based on mode
   const getInitialFormData = (): CreateStatistikaFormData => {
     if (isEdit && initialData) {
-      const normalizedKategori = initialData.kategori === "sayur" ? "jenis_sayur" : initialData.kategori;
+      const normalizedKategori =
+        initialData.kategori === "sayur" ? "jenis_sayur" : initialData.kategori;
       const jenisTanaman = determineJenisTanaman(
         normalizedKategori,
         initialData.komoditas,
@@ -100,7 +101,6 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
       setFormData((prev) => ({ ...prev, fk_kelompokId: selectedPoktanId }));
     }
   }, [selectedPoktanId]);
-
 
   const handleInputChange = (
     field: keyof CreateStatistikaFormData,
@@ -234,8 +234,13 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           orientation="horizontal"
           value={formData.kategoriTanaman}
           onValueChange={(value) => {
-            const val = value as "pangan" | "perkebunan" | "jenis_sayur" | "buah";
+            const val = value as
+              | "pangan"
+              | "perkebunan"
+              | "jenis_sayur"
+              | "buah";
             const defaultJenis = val === "jenis_sayur" ? "tahunan" : "semusim";
+
             setFormData((prev) => ({
               ...prev,
               kategoriTanaman: val,
@@ -245,7 +250,13 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
             }));
             // Clear errors for fields that were reset
             setErrors((prev) => {
-              const { kategoriTanaman, komoditasSemusim, komoditasTahunan, ...rest } = prev;
+              const {
+                kategoriTanaman,
+                komoditasSemusim,
+                komoditasTahunan,
+                ...rest
+              } = prev;
+
               return rest;
             });
           }}
@@ -291,6 +302,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
                 // Clear errors
                 setErrors((prev) => {
                   const { komoditasSemusim, komoditasTahunan, ...rest } = prev;
+
                   return rest;
                 });
               }}
@@ -331,6 +343,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
                 // Clear errors
                 setErrors((prev) => {
                   const { komoditasSemusim, komoditasTahunan, ...rest } = prev;
+
                   return rest;
                 });
               }}

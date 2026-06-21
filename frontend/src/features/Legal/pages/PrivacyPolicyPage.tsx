@@ -1,6 +1,7 @@
 // @ts-ignore
-import privacyPolicyContent from "@/assets/privacy-policy.md?raw";
 import { MarkdownViewer } from "../components/MarkdownViewer";
+
+import privacyPolicyContent from "@/assets/privacy-policy.md?raw";
 import HomeLayout from "@/layouts/HomeLayout";
 import { Navbar } from "@/components/NavBar";
 import { Footer } from "@/features/Home/components/Footer";
@@ -10,8 +11,8 @@ export const PrivacyPolicyPage = () => {
   return (
     <>
       <PageMeta
-        title="Privacy Policy | SiKetan"
         description="Kebijakan Privasi Aplikasi SiKetan Kabupaten Ngawi"
+        title="Privacy Policy | SiKetan"
       />
       <HomeLayout>
         <Navbar index={-1} />
@@ -27,7 +28,12 @@ export const PrivacyPolicyPage = () => {
 
             <div className="mt-12 pt-8 border-t border-gray-200 text-center">
               <p className="text-gray-500 text-sm">
-                Terakhir diperbarui: {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
+                Terakhir diperbarui:{" "}
+                {new Date().toLocaleDateString("id-ID", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
               </p>
             </div>
           </div>

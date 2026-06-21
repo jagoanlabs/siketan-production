@@ -92,7 +92,10 @@ const formatBulanTanam = (dateString: string | null): string => {
 };
 
 // Main export function
-export const exportAllDataToExcel = async (tahun?: string | null, bulan?: string | null) => {
+export const exportAllDataToExcel = async (
+  tahun?: string | null,
+  bulan?: string | null,
+) => {
   try {
     const toastId = toast.loading("Mengunduh data tanaman...");
 
@@ -177,7 +180,13 @@ export const exportAllDataToExcel = async (tahun?: string | null, bulan?: string
           item.realisasiProduksiPanen !== undefined
             ? item.realisasiProduksiPanen
             : "0",
-        "TANGGAL DIBUAT": item.createdAt ? new Date(item.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-",
+        "TANGGAL DIBUAT": item.createdAt
+          ? new Date(item.createdAt).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          : "-",
       }));
 
       // Only create sheet if there's data
@@ -241,10 +250,23 @@ export const exportAllDataToExcel = async (tahun?: string | null, bulan?: string
 
     const yearSuffix = tahun ? `_${tahun}` : "";
     const monthNames = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ];
-    const monthSuffix = (bulan && Number(bulan) >= 1 && Number(bulan) <= 12) ? `_${monthNames[Number(bulan) - 1]}` : "";
+    const monthSuffix =
+      bulan && Number(bulan) >= 1 && Number(bulan) <= 12
+        ? `_${monthNames[Number(bulan) - 1]}`
+        : "";
     const fileName = `Data_Tanaman_Petani${yearSuffix}${monthSuffix}_${new Date().toISOString().split("T")[0]}.xlsx`;
 
     saveAs(blob, fileName);

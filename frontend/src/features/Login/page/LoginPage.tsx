@@ -188,7 +188,7 @@ export default function LoginPage() {
           <div className="flex flex-col items-center mt-[30%]  h-full">
             {/* Coming Soon Message for Petani */}
             {/* {isPetaniSelected ? ( */}
-              {/* <form
+            {/* <form
                 className="w-full lg:w-10/12 xl:w-9/12"
                 onSubmit={handlePetaniLogin}
               >
@@ -321,99 +321,99 @@ export default function LoginPage() {
                 )}
               </form> */}
             {/* ) : ( */}
-              {/* /* Regular Login Form for Penyuluh */}
-              <form
-                className="w-full lg:w-10/12 xl:w-9/12"
-                onSubmit={handlePenyuluhLogin}
-              >
-                {/* Form Title */}
-                <div className="flex items-center justify-between pb-6 lg:pb-8">
-                  <div>
-                    <h2 className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-gray-800">
-                      Login Siketan Ngawi
-                    </h2>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                      Selamat datang kembali, Penyuluh!
-                    </p>
-                  </div>
-                  <Link className="hover:scale-110 transition-transform" to="/">
-                    <GoHomeFill
-                      className="text-blue-500 hover:text-blue-600"
-                      size={24}
-                    />
-                  </Link>
+            {/* /* Regular Login Form for Penyuluh */}
+            <form
+              className="w-full lg:w-10/12 xl:w-9/12"
+              onSubmit={handlePenyuluhLogin}
+            >
+              {/* Form Title */}
+              <div className="flex items-center justify-between pb-6 lg:pb-8">
+                <div>
+                  <h2 className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-gray-800">
+                    Login Siketan Ngawi
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    Selamat datang kembali, Penyuluh!
+                  </p>
                 </div>
-
-                {/* Email Input */}
-                <div className="mb-6 lg:mb-5 pb-6 lg:pb-5">
-                  <Input
-                    required
-                    autoComplete="email"
-                    classNames={{
-                      label: "font-semibold text-sm sm:text-base",
-                      inputWrapper:
-                        "px-3 sm:px-4 py-5 sm:py-6 w-full border-1 border-gray-300 bg-white hover:border-gray-400 data-[focus=true]:border-green-500",
-                      input: "text-sm sm:text-base",
-                    }}
-                    label="Email"
-                    labelPlacement="outside"
-                    placeholder="Masukkan email anda"
-                    type="email"
-                    value={email}
-                    variant="bordered"
-                    onChange={(e) => setEmail(e.target.value)}
+                <Link className="hover:scale-110 transition-transform" to="/">
+                  <GoHomeFill
+                    className="text-blue-500 hover:text-blue-600"
+                    size={24}
                   />
+                </Link>
+              </div>
+
+              {/* Email Input */}
+              <div className="mb-6 lg:mb-5 pb-6 lg:pb-5">
+                <Input
+                  required
+                  autoComplete="email"
+                  classNames={{
+                    label: "font-semibold text-sm sm:text-base",
+                    inputWrapper:
+                      "px-3 sm:px-4 py-5 sm:py-6 w-full border-1 border-gray-300 bg-white hover:border-gray-400 data-[focus=true]:border-green-500",
+                    input: "text-sm sm:text-base",
+                  }}
+                  label="Email"
+                  labelPlacement="outside"
+                  placeholder="Masukkan email anda"
+                  type="email"
+                  value={email}
+                  variant="bordered"
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              {/* Password Input */}
+              <div className="mb-2">
+                <Input
+                  required
+                  autoComplete="current-password"
+                  classNames={{
+                    label: "font-semibold text-sm sm:text-base",
+                    inputWrapper:
+                      "px-3 sm:px-4 py-5 sm:py-6 w-full border-1 border-gray-300 bg-white hover:border-gray-400 data-[focus=true]:border-green-500",
+                    input: "text-sm sm:text-base",
+                  }}
+                  endContent={
+                    <button
+                      className="focus:outline-none"
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <FiEyeOff
+                          className="text-gray-400 hover:text-gray-600"
+                          size={20}
+                        />
+                      ) : (
+                        <FiEye
+                          className="text-gray-400 hover:text-gray-600"
+                          size={20}
+                        />
+                      )}
+                    </button>
+                  }
+                  label="Password"
+                  labelPlacement="outside"
+                  placeholder="Masukkan password anda"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  variant="bordered"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 text-xs sm:text-sm text-red-600 bg-red-50 rounded-lg">
+                  {error}
                 </div>
+              )}
 
-                {/* Password Input */}
-                <div className="mb-2">
-                  <Input
-                    required
-                    autoComplete="current-password"
-                    classNames={{
-                      label: "font-semibold text-sm sm:text-base",
-                      inputWrapper:
-                        "px-3 sm:px-4 py-5 sm:py-6 w-full border-1 border-gray-300 bg-white hover:border-gray-400 data-[focus=true]:border-green-500",
-                      input: "text-sm sm:text-base",
-                    }}
-                    endContent={
-                      <button
-                        className="focus:outline-none"
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <FiEyeOff
-                            className="text-gray-400 hover:text-gray-600"
-                            size={20}
-                          />
-                        ) : (
-                          <FiEye
-                            className="text-gray-400 hover:text-gray-600"
-                            size={20}
-                          />
-                        )}
-                      </button>
-                    }
-                    label="Password"
-                    labelPlacement="outside"
-                    placeholder="Masukkan password anda"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    variant="bordered"
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-
-                {/* Error Message */}
-                {error && (
-                  <div className="mb-4 p-3 text-xs sm:text-sm text-red-600 bg-red-50 rounded-lg">
-                    {error}
-                  </div>
-                )}
-
-                {/* Links */}
-                {/* <div className="flex items-center justify-between mt-4 mb-6 text-xs sm:text-sm">
+              {/* Links */}
+              {/* <div className="flex items-center justify-between mt-4 mb-6 text-xs sm:text-sm">
                   <Link
                     className="text-gray-500 hover:text-gray-700 transition-colors"
                     to="/register"
@@ -428,16 +428,16 @@ export default function LoginPage() {
                   </Link>
                 </div> */}
 
-                {/* Submit Button */}
-                <Button
-                  className="w-full py-5 sm:py-6 mt-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 transition-all duration-200 shadow-lg hover:shadow-xl"
-                  isDisabled={!email || !password || isLoading}
-                  isLoading={isLoading}
-                  type="submit"
-                >
-                  {isLoading ? "Sedang Masuk..." : "LOGIN"}
-                </Button>
-              </form>
+              {/* Submit Button */}
+              <Button
+                className="w-full py-5 sm:py-6 mt-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+                isDisabled={!email || !password || isLoading}
+                isLoading={isLoading}
+                type="submit"
+              >
+                {isLoading ? "Sedang Masuk..." : "LOGIN"}
+              </Button>
+            </form>
             {/* )} */}
           </div>
         </div>

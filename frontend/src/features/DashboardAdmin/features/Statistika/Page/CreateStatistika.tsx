@@ -12,7 +12,6 @@ import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
 import { useDashboardDataPotkan } from "@/hook/dashboard/useDashboardDataPotkan";
 import { DashoardDataPotkan } from "@/types/dashboard/searchPoktan";
-
 import { ColumnConfig, PaginationInfo } from "@/types/table";
 import { Kelompok, StatistikaData } from "@/types/Statistika/statistika.d";
 import { ReusableTable } from "@/components/Table/ReusableTable";
@@ -240,7 +239,6 @@ export const CreateStatistika = () => {
                 menu: () => "z-[9999]",
                 menuPortal: () => "z-[9999]",
               }}
-              options={poktanOptions}
               isLoading={isPotkanLoading}
               menuPlacement="auto"
               menuPortalTarget={document.body}
@@ -250,6 +248,7 @@ export const CreateStatistika = () => {
                   ? `Tidak ada hasil untuk "${inputValue}"`
                   : "Data Poktan tidak ditemukan"
               }
+              options={poktanOptions}
               placeholder="Pilih atau cari poktan..."
               styles={{
                 menuPortal: (base) => ({

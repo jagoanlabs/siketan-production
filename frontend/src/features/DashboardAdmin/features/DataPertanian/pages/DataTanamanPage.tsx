@@ -113,6 +113,7 @@ export const DataTanamanPage = () => {
     queryKey: ["tanamanPetaniYears"],
     queryFn: async () => {
       const response = await axiosClient.get("/list-tanaman/years");
+
       return (response.data.data || []).map((year: any) => year.toString());
     },
     staleTime: 300000,
@@ -424,7 +425,11 @@ export const DataTanamanPage = () => {
     try {
       await exportAllDataToExcel(
         exportType === "year" ? selectedExportYear : null,
-        exportType === "year" && selectedExportMonth && selectedExportMonth !== "all" ? selectedExportMonth : null
+        exportType === "year" &&
+          selectedExportMonth &&
+          selectedExportMonth !== "all"
+          ? selectedExportMonth
+          : null,
       );
     } catch (error) {
       console.error("Export error:", error);
@@ -482,7 +487,7 @@ export const DataTanamanPage = () => {
           toast.error("Gagal menghapus data tanaman");
         }
       },
-      reject: () => { },
+      reject: () => {},
     });
   };
 
@@ -532,19 +537,19 @@ export const DataTanamanPage = () => {
   const tableData = data?.data || [];
   const paginationInfo: PaginationInfo = data
     ? {
-      total: data.total,
-      currentPages: data.currentPages,
-      maxPages: data.maxPages,
-      from: data.from,
-      to: data.to,
-    }
+        total: data.total,
+        currentPages: data.currentPages,
+        maxPages: data.maxPages,
+        from: data.from,
+        to: data.to,
+      }
     : {
-      total: 0,
-      currentPages: 1,
-      maxPages: 1,
-      from: 1,
-      to: 0,
-    };
+        total: 0,
+        currentPages: 1,
+        maxPages: 1,
+        from: 1,
+        to: 0,
+      };
 
   // Header actions with selection counter
   const headerActions = (
@@ -668,7 +673,7 @@ export const DataTanamanPage = () => {
                   <Chip
                     color={
                       selectedTanaman?.statusKepemilikanLahan ===
-                        "MILIK SENDIRI"
+                      "MILIK SENDIRI"
                         ? "success"
                         : "warning"
                     }
@@ -727,7 +732,7 @@ export const DataTanamanPage = () => {
                             <Chip
                               color={
                                 selectedTanaman.statusKepemilikanLahan ===
-                                  "MILIK SENDIRI"
+                                "MILIK SENDIRI"
                                   ? "success"
                                   : "warning"
                               }
@@ -879,11 +884,17 @@ export const DataTanamanPage = () => {
       </Modal>
 
       {/* Export Options Modal */}
-      <Modal isOpen={isExportModalOpen} onOpenChange={setIsExportModalOpen} placement="center">
+      <Modal
+        isOpen={isExportModalOpen}
+        placement="center"
+        onOpenChange={setIsExportModalOpen}
+      >
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Export Data Tanaman</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">
+                Export Data Tanaman
+              </ModalHeader>
               <ModalBody className="space-y-4">
                 <div className="flex flex-col gap-2">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -892,26 +903,30 @@ export const DataTanamanPage = () => {
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
-                        type="radio"
-                        name="exportType"
                         checked={exportType === "all"}
+                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                        name="exportType"
+                        type="radio"
                         onChange={() => {
                           setExportType("all");
                           setSelectedExportMonth("all");
                         }}
-                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                       />
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Keseluruhan</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Export Keseluruhan
+                      </span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
-                        type="radio"
-                        name="exportType"
                         checked={exportType === "year"}
-                        onChange={() => setExportType("year")}
                         className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                        name="exportType"
+                        type="radio"
+                        onChange={() => setExportType("year")}
                       />
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Berdasarkan Tahun</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Export Berdasarkan Tahun
+                      </span>
                     </label>
                   </div>
                 </div>
@@ -924,22 +939,20 @@ export const DataTanamanPage = () => {
                       </p>
                       <Select
                         disableAnimation
-                        popoverProps={{
-                          shouldBlockScroll: false,
-                          shouldCloseOnScroll: false,
-                        }}
                         listboxProps={{
                           style: { maxHeight: "200px", overflowY: "auto" },
                         }}
                         placeholder="Pilih tahun..."
+                        popoverProps={{
+                          shouldBlockScroll: false,
+                          shouldCloseOnScroll: false,
+                        }}
                         selectedKeys={[selectedExportYear]}
                         variant="bordered"
                         onChange={(e) => setSelectedExportYear(e.target.value)}
                       >
                         {availableYears.map((year) => (
-                          <SelectItem key={year}>
-                            {year}
-                          </SelectItem>
+                          <SelectItem key={year}>{year}</SelectItem>
                         ))}
                       </Select>
                     </div>
@@ -950,14 +963,14 @@ export const DataTanamanPage = () => {
                       </p>
                       <Select
                         disableAnimation
-                        popoverProps={{
-                          shouldBlockScroll: false,
-                          shouldCloseOnScroll: false,
-                        }}
                         listboxProps={{
                           style: { maxHeight: "200px", overflowY: "auto" },
                         }}
                         placeholder="Semua Bulan"
+                        popoverProps={{
+                          shouldBlockScroll: false,
+                          shouldCloseOnScroll: false,
+                        }}
                         selectedKeys={[selectedExportMonth]}
                         variant="bordered"
                         onChange={(e) => setSelectedExportMonth(e.target.value)}
@@ -984,7 +997,11 @@ export const DataTanamanPage = () => {
                 <Button color="danger" variant="light" onPress={onClose}>
                   Batal
                 </Button>
-                <Button className="text-gray-100" color="success" onPress={executeExport}>
+                <Button
+                  className="text-gray-100"
+                  color="success"
+                  onPress={executeExport}
+                >
                   Export ke Excel
                 </Button>
               </ModalFooter>

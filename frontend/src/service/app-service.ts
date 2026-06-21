@@ -79,52 +79,64 @@ axiosClient.interceptors.response.use(
 
         case 403:
           // Forbidden - No permission
-          toast.error("Akses Ditolak", {
-            description:
-              "Anda tidak memiliki izin untuk mengakses resource ini",
-          });
+          if (error.config?.showGlobalToast) {
+            toast.error("Akses Ditolak", {
+              description:
+                "Anda tidak memiliki izin untuk mengakses resource ini",
+            });
+          }
           break;
 
         case 404:
           // Not Found
-          toast.error("Resource Tidak Ditemukan", {
-            description: "Endpoint yang diminta tidak tersedia",
-          });
+          if (error.config?.showGlobalToast) {
+            toast.error("Resource Tidak Ditemukan", {
+              description: "Endpoint yang diminta tidak tersedia",
+            });
+          }
           break;
 
         case 422:
           // Validation Error
-          const validationMessage =
-            data?.message || "Data yang dikirim tidak valid";
+          if (error.config?.showGlobalToast) {
+            const validationMessage =
+              data?.message || "Data yang dikirim tidak valid";
 
-          toast.error("Validasi Error", {
-            description: validationMessage,
-          });
+            toast.error("Validasi Error", {
+              description: validationMessage,
+            });
+          }
           break;
 
         case 429:
           // Too Many Requests
-          toast.error("Terlalu Banyak Permintaan", {
-            description: "Silakan tunggu beberapa saat sebelum mencoba lagi",
-          });
+          if (error.config?.showGlobalToast) {
+            toast.error("Terlalu Banyak Permintaan", {
+              description: "Silakan tunggu beberapa saat sebelum mencoba lagi",
+            });
+          }
           break;
 
         case 500:
           // Internal Server Error
-          toast.error("Server Error", {
-            description:
-              "Terjadi kesalahan pada server. Silakan coba lagi nanti",
-          });
+          if (error.config?.showGlobalToast) {
+            toast.error("Server Error", {
+              description:
+                "Terjadi kesalahan pada server. Silakan coba lagi nanti",
+            });
+          }
           break;
 
         default:
           // Generic error
-          const genericMessage =
-            data?.message || "Terjadi kesalahan yang tidak diketahui";
+          if (error.config?.showGlobalToast) {
+            const genericMessage =
+              data?.message || "Terjadi kesalahan yang tidak diketahui";
 
-          toast.error("Error", {
-            description: genericMessage,
-          });
+            toast.error("Error", {
+              description: genericMessage,
+            });
+          }
       }
     } else if (error.request) {
       // Network error - no response received
@@ -136,9 +148,11 @@ axiosClient.interceptors.response.use(
     } else {
       // Something else happened
       console.error("⚠️ Unknown Error:", error.message);
-      toast.error("Error", {
-        description: "Terjadi kesalahan yang tidak terduga",
-      });
+      if (error.config?.showGlobalToast) {
+        toast.error("Error", {
+          description: "Terjadi kesalahan yang tidak terduga",
+        });
+      }
     }
 
     return Promise.reject(error);

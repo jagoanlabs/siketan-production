@@ -50,11 +50,12 @@ export const DashboardStatistika = () => {
   // AsyncSelect state
   const [selectedOption, setSelectedOption] = useState<any>(null);
 
-
-
   // Import Success Modal states
   const [isImportSuccessOpen, setIsImportSuccessOpen] = useState(false);
-  const [importSuccessData, setImportSuccessData] = useState<{ id: number; count: number } | null>(null);
+  const [importSuccessData, setImportSuccessData] = useState<{
+    id: number;
+    count: number;
+  } | null>(null);
 
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
@@ -96,12 +97,18 @@ export const DashboardStatistika = () => {
   const handleDownloadTemplate = async (id: number, filename: string) => {
     try {
       toast.info("Sedang menyiapkan template realisasi...");
-      const response = await axiosClient.get(`/statistik/riwayat/${id}/download-template`, {
-        responseType: 'blob'
+      const response = await axiosClient.get(
+        `/statistik/riwayat/${id}/download-template`,
+        {
+          responseType: "blob",
+        },
+      );
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
+
       a.href = url;
       a.download = filename || `formulir_realisasi_${id}.xlsx`;
       document.body.appendChild(a);
@@ -114,6 +121,7 @@ export const DashboardStatistika = () => {
       console.error("Download template error:", error);
     }
   };
+
 
   // Debounce functions
   const debouncedSetTableSearch = useMemo(
@@ -329,14 +337,16 @@ export const DashboardStatistika = () => {
                         ? "success"
                         : item.kategori === "perkebunan"
                           ? "warning"
-                          : item.kategori === "jenis_sayur" || item.kategori === "sayur"
+                          : item.kategori === "jenis_sayur" ||
+                            item.kategori === "sayur"
                             ? "secondary"
                             : "primary"
                     }
                     size="sm"
                     variant="flat"
                   >
-                    {item.kategori === "jenis_sayur" || item.kategori === "sayur"
+                    {item.kategori === "jenis_sayur" ||
+                      item.kategori === "sayur"
                       ? "Sayur"
                       : item.kategori.charAt(0).toUpperCase() +
                       item.kategori.slice(1)}
@@ -407,7 +417,12 @@ export const DashboardStatistika = () => {
       await exportMutation.mutateAsync({
         poktanId: selectedOption?.value || null,
         tahun: exportType === "year" ? selectedExportYear : null,
-        bulan: exportType === "year" && selectedExportMonth && selectedExportMonth !== "all" ? selectedExportMonth : null,
+        bulan:
+          exportType === "year" &&
+            selectedExportMonth &&
+            selectedExportMonth !== "all"
+            ? selectedExportMonth
+            : null,
       });
     } finally {
       setShowLoadingModal(false);
@@ -447,9 +462,13 @@ export const DashboardStatistika = () => {
 
         try {
           const result = await importMutation.mutateAsync(file);
+
           await refetchTanamanData();
           if (result?.riwayatId && result?.imported_count) {
-            setImportSuccessData({ id: result.riwayatId, count: result.imported_count });
+            setImportSuccessData({
+              id: result.riwayatId,
+              count: result.imported_count,
+            });
             setIsImportSuccessOpen(true);
           }
         } finally {
@@ -724,7 +743,6 @@ export const DashboardStatistika = () => {
         type="processing"
       />
 
-
       {/* Poktan Select Filter */}
       <div className="mb-6">
         <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -738,7 +756,6 @@ export const DashboardStatistika = () => {
             menu: () => "z-[9999]",
             menuPortal: () => "z-[9999]",
           }}
-          options={poktanOptions}
           isLoading={isPotkanLoading}
           menuPlacement="auto"
           menuPortalTarget={document.body}
@@ -748,6 +765,7 @@ export const DashboardStatistika = () => {
               ? `Tidak ada hasil untuk "${inputValue}"`
               : "Data Poktan tidak ditemukan"
           }
+          options={poktanOptions}
           placeholder="Pilih atau cari poktan..."
           styles={{
             menuPortal: (base) => ({ ...base, zIndex: 9999 }),
@@ -808,11 +826,17 @@ export const DashboardStatistika = () => {
       />
 
       {/* Export Options Modal */}
-      <Modal isOpen={isExportModalOpen} onOpenChange={setIsExportModalOpen} placement="center">
+      <Modal
+        isOpen={isExportModalOpen}
+        placement="center"
+        onOpenChange={setIsExportModalOpen}
+      >
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Export Data Statistika</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">
+                Export Data Statistika
+              </ModalHeader>
               <ModalBody className="space-y-4">
                 <div className="flex flex-col gap-2">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -821,26 +845,30 @@ export const DashboardStatistika = () => {
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
-                        type="radio"
-                        name="exportType"
                         checked={exportType === "all"}
+                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                        name="exportType"
+                        type="radio"
                         onChange={() => {
                           setExportType("all");
                           setSelectedExportMonth("all");
                         }}
-                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                       />
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Keseluruhan</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Export Keseluruhan
+                      </span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
-                        type="radio"
-                        name="exportType"
                         checked={exportType === "year"}
-                        onChange={() => setExportType("year")}
                         className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                        name="exportType"
+                        type="radio"
+                        onChange={() => setExportType("year")}
                       />
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Berdasarkan Tahun</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Export Berdasarkan Tahun
+                      </span>
                     </label>
                   </div>
                 </div>
@@ -853,22 +881,20 @@ export const DashboardStatistika = () => {
                       </p>
                       <Select
                         disableAnimation
-                        popoverProps={{
-                          shouldBlockScroll: false,
-                          shouldCloseOnScroll: false,
-                        }}
                         listboxProps={{
                           style: { maxHeight: "200px", overflowY: "auto" },
                         }}
                         placeholder="Pilih tahun..."
+                        popoverProps={{
+                          shouldBlockScroll: false,
+                          shouldCloseOnScroll: false,
+                        }}
                         selectedKeys={[selectedExportYear]}
                         variant="bordered"
                         onChange={(e) => setSelectedExportYear(e.target.value)}
                       >
                         {availableYears.map((year) => (
-                          <SelectItem key={year}>
-                            {year}
-                          </SelectItem>
+                          <SelectItem key={year}>{year}</SelectItem>
                         ))}
                       </Select>
                     </div>
@@ -879,14 +905,14 @@ export const DashboardStatistika = () => {
                       </p>
                       <Select
                         disableAnimation
-                        popoverProps={{
-                          shouldBlockScroll: false,
-                          shouldCloseOnScroll: false,
-                        }}
                         listboxProps={{
                           style: { maxHeight: "200px", overflowY: "auto" },
                         }}
                         placeholder="Semua Bulan"
+                        popoverProps={{
+                          shouldBlockScroll: false,
+                          shouldCloseOnScroll: false,
+                        }}
                         selectedKeys={[selectedExportMonth]}
                         variant="bordered"
                         onChange={(e) => setSelectedExportMonth(e.target.value)}
@@ -913,7 +939,11 @@ export const DashboardStatistika = () => {
                 <Button color="danger" variant="light" onPress={onClose}>
                   Batal
                 </Button>
-                <Button className="text-gray-100" color="success" onPress={executeExport}>
+                <Button
+                  className="text-gray-100"
+                  color="success"
+                  onPress={executeExport}
+                >
                   Export ke Excel
                 </Button>
               </ModalFooter>
@@ -923,7 +953,11 @@ export const DashboardStatistika = () => {
       </Modal>
 
       {/* Import Success Modal - Offering direct template download */}
-      <Modal isOpen={isImportSuccessOpen} onOpenChange={setIsImportSuccessOpen} size="md">
+      <Modal
+        isOpen={isImportSuccessOpen}
+        size="md"
+        onOpenChange={setIsImportSuccessOpen}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -933,14 +967,18 @@ export const DashboardStatistika = () => {
               </ModalHeader>
               <ModalBody className="space-y-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  Sebanyak <strong>{importSuccessData?.count}</strong> data tanaman berhasil diimpor ke sistem.
+                  Sebanyak <strong>{importSuccessData?.count}</strong> data
+                  tanaman berhasil diimpor ke sistem.
                 </p>
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl flex flex-col gap-2">
                   <p className="text-xs text-blue-750 dark:text-blue-300 font-semibold">
                     TIPS REALISASI MASSAL:
                   </p>
                   <p className="text-xs text-blue-600 dark:text-blue-400">
-                    Anda dapat langsung mengunduh Formulir Realisasi untuk baris data yang baru saja diimpor ini, membagikannya kepada kelompok tani/petani, lalu mengunggahnya kembali nanti untuk memperbarui data realisasi secara massal.
+                    Anda dapat langsung mengunduh Formulir Realisasi untuk baris
+                    data yang baru saja diimpor ini, membagikannya kepada
+                    kelompok tani/petani, lalu mengunggahnya kembali nanti untuk
+                    memperbarui data realisasi secara massal.
                   </p>
                 </div>
               </ModalBody>
@@ -949,12 +987,15 @@ export const DashboardStatistika = () => {
                   Tutup
                 </Button>
                 <Button
-                  color="primary"
                   className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  color="primary"
                   startContent={<BsFiletypeXlsx className="w-4 h-4" />}
                   onPress={() => {
                     if (importSuccessData?.id) {
-                      handleDownloadTemplate(importSuccessData.id, `formulir_realisasi_langsung_${importSuccessData.id}.xlsx`);
+                      handleDownloadTemplate(
+                        importSuccessData.id,
+                        `formulir_realisasi_langsung_${importSuccessData.id}.xlsx`,
+                      );
                     }
                     onClose();
                   }}

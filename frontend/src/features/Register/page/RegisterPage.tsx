@@ -65,8 +65,8 @@ export default function RegisterPage() {
             {/* ) : ( */}
             <>
               <p className="text-2xl xl:text-4xl font-light leading-snug">
-                Bergabunglah{" "}
-                <strong className="font-bold">Bersama Kami</strong> <br />
+                Bergabunglah <strong className="font-bold">Bersama Kami</strong>{" "}
+                <br />
                 Majukan{" "}
                 <strong className="font-bold">Pertanian Indonesia</strong>
               </p>

@@ -1,6 +1,7 @@
 // hooks/statistika/useStatistikaData.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 import { axiosClient } from "@/service/app-service";
 import {
@@ -9,7 +10,6 @@ import {
   CreateStatistikaPayload,
   RiwayatImportResponse,
 } from "@/types/Statistika/statistika.d";
-import * as XLSX from "xlsx";
 
 interface UseStatistikaDataParams {
   poktanId: number | null;
@@ -213,9 +213,7 @@ export const useExportStatistika = () => {
         params.append("bulan", bulan);
       }
 
-      const response = await axiosClient.get(
-        `/statistik?${params.toString()}`
-      );
+      const response = await axiosClient.get(`/statistik?${params.toString()}`);
 
       return response.data;
     },
@@ -224,33 +222,84 @@ export const useExportStatistika = () => {
 
       if (rawData.length === 0) {
         toast.error("Tidak ada data untuk diexport");
+
         return;
       }
 
       const headerRow1 = [
-        "NO POKTAN", "KECAMATAN", "DESA", "LAHAN BAKU", "GAPOKTAN", "NAMA POKTAN",
-        "TANAMAN PANGAN", "", "", "", "", "", "", "",
-        "TANAMAN PERKEBUNAN SEMUSIM", "", "", "", "", "", "", "",
-        "TANAMAN PERKEBUNAN TAHUNAN", "", "", "", "", "", "", "",
-        "TANAMAN HORTIKULTURA SEMUSIM", "", "", "", "", "", "", "",
-        "TANAMAN HORTIKULTURA TAHUNAN", "", "", "", "", "", "", "",
-        "TANGGAL DIBUAT"
+        "NO POKTAN",
+        "KECAMATAN",
+        "DESA",
+        "LAHAN BAKU",
+        "GAPOKTAN",
+        "NAMA POKTAN",
+        "TANAMAN PANGAN",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "TANAMAN PERKEBUNAN SEMUSIM",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "TANAMAN PERKEBUNAN TAHUNAN",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "TANAMAN HORTIKULTURA SEMUSIM",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "TANAMAN HORTIKULTURA TAHUNAN",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "TANGGAL DIBUAT",
       ];
 
       const sectionFields = [
-        "KOMODITAS", "LUAS LAHAN(HA)", "BULAN TANAM", "PRAKIRAAN BULAN PANEN",
-        "PRAKIRAAN LUAS PANEN (HA)", "PRAKIRAAN HASIL PANEN (TON)",
-        "REALISASI LUAS PANEN (HA)", "REALISASI PRODUKSI PANEN (TON)"
+        "KOMODITAS",
+        "LUAS LAHAN(HA)",
+        "BULAN TANAM",
+        "PRAKIRAAN BULAN PANEN",
+        "PRAKIRAAN LUAS PANEN (HA)",
+        "PRAKIRAAN HASIL PANEN (TON)",
+        "REALISASI LUAS PANEN (HA)",
+        "REALISASI PRODUKSI PANEN (TON)",
       ];
 
       const headerRow2 = [
-        "", "", "", "", "", "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
         ...sectionFields,
         ...sectionFields,
         ...sectionFields,
         ...sectionFields,
         ...sectionFields,
-        ""
+        "",
       ];
 
       const aoaData: any[][] = [headerRow1, headerRow2];
@@ -263,7 +312,14 @@ export const useExportStatistika = () => {
         if (kat === "pangan") {
           sectionIndex = 0;
         } else if (kat === "perkebunan") {
-          const semusimList = ["Kopi", "Kakao", "Cengkeh", "Teh", "Karet", "Kelapa"];
+          const semusimList = [
+            "Kopi",
+            "Kakao",
+            "Cengkeh",
+            "Teh",
+            "Karet",
+            "Kelapa",
+          ];
           const tahunanList = ["Perkebunan Tembakau", "Perkebunan Tebu"];
 
           if (semusimList.includes(komoditas)) {
@@ -275,14 +331,40 @@ export const useExportStatistika = () => {
           }
         } else if (kat === "buah" || kat === "sayur") {
           const semusimList = [
-            "Melon", "Semangka", "Pisang", "Blewah",
-            "Cabe Kecil", "Cabe Besar", "Bawang Merah", "Tomat", "Terong",
-            "Pare", "Gambas", "Bayam", "Kangkung", "Sawi", "Kacang Panjang", "Timun"
+            "Melon",
+            "Semangka",
+            "Pisang",
+            "Blewah",
+            "Cabe Kecil",
+            "Cabe Besar",
+            "Bawang Merah",
+            "Tomat",
+            "Terong",
+            "Pare",
+            "Gambas",
+            "Bayam",
+            "Kangkung",
+            "Sawi",
+            "Kacang Panjang",
+            "Timun",
           ];
           const tahunanList = [
-            "Mangga", "Durian", "Manggis", "Alpukat", "Rambutan", "Jeruk Lemon",
-            "Jeruk Nipis", "Jeruk Keprok", "Jeruk Besar", "Nangka", "Jambu Biji",
-            "Jambu Air", "Sukun", "Sirsak", "Sawo", "Duku"
+            "Mangga",
+            "Durian",
+            "Manggis",
+            "Alpukat",
+            "Rambutan",
+            "Jeruk Lemon",
+            "Jeruk Nipis",
+            "Jeruk Keprok",
+            "Jeruk Besar",
+            "Nangka",
+            "Jambu Biji",
+            "Jambu Air",
+            "Sukun",
+            "Sirsak",
+            "Sawo",
+            "Duku",
           ];
 
           if (semusimList.includes(komoditas)) {
@@ -300,7 +382,7 @@ export const useExportStatistika = () => {
           item.kelompok?.desa || "-",
           item.luasLahan || "-",
           item.kelompok?.gapoktan || "-",
-          item.kelompok?.namaKelompok || "-"
+          item.kelompok?.namaKelompok || "-",
         ];
 
         for (let i = 0; i < 5; i++) {
@@ -313,14 +395,22 @@ export const useExportStatistika = () => {
               item.prakiraanLuasPanen || "-",
               item.prakiraanHasilPanen || "-",
               item.realisasiLuasPanen ?? "-",
-              item.realisasiHasilPanen ?? "-"
+              item.realisasiHasilPanen ?? "-",
             );
           } else {
             row.push("-", "-", "-", "-", "-", "-", "-", "-");
           }
         }
 
-        row.push(item.createdAt ? new Date(item.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-");
+        row.push(
+          item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            : "-",
+        );
 
         aoaData.push(row);
       });
@@ -339,10 +429,11 @@ export const useExportStatistika = () => {
         { s: { r: 0, c: 3 }, e: { r: 1, c: 3 } },
         { s: { r: 0, c: 4 }, e: { r: 1, c: 4 } },
         { s: { r: 0, c: 5 }, e: { r: 1, c: 5 } },
-        { s: { r: 0, c: 46 }, e: { r: 1, c: 46 } }
+        { s: { r: 0, c: 46 }, e: { r: 1, c: 46 } },
       ];
 
       const workbook = XLSX.utils.book_new();
+
       XLSX.utils.book_append_sheet(workbook, worksheet, "Statistika");
 
       // Generate filename dengan timestamp
@@ -353,13 +444,30 @@ export const useExportStatistika = () => {
 
       const yearSuffix = variables?.tahun ? `-${variables.tahun}` : "";
       const monthNames = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
       ];
-      const monthSuffix = (variables?.bulan && Number(variables.bulan) >= 1 && Number(variables.bulan) <= 12)
-        ? `-${monthNames[Number(variables.bulan) - 1]}`
-        : "";
-      XLSX.writeFile(workbook, `data-statistika${yearSuffix}${monthSuffix}-${timestamp}.xlsx`);
+      const monthSuffix =
+        variables?.bulan &&
+        Number(variables.bulan) >= 1 &&
+        Number(variables.bulan) <= 12
+          ? `-${monthNames[Number(variables.bulan) - 1]}`
+          : "";
+
+      XLSX.writeFile(
+        workbook,
+        `data-statistika${yearSuffix}${monthSuffix}-${timestamp}.xlsx`,
+      );
 
       toast.success("Data berhasil diexport!");
     },
@@ -419,6 +527,7 @@ export const useStatistikaYears = () => {
     queryKey: ["statistika-years"],
     queryFn: async (): Promise<string[]> => {
       const response = await axiosClient.get("/statistik/years");
+
       return (response.data.data || []).map((year: any) => year.toString());
     },
     staleTime: 300000, // 5 minutes cache
@@ -430,6 +539,7 @@ export const useRiwayatImport = () => {
     queryKey: ["statistika-riwayat-import"],
     queryFn: async (): Promise<RiwayatImportResponse> => {
       const response = await axiosClient.get("/statistik/riwayat");
+
       return response.data;
     },
   });
@@ -439,34 +549,41 @@ export const useUploadRealisasi = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, file }: { id: number; file: File }) => {
+    mutationFn: async ({ id, file }: { id?: number; file: File }) => {
       const formData = new FormData();
+
       formData.append("file", file);
 
+      const url = id
+        ? `/statistik/riwayat/${id}/upload-realisasi`
+        : `/statistik/riwayat/upload-realisasi`;
+
       const response = await axiosClient.post(
-        `/statistik/riwayat/${id}/upload-realisasi`,
+        url,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
           timeout: 120000,
-        }
+        },
       );
+
       return response.data;
     },
     onSuccess: () => {
       toast.success("Data realisasi berhasil diperbarui secara massal!");
-      queryClient.invalidateQueries({ queryKey: ["statistika-riwayat-import"] });
+      queryClient.invalidateQueries({
+        queryKey: ["statistika-riwayat-import"],
+      });
       queryClient.invalidateQueries({ queryKey: ["statistika-data"] });
     },
     onError: (error: any) => {
       const message =
         error.response?.data?.message || "Gagal mengunggah data realisasi";
+
       toast.error(message);
       console.error("Upload realisasi error:", error);
     },
   });
 };
-
-

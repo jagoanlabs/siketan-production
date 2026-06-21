@@ -82,13 +82,12 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
           {navItems.map((item, i) => (
             <li key={item.id}>
               <Link
-                className={`relative px-2.5 xl:px-3 py-2 transition-colors duration-300 hover:cursor-pointer ${activeMenu === i
-                  ? "text-[#1167B1] font-semibold"
-                  : "text-gray-700 hover:text-[#1167B1]"
-                  }`}
-                to={
-                  item.link
-                }
+                className={`relative px-2.5 xl:px-3 py-2 transition-colors duration-300 hover:cursor-pointer ${
+                  activeMenu === i
+                    ? "text-[#1167B1] font-semibold"
+                    : "text-gray-700 hover:text-[#1167B1]"
+                }`}
+                to={item.link}
                 onClick={() => setActiveMenu(i)}
               >
                 {item.name}
@@ -105,8 +104,6 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
         <div className="hidden lg:block">
           {isAuthenticated ? (
             <div className="flex items-center gap-3 xl:gap-4">
-
-
               {/* Profile Info */}
               <div className="flex items-center gap-2 xl:gap-3">
                 <div className="w-9 h-9 xl:w-10 xl:h-10 overflow-hidden border border-gray-300 rounded-full">
@@ -143,7 +140,6 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
 
         {/* Mobile Menu Button & Notification */}
         <div className="flex items-center gap-2 lg:hidden">
-
           <button
             aria-label="Toggle menu"
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -160,18 +156,20 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
 
       {/* Mobile Menu Overlay */}
       <button
-        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen
-          ? "opacity-100 visible"
-          : "opacity-0 invisible pointer-events-none"
-          }`}
+        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${
+          isMobileMenuOpen
+            ? "opacity-100 visible"
+            : "opacity-0 invisible pointer-events-none"
+        }`}
         onClick={toggleMobileMenu}
       />
 
       {/* Mobile Menu Drawer */}
       <div
         className={`fixed top-0 right-0 h-full w-[85%] sm:w-[75%] md:w-[60%] max-w-sm bg-white z-50 lg:hidden 
-        transform transition-transform duration-300 ease-out shadow-xl ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        transform transition-transform duration-300 ease-out shadow-xl ${
+          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         {/* Mobile Menu Header */}
         <div className="p-4 border-b border-gray-200">
@@ -218,10 +216,11 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
             {navItems.map((item, i) => (
               <li key={item.id}>
                 <Link
-                  className={`block px-4 py-3 rounded-lg transition-all duration-200 ${activeMenu === i
-                    ? "bg-[#1167B1] text-white font-semibold shadow-md"
-                    : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                  className={`block px-4 py-3 rounded-lg transition-all duration-200 ${
+                    activeMenu === i
+                      ? "bg-[#1167B1] text-white font-semibold shadow-md"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
                   to={item.link}
                   onClick={() => handleMenuClick(i)}
                 >
@@ -254,9 +253,7 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
 
               <Link
                 className="block px-4 py-3 text-gray-700 transition-colors rounded-lg hover:bg-white"
-                to={
-                  "/dashboard-admin"
-                }
+                to={"/dashboard-admin"}
                 onClick={toggleMobileMenu}
               >
                 <span className="flex items-center gap-3">

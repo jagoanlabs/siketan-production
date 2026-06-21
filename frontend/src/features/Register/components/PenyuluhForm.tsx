@@ -27,9 +27,9 @@ import {
 import { toast } from "sonner";
 
 // @ts-ignore
-import privacyPolicyContent from "@/assets/privacy-policy.md?raw";
 import { MarkdownViewer } from "../../Legal/components/MarkdownViewer";
 
+import privacyPolicyContent from "@/assets/privacy-policy.md?raw";
 import { useRegisterPenyuluh } from "@/hook/useAuthApi";
 import {
   useKecamatan,
@@ -502,14 +502,15 @@ export function PenyuluhForm() {
                       {[1, 2, 3, 4, 5].map((level) => (
                         <div
                           key={level}
-                          className={`flex-1 h-1 rounded-full ${passwordStrength.strength >= level
-                            ? passwordStrength.strength <= 2
-                              ? "bg-red-500"
-                              : passwordStrength.strength <= 3
-                                ? "bg-yellow-500"
-                                : "bg-green-500"
-                            : "bg-gray-200"
-                            }`}
+                          className={`flex-1 h-1 rounded-full ${
+                            passwordStrength.strength >= level
+                              ? passwordStrength.strength <= 2
+                                ? "bg-red-500"
+                                : passwordStrength.strength <= 3
+                                  ? "bg-yellow-500"
+                                  : "bg-green-500"
+                              : "bg-gray-200"
+                          }`}
                         />
                       ))}
                     </div>
@@ -524,7 +525,7 @@ export function PenyuluhForm() {
                       </div>
                       <div className="flex items-center gap-1">
                         {passwordStrength.checks.uppercase &&
-                          passwordStrength.checks.lowercase ? (
+                        passwordStrength.checks.lowercase ? (
                           <FiCheck className="text-green-500" size={12} />
                         ) : (
                           <FiX className="text-red-500" size={12} />
@@ -873,8 +874,7 @@ export function PenyuluhForm() {
           color="success"
           isSelected={privacyAccepted}
           onValueChange={setPrivacyAccepted}
-        >
-        </Checkbox>
+        />
         <span className="text-sm text-gray-600">
           Saya menyetujui{" "}
           <span

@@ -54,14 +54,14 @@ import { PERMISSIONS, ROLES } from "./helpers/RoleHelper/roleHelpers";
 import { InformasiOperator } from "./features/DashboardAdmin/features/Operator/page/InformasiOperator";
 import { CreateOperator } from "./features/DashboardAdmin/features/Operator/page/CreateOperator";
 import { EditOperator } from "./features/DashboardAdmin/features/Operator/page/EditOperator";
-
-import HomePage from "@/features/Home/page/HomePage";
-import SearchPage from "@/features/Search/page/SearchPage";
 import RegisterPage from "./features/Register/page/RegisterPage";
 import { ProfilePage } from "./features/Profile/page/ProfilePage";
 import { PrivacyPolicyPage } from "./features/Legal/pages/PrivacyPolicyPage";
 import { DeleteAccountPage } from "./features/Legal/pages/DeleteAccountPage";
 import { DeleteAccountView } from "./features/Legal/components/DeleteAccountView";
+
+import SearchPage from "@/features/Search/page/SearchPage";
+import HomePage from "@/features/Home/page/HomePage";
 
 function App() {
   // const { user } = useAuth();

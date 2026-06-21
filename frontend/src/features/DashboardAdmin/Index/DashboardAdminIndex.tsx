@@ -231,13 +231,13 @@ export const DashboardAdminIndex = () => {
           classNames={{
             control: () => "w-full px-1 py-1 border border-gray-300 rounded",
           }}
-          options={poktanOptions}
           isLoading={isPotkanLoading}
           noOptionsMessage={({ inputValue }) =>
             inputValue
               ? `Tidak ada hasil untuk "${inputValue}"`
               : "Data Poktan tidak ditemukan"
           }
+          options={poktanOptions}
           placeholder="Pilih atau cari poktan..."
           value={selectedOption}
           onChange={handlePoktanChange}
