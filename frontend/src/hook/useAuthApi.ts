@@ -206,17 +206,20 @@ const registerPenyuluh = async (data: CreatePenyuluhData): Promise<any> => {
       "Create penyuluh error:",
       error.response?.data || error.message,
     );
-    throw new Error(
-      error.response?.data?.message || "Failed to create penyuluh",
-    );
+    throw error;
   }
 };
 
 export const useRegisterPenyuluh = () => {
   return useMutation({
     mutationFn: registerPenyuluh,
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error creating penyuluh:", error);
+      const errorMessage =
+        error?.response?.data?.message || "Terjadi kesalahan saat mendaftar";
+      toast.error("Pendaftaran gagal!", {
+        description: errorMessage,
+      });
     },
     onSuccess: () => {
       toast.success(

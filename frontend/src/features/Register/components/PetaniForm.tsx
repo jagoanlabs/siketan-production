@@ -281,7 +281,47 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
       submitData.append("foto", selectedFile);
     }
 
-    petaniRegisterMutation.mutate(submitData);
+    petaniRegisterMutation.mutate(submitData, {
+      onError: (error: any) => {
+        const message = error?.response?.data?.message || error?.message || "";
+        console.error("Petani register error:", message);
+
+        const newErrors: Record<string, string> = {};
+        const lowerMessage = message.toLowerCase();
+
+        if (lowerMessage.includes("nik")) {
+          newErrors.NIK = message;
+        } else if (lowerMessage.includes("nkk")) {
+          newErrors.NKK = message;
+        } else if (lowerMessage.includes("email")) {
+          newErrors.email = message;
+        } else if (lowerMessage.includes("nama")) {
+          newErrors.nama = message;
+        } else if (
+          lowerMessage.includes("no wa") ||
+          lowerMessage.includes("wa") ||
+          lowerMessage.includes("whatsapp") ||
+          lowerMessage.includes("telp") ||
+          lowerMessage.includes("telepon")
+        ) {
+          newErrors.NoWa = message;
+        } else if (lowerMessage.includes("alamat")) {
+          newErrors.alamat = message;
+        } else if (lowerMessage.includes("password")) {
+          newErrors.password = message;
+        } else if (lowerMessage.includes("kecamatan")) {
+          newErrors.kecamatan = message;
+        } else if (lowerMessage.includes("desa")) {
+          newErrors.desa = message;
+        } else if (lowerMessage.includes("penyuluh")) {
+          newErrors.penyuluh = message;
+        } else if (lowerMessage.includes("kelompok")) {
+          newErrors.namaKelompok = message;
+        }
+
+        setErrors(newErrors);
+      }
+    });
   };
 
   const handleInputChange = (field: string, value: string | number) => {
@@ -356,7 +396,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* NIK */}
               <Input
-                required
+                isRequired
                 className="mb-4"
                 classNames={{
                   label: "font-semibold text-sm",
@@ -400,7 +440,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
 
             {/* Nama Lengkap */}
             <Input
-              required
+              isRequired
               classNames={{
                 label: "font-semibold text-sm",
                 inputWrapper: `px-4 py-3 border-1 ${errors.nama ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -419,7 +459,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* No WhatsApp */}
               <Input
-                required
+                isRequired
                 classNames={{
                   label: "font-semibold text-sm",
                   inputWrapper: `px-4 py-3 border-1 ${errors.NoWa ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -458,7 +498,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Password */}
               <Input
-                required
+                isRequired
                 classNames={{
                   label: "font-semibold text-sm",
                   inputWrapper: `px-4 py-3 border-1 ${errors.password ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -489,7 +529,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
 
               {/* Confirm Password */}
               <Input
-                required
+                isRequired
                 classNames={{
                   label: "font-semibold text-sm",
                   inputWrapper: `px-4 py-3 border-1 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -615,7 +655,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
         <div className="space-y-4">
           {/* Alamat */}
           <Textarea
-            required
+            isRequired
             classNames={{
               label: "font-semibold text-sm",
               inputWrapper: `px-4 py-3 border-1 ${errors.alamat ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -638,8 +678,10 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 Kecamatan *
               </p>
               <Select
+                isInvalid={!!errors.kecamatan}
+                errorMessage={errors.kecamatan}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.kecamatan ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 isLoading={loadingKecamatan}
                 placeholder="Pilih kecamatan"
@@ -659,9 +701,6 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                   </SelectItem>
                 )) || []}
               </Select>
-              {errors.kecamatan && (
-                <p className="text-xs text-red-500 mt-1">{errors.kecamatan}</p>
-              )}
             </div>
 
             {/* Desa */}
@@ -670,8 +709,10 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 Desa *
               </p>
               <Select
+                isInvalid={!!errors.desa}
+                errorMessage={errors.desa}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.desa ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 isDisabled={!petaniForm.kecamatan}
                 isLoading={loadingDesa}
@@ -692,9 +733,6 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                   </SelectItem>
                 )) || []}
               </Select>
-              {errors.desa && (
-                <p className="text-xs text-red-500 mt-1">{errors.desa}</p>
-              )}
             </div>
           </div>
         </div>
@@ -713,8 +751,10 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               Penyuluh *
             </p>
             <Select
+              isInvalid={!!errors.penyuluh}
+              errorMessage={errors.penyuluh}
               classNames={{
-                trigger: `px-4 py-3 border-1 ${errors.penyuluh ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
               }}
               isLoading={loadingPenyuluh}
               placeholder="Pilih penyuluh"
@@ -741,9 +781,6 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 </SelectItem>
               )) || []}
             </Select>
-            {errors.penyuluh && (
-              <p className="text-xs text-red-500 mt-1">{errors.penyuluh}</p>
-            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -775,8 +812,10 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 Nama Kelompok Tani *
               </p>
               <Select
+                isInvalid={!!errors.namaKelompok}
+                errorMessage={errors.namaKelompok}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.namaKelompok ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 isDisabled={
                   !kelompokTaniData?.kelompokTani ||
@@ -816,11 +855,6 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                   </SelectItem>
                 )) || []}
               </Select>
-              {errors.namaKelompok && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.namaKelompok}
-                </p>
-              )}
             </div>
           </div>
         </div>

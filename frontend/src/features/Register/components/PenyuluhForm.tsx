@@ -175,6 +175,7 @@ export function PenyuluhForm() {
         desaId: null,
         desa: "",
       }));
+      setErrors((prev) => ({ ...prev, kecamatan: "" }));
     }
   };
 
@@ -188,6 +189,7 @@ export function PenyuluhForm() {
         desaId: selectedDesa.id,
         desa: selectedDesa.nama,
       }));
+      setErrors((prev) => ({ ...prev, desa: "" }));
     }
   };
 
@@ -205,6 +207,7 @@ export function PenyuluhForm() {
         desaBinaan: [],
         selectedKelompokIds: [],
       }));
+      setErrors((prev) => ({ ...prev, kecamatanBinaan: "" }));
     }
   };
 
@@ -322,6 +325,43 @@ export function PenyuluhForm() {
           navigate("/login");
         }, 2000);
       },
+      onError: (error: any) => {
+        const message = error?.response?.data?.message || error?.message || "";
+        console.error("Penyuluh register error:", message);
+
+        const newErrors: Record<string, string> = {};
+        const lowerMessage = message.toLowerCase();
+
+        if (lowerMessage.includes("nip") || lowerMessage.includes("nik")) {
+          newErrors.NIP = message;
+        } else if (lowerMessage.includes("email")) {
+          newErrors.email = message;
+        } else if (lowerMessage.includes("nama")) {
+          newErrors.nama = message;
+        } else if (
+          lowerMessage.includes("no wa") ||
+          lowerMessage.includes("wa") ||
+          lowerMessage.includes("whatsapp") ||
+          lowerMessage.includes("telp") ||
+          lowerMessage.includes("telepon")
+        ) {
+          newErrors.NoWa = message;
+        } else if (lowerMessage.includes("alamat")) {
+          newErrors.alamat = message;
+        } else if (lowerMessage.includes("password")) {
+          newErrors.password = message;
+        } else if (lowerMessage.includes("kecamatan")) {
+          newErrors.kecamatan = message;
+        } else if (lowerMessage.includes("desa")) {
+          newErrors.desa = message;
+        } else if (lowerMessage.includes("tipe")) {
+          newErrors.tipe = message;
+        } else if (lowerMessage.includes("kelompok")) {
+          newErrors.selectedKelompokIds = message;
+        }
+
+        setErrors(newErrors);
+      }
     });
   };
 
@@ -389,7 +429,7 @@ export function PenyuluhForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* NIP */}
               <Input
-                required
+                isRequired
                 classNames={{
                   label: "font-semibold text-sm",
                   inputWrapper: `px-4 py-3 border-1 ${errors.NIP ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -406,7 +446,7 @@ export function PenyuluhForm() {
 
               {/* Nama Lengkap */}
               <Input
-                required
+                isRequired
                 classNames={{
                   label: "font-semibold text-sm",
                   inputWrapper: `px-4 py-3 border-1 ${errors.nama ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -425,7 +465,7 @@ export function PenyuluhForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Email */}
               <Input
-                required
+                isRequired
                 classNames={{
                   label: "font-semibold text-sm",
                   inputWrapper: `px-4 py-3 border-1 ${errors.email ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -443,7 +483,7 @@ export function PenyuluhForm() {
 
               {/* WhatsApp */}
               <Input
-                required
+                isRequired
                 classNames={{
                   label: "font-semibold text-sm",
                   inputWrapper: `px-4 py-3 border-1 ${errors.NoWa ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -464,7 +504,7 @@ export function PenyuluhForm() {
               {/* Password */}
               <div>
                 <Input
-                  required
+                  isRequired
                   classNames={{
                     label: "font-semibold text-sm",
                     inputWrapper: `px-4 py-3 border-1 ${errors.password ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -546,7 +586,7 @@ export function PenyuluhForm() {
 
               {/* Confirm Password */}
               <Input
-                required
+                isRequired
                 classNames={{
                   label: "font-semibold text-sm",
                   inputWrapper: `px-4 py-3 border-1 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -584,8 +624,10 @@ export function PenyuluhForm() {
                 Tipe Penyuluh *
               </p>
               <Select
+                isInvalid={!!errors.tipe}
+                errorMessage={errors.tipe}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.tipe ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 placeholder="Pilih tipe penyuluh"
                 selectedKeys={formData.tipe ? [formData.tipe] : []}
@@ -603,14 +645,11 @@ export function PenyuluhForm() {
                   Swadaya
                 </SelectItem>
               </Select>
-              {errors.tipe && (
-                <p className="text-xs text-red-500 mt-1">{errors.tipe}</p>
-              )}
             </div>
 
             {/* Alamat */}
             <Textarea
-              required
+              isRequired
               classNames={{
                 label: "font-semibold text-sm",
                 inputWrapper: `px-4 py-3 border-1 ${errors.alamat ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
@@ -641,8 +680,10 @@ export function PenyuluhForm() {
                 Kecamatan *
               </p>
               <Select
+                isInvalid={!!errors.kecamatan}
+                errorMessage={errors.kecamatan}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.kecamatan ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 isLoading={loadingKecamatan}
                 placeholder="Pilih kecamatan"
@@ -662,9 +703,6 @@ export function PenyuluhForm() {
                   </SelectItem>
                 ))}
               </Select>
-              {errors.kecamatan && (
-                <p className="text-xs text-red-500 mt-1">{errors.kecamatan}</p>
-              )}
             </div>
 
             {/* Desa */}
@@ -673,8 +711,10 @@ export function PenyuluhForm() {
                 Desa *
               </p>
               <Select
+                isInvalid={!!errors.desa}
+                errorMessage={errors.desa}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.desa ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 isDisabled={!formData.kecamatanId}
                 isLoading={loadingDesa}
@@ -697,9 +737,6 @@ export function PenyuluhForm() {
                   </SelectItem>
                 ))}
               </Select>
-              {errors.desa && (
-                <p className="text-xs text-red-500 mt-1">{errors.desa}</p>
-              )}
             </div>
           </div>
         </div>
@@ -717,8 +754,10 @@ export function PenyuluhForm() {
                 Kecamatan Binaan *
               </p>
               <Select
+                isInvalid={!!errors.kecamatanBinaan}
+                errorMessage={errors.kecamatanBinaan}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.kecamatanBinaan ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 isLoading={loadingKecamatan}
                 placeholder="Pilih kecamatan binaan"
@@ -740,11 +779,6 @@ export function PenyuluhForm() {
                   </SelectItem>
                 ))}
               </Select>
-              {errors.kecamatanBinaan && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.kecamatanBinaan}
-                </p>
-              )}
             </div>
 
             {/* Desa Binaan - Multiple Select */}
@@ -753,8 +787,10 @@ export function PenyuluhForm() {
                 Desa Wilayah Binaan *
               </p>
               <Select
+                isInvalid={!!errors.desaBinaan}
+                errorMessage={errors.desaBinaan}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.desaBinaan ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 isDisabled={!formData.kecamatanBinaanId}
                 isLoading={loadingDesaBinaan}
@@ -789,9 +825,6 @@ export function PenyuluhForm() {
                   </SelectItem>
                 ))}
               </Select>
-              {errors.desaBinaan && (
-                <p className="text-xs text-red-500 mt-1">{errors.desaBinaan}</p>
-              )}
             </div>
 
             {/* Kelompok Binaan - Multiple Select */}
@@ -800,8 +833,10 @@ export function PenyuluhForm() {
                 Kelompok Tani Binaan *
               </p>
               <Select
+                isInvalid={!!errors.selectedKelompokIds}
+                errorMessage={errors.selectedKelompokIds}
                 classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.selectedKelompokIds ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
+                  trigger: `px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500`,
                 }}
                 isDisabled={!formData.kecamatanBinaanId}
                 isLoading={loadingKelompok}
@@ -842,11 +877,6 @@ export function PenyuluhForm() {
                   </SelectItem>
                 ))}
               </Select>
-              {errors.selectedKelompokIds && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.selectedKelompokIds}
-                </p>
-              )}
             </div>
 
             {/* Nama Produk */}
