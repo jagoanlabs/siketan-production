@@ -1,5 +1,4 @@
 import type { PetaniOption } from "@/types/DataPertanian/createDataTanaman.d";
-
 import { useNavigate } from "react-router-dom";
 import AsyncSelect from "react-select/async";
 import { Button } from "@heroui/button";
@@ -20,6 +19,8 @@ export const CreateTanamanPage = () => {
     errors,
     selectedPetani,
     isPetaniLoading,
+    user,
+    isPetani,
 
     // Options
     statusKepemilikanOptions,
@@ -97,59 +98,72 @@ export const CreateTanamanPage = () => {
                 </CardHeader>
                 <CardBody className="space-y-4">
                   {/* Petani Select Filter */}
-                  <div className="mb-4">
-                    <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Pilih Petani <span className="text-red-500">*</span>
-                    </p>
-                    <AsyncSelect
-                      cacheOptions
-                      isClearable
-                      className=""
-                      classNames={{
-                        control: () =>
-                          "w-full px-1 py-2 border border-gray-300 rounded",
-                      }}
-                      // Tambahkan styles untuk z-index yang lebih tinggi
-                      formatOptionLabel={(option: PetaniOption) => (
-                        <div className="flex flex-col">
-                          <span className="font-medium">{option.nama}</span>
-                          <span className="text-sm text-gray-500">
-                            NIK: {option.nik} | {option.desa},{" "}
-                            {option.kecamatan}
-                          </span>
+                  {!isPetani() ? (
+                    <div className="mb-4">
+                      <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Pilih Petani <span className="text-red-500">*</span>
+                      </p>
+                      <AsyncSelect
+                        cacheOptions
+                        isClearable
+                        className=""
+                        classNames={{
+                          control: () =>
+                            "w-full px-1 py-2 border border-gray-300 rounded",
+                        }}
+                        // Tambahkan styles untuk z-index yang lebih tinggi
+                        formatOptionLabel={(option: PetaniOption) => (
+                          <div className="flex flex-col">
+                            <span className="font-medium">{option.nama}</span>
+                            <span className="text-sm text-gray-500">
+                              NIK: {option.nik} | {option.desa},{" "}
+                              {option.kecamatan}
+                            </span>
+                          </div>
+                        )}
+                        isLoading={isPetaniLoading}
+                        loadOptions={loadPetaniOptions}
+                        menuPortalTarget={document.body}
+                        menuPosition="fixed"
+                        menuShouldScrollIntoView={false}
+                        noOptionsMessage={({ inputValue }) =>
+                          inputValue
+                            ? `Tidak ada hasil untuk "${inputValue}"`
+                            : "Ketik NIK untuk mencari..."
+                        }
+                        placeholder="Pilih atau cari petani..."
+                        styles={{
+                          menuPortal: (base) => ({
+                            ...base,
+                            zIndex: 9999,
+                          }),
+                          menu: (base) => ({
+                            ...base,
+                            zIndex: 9999,
+                          }),
+                        }}
+                        value={selectedPetani}
+                        onChange={handlePetaniChange}
+                      />
+
+                      {errors.fk_petaniId && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {errors.fk_petaniId}
                         </div>
                       )}
-                      isLoading={isPetaniLoading}
-                      loadOptions={loadPetaniOptions}
-                      menuPortalTarget={document.body}
-                      menuPosition="fixed"
-                      menuShouldScrollIntoView={false}
-                      noOptionsMessage={({ inputValue }) =>
-                        inputValue
-                          ? `Tidak ada hasil untuk "${inputValue}"`
-                          : "Ketik NIK untuk mencari..."
-                      }
-                      placeholder="Pilih atau cari petani..."
-                      styles={{
-                        menuPortal: (base) => ({
-                          ...base,
-                          zIndex: 9999,
-                        }),
-                        menu: (base) => ({
-                          ...base,
-                          zIndex: 9999,
-                        }),
-                      }}
-                      value={selectedPetani}
-                      onChange={handlePetaniChange}
-                    />
-
-                    {errors.fk_petaniId && (
-                      <div className="text-red-500 text-sm mt-1">
-                        {errors.fk_petaniId}
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="mb-4">
+                      <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Nama Petani
+                      </p>
+                      <Input
+                        disabled
+                        value={user?.nama || ""}
+                        variant="bordered"
+                      />
+                    </div>
+                  )}
                 </CardBody>
               </Card>
 
@@ -163,6 +177,12 @@ export const CreateTanamanPage = () => {
                 <CardBody className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Select
+                      popoverProps={{
+                        placement: "bottom",
+                      }}
+                      listboxProps={{
+                        style: { maxHeight: "200px", overflowY: "auto" },
+                      }}
                       isRequired
                       errorMessage={errors.statusKepemilikanLahan}
                       isInvalid={!!errors.statusKepemilikanLahan}
@@ -213,6 +233,12 @@ export const CreateTanamanPage = () => {
                 <CardBody className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Select
+                      popoverProps={{
+                        placement: "bottom",
+                      }}
+                      listboxProps={{
+                        style: { maxHeight: "200px", overflowY: "auto" },
+                      }}
                       isRequired
                       errorMessage={errors.kategori}
                       isInvalid={!!errors.kategori}
@@ -235,6 +261,12 @@ export const CreateTanamanPage = () => {
                     </Select>
 
                     <Select
+                      popoverProps={{
+                        placement: "bottom",
+                      }}
+                      listboxProps={{
+                        style: { maxHeight: "200px", overflowY: "auto" },
+                      }}
                       isRequired
                       errorMessage={errors.jenis}
                       isInvalid={!!errors.jenis}
@@ -280,6 +312,12 @@ export const CreateTanamanPage = () => {
                 <CardBody className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Select
+                      popoverProps={{
+                        placement: "bottom",
+                      }}
+                      listboxProps={{
+                        style: { maxHeight: "200px", overflowY: "auto" },
+                      }}
                       isRequired
                       errorMessage={errors.periodeMusimTanam}
                       isInvalid={!!errors.periodeMusimTanam}
@@ -304,6 +342,12 @@ export const CreateTanamanPage = () => {
                     </Select>
 
                     <Select
+                      popoverProps={{
+                        placement: "bottom",
+                      }}
+                      listboxProps={{
+                        style: { maxHeight: "200px", overflowY: "auto" },
+                      }}
                       isRequired
                       errorMessage={errors.periodeBulanTanam}
                       isInvalid={!!errors.periodeBulanTanam}
@@ -374,6 +418,12 @@ export const CreateTanamanPage = () => {
                     />
 
                     <Select
+                      popoverProps={{
+                        placement: "bottom",
+                      }}
+                      listboxProps={{
+                        style: { maxHeight: "200px", overflowY: "auto" },
+                      }}
                       isRequired
                       errorMessage={errors.prakiraanBulanPanen}
                       isInvalid={!!errors.prakiraanBulanPanen}
@@ -399,7 +449,36 @@ export const CreateTanamanPage = () => {
                   </div>
                 </CardBody>
               </Card>
+
+              {/* Catatan Tambahan & Spacer */}
+              <Card className="bg-emerald-50/50 border-emerald-100 border mt-4 md:mb-32" shadow="none">
+                <CardBody className="p-4 text-sm">
+                  <div className="flex gap-2.5 text-emerald-800">
+                    <svg
+                      className="w-5 h-5 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                    <div>
+                      <p className="font-semibold text-emerald-900">Informasi Pengisian:</p>
+                      <p className="text-xs mt-1 text-emerald-700 leading-relaxed">
+                        Data tanaman yang disimpan akan masuk ke dalam rekapitulasi pertanian. Mohon pastikan data perkiraan panen diisi selaras dengan kondisi riil lahan.
+                      </p>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
             </div>
+
+
 
             {/* Right Sidebar */}
             <div className="space-y-6">

@@ -4,22 +4,23 @@ import type {
   PetaniData,
   SelectOption,
   CreateTanamanFormData,
-  UseCreateDataTanamanReturn,
 } from "@/types/DataPertanian/createDataTanaman.d";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { axiosClient } from "@/service/app-service";
+import { useAuth } from "@/hook/UseAuth";
 import {
   createTanaman,
   type CreateTanamanData,
 } from "@/service/DashboardAdmin/tanaman/tanaman-service";
 
-export const useCreateDataTanaman = (): UseCreateDataTanamanReturn => {
+export const useCreateDataTanaman = () => {
   const navigate = useNavigate();
+  const { user, isPetani } = useAuth();
 
   // Form State
   const [formData, setFormData] = useState<CreateTanamanFormData>({
@@ -33,8 +34,19 @@ export const useCreateDataTanaman = (): UseCreateDataTanamanReturn => {
     prakiraanLuasPanen: 0,
     prakiraanProduksiPanen: 0,
     prakiraanBulanPanen: "",
-    fk_petaniId: 0,
+    fk_petaniId: isPetani() ? (user?.petani?.id || 0) : 0,
   });
+
+  // Automatically update fk_petaniId when user loads (useful for farmers)
+  useEffect(() => {
+    if (isPetani() && user && user.petani) {
+      const petaniId = user.petani.id;
+      setFormData((prev) => ({
+        ...prev,
+        fk_petaniId: petaniId,
+      }));
+    }
+  }, [user, isPetani]);
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [selectedPetani, setSelectedPetani] = useState<PetaniOption | null>(
@@ -251,6 +263,8 @@ export const useCreateDataTanaman = (): UseCreateDataTanamanReturn => {
     errors,
     selectedPetani,
     isPetaniLoading,
+    user,
+    isPetani,
 
     // Options
     statusKepemilikanOptions,

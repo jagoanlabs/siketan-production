@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Button } from "@heroui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 import { GoHomeFill } from "react-icons/go";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 import { assets } from "@/assets/assets";
 import { useLogin } from "@/hook/useAuthApi";
-// import { usePetaniLogin } from "@/hook/usePetaniAuth";
+import { usePetaniLogin } from "@/hook/usePetaniAuth";
 
 type RoleType = {
   key: string;
@@ -21,15 +22,15 @@ export const role: RoleType[] = [
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  // const [selectedRole, setSelectedRole] = useState<string>("penyuluh");
+  const [selectedRole, setSelectedRole] = useState<string>("penyuluh");
 
   // Penyuluh login states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   // Petani login states
-  // const [nik, setNik] = useState("");
-  // const [petaniPassword, setPetaniPassword] = useState("");
+  const [nik, setNik] = useState("");
+  const [petaniPassword, setPetaniPassword] = useState("");
 
   // Common states
   const [error, setError] = useState("");
@@ -38,30 +39,29 @@ export default function LoginPage() {
 
   // Hooks
   const loginMutation = useLogin();
-  // const petaniLoginMutation = usePetaniLogin();
+  const petaniLoginMutation = usePetaniLogin();
 
   // Check if Petani is selected
-  // const isPetaniSelected = selectedRole === "petani";
-  // Check if Petani is selected
+  const isPetaniSelected = selectedRole === "petani";
 
-  // const handlePetaniLogin = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
+  const handlePetaniLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-  //   petaniLoginMutation.mutate(
-  //     { NIK: nik, password: petaniPassword },
-  //     {
-  //       onError: (err: any) => {
-  //         setError(
-  //           err?.response?.data?.message || "Terjadi kesalahan saat login",
-  //         );
-  //       },
-  //       onSettled: () => {
-  //         setIsLoading(false);
-  //       },
-  //     },
-  //   );
-  // };
+    petaniLoginMutation.mutate(
+      { NIK: nik, password: petaniPassword },
+      {
+        onError: (err: any) => {
+          setError(
+            err?.response?.data?.message || "Terjadi kesalahan saat login",
+          );
+        },
+        onSettled: () => {
+          setIsLoading(false);
+        },
+      },
+    );
+  };
 
   const handlePenyuluhLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,18 +86,18 @@ export default function LoginPage() {
   };
 
   // Handle role change
-  // const handleRoleChange = (keys: any) => {
-  //   const key = Array.from(keys)[0] as string;
+  const handleRoleChange = (keys: any) => {
+    const key = Array.from(keys)[0] as string;
 
-  //   setSelectedRole(key);
-  //   setError(""); // Clear error when switching roles
+    setSelectedRole(key);
+    setError(""); // Clear error when switching roles
 
-  //   // Reset form fields
-  //   setEmail("");
-  //   setPassword("");
-  //   setNik("");
-  //   setPetaniPassword("");
-  // };
+    // Reset form fields
+    setEmail("");
+    setPassword("");
+    setNik("");
+    setPetaniPassword("");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D9EAF2] to-[#E8F3FA] flex items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -154,7 +154,7 @@ export default function LoginPage() {
             </div>
 
             {/* Role Selector */}
-            {/* <div className="flex items-center gap-2 justify-center sm:justify-end">
+            <div className="flex items-center gap-2 justify-center sm:justify-end">
               <span className="text-xs sm:text-sm text-gray-600 text-nowrap">
                 Masuk sebagai
               </span>
@@ -181,36 +181,35 @@ export default function LoginPage() {
                   </SelectItem>
                 ))}
               </Select>
-            </div> */}
+            </div>
           </div>
 
           {/* Login Form or Coming Soon */}
-          <div className="flex flex-col items-center mt-[30%]  h-full">
-            {/* Coming Soon Message for Petani */}
-            {/* {isPetaniSelected ? ( */}
-              {/* <form
+          <div className="flex flex-col items-center mt-[15%] h-full">
+            {isPetaniSelected ? (
+              <form
                 className="w-full lg:w-10/12 xl:w-9/12"
                 onSubmit={handlePetaniLogin}
               >
-                Form Title
+                {/* Form Title */}
                 <div className="flex items-center justify-between pb-6 lg:pb-8">
                   <div>
                     <h2 className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-gray-800">
                       Login Siketan Ngawi
                     </h2>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                      Selamat datang kembali, Penyuluh!
+                      Selamat datang kembali, Petani!
                     </p>
                   </div>
                   <Link className="hover:scale-110 transition-transform" to="/">
                     <GoHomeFill
-                      className="text-blue-500 hover:text-blue-600"
+                      className="text-green-500 hover:text-green-600"
                       size={24}
                     />
                   </Link>
                 </div>
 
-                NIK Input
+                {/* NIK Input */}
                 <div className="mb-6 lg:mb-5 pb-6 lg:pb-5">
                   <Input
                     required
@@ -238,7 +237,7 @@ export default function LoginPage() {
                   />
                 </div>
 
-                Password Input
+                {/* Password Input */}
                 <div className="mb-2">
                   <Input
                     required
@@ -278,32 +277,16 @@ export default function LoginPage() {
                   />
                 </div>
 
-                Error Message
+                {/* Error Message */}
                 {error && (
                   <div className="mb-4 p-3 text-xs sm:text-sm text-red-600 bg-red-50 rounded-lg">
                     {error}
                   </div>
                 )}
 
-                Links
-                <div className="flex items-center justify-between mt-4 mb-6 text-xs sm:text-sm">
-                  <Link
-                    className="text-gray-500 hover:text-gray-700 transition-colors"
-                    to="/petani/register"
-                  >
-                    Belum punya akun?
-                  </Link>
-                  <Link
-                    className="text-green-600 hover:text-green-700 hover:underline transition-colors"
-                    to="/petani/forgot-password"
-                  >
-                    Lupa Password?
-                  </Link>
-                </div>
-
-                Submit Button
+                {/* Submit Button */}
                 <Button
-                  className="w-full py-5 sm:py-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="w-full py-5 sm:py-6 mt-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl"
                   isDisabled={
                     !nik || !petaniPassword || isLoading || nik.length !== 16
                   }
@@ -313,15 +296,15 @@ export default function LoginPage() {
                   {isLoading ? "Sedang Masuk..." : "LOGIN"}
                 </Button>
 
-                NIK validation helper
+                {/* NIK validation helper */}
                 {nik && nik.length > 0 && nik.length !== 16 && (
                   <p className="mt-2 text-xs text-green-600">
                     NIK harus terdiri dari 16 digit
                   </p>
                 )}
-              </form> */}
-            {/* ) : ( */}
-              {/* /* Regular Login Form for Penyuluh */}
+              </form>
+            ) : (
+              /* Regular Login Form for Penyuluh */
               <form
                 className="w-full lg:w-10/12 xl:w-9/12"
                 onSubmit={handlePenyuluhLogin}
@@ -412,22 +395,6 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                {/* Links */}
-                {/* <div className="flex items-center justify-between mt-4 mb-6 text-xs sm:text-sm">
-                  <Link
-                    className="text-gray-500 hover:text-gray-700 transition-colors"
-                    to="/register"
-                  >
-                    Buat akun baru
-                  </Link>
-                  <Link
-                    className="text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                    to="/forgot-password"
-                  >
-                    Lupa Password?
-                  </Link>
-                </div> */}
-
                 {/* Submit Button */}
                 <Button
                   className="w-full py-5 sm:py-6 mt-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -438,7 +405,7 @@ export default function LoginPage() {
                   {isLoading ? "Sedang Masuk..." : "LOGIN"}
                 </Button>
               </form>
-            {/* )} */}
+            )}
           </div>
         </div>
       </div>

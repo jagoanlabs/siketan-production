@@ -13,6 +13,15 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   role: Role;
+  petani?: {
+    id: number;
+    nama: string;
+    nik: string;
+    alamat: string;
+    desa: string;
+    kecamatan: string;
+    [key: string]: any;
+  };
 }
 
 export interface Role {

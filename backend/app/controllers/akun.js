@@ -460,6 +460,10 @@ const loginPetani = async (req, res) => {
                 required: false
               }
             ]
+          },
+          {
+            model: dataPetani,
+            as: 'petani'
           }
         ]
       });
@@ -652,7 +656,8 @@ const registerPetani = async (req, res) => {
       peran: 'petani',
       foto: urlImg,
       accountID: accountID,
-      role_id: role.id
+      role_id: role.id,
+      isVerified: true
     });
 
     let kecamatanData;
@@ -715,9 +720,31 @@ const registerPetani = async (req, res) => {
       detail_id: newUser.id
     });
 
+    const userWithRelations = await tblAkun.findOne({
+      where: { id: newUser.id },
+      include: [
+        {
+          model: roleModel,
+          as: 'role',
+          include: [
+            {
+              model: permissionModel,
+              as: 'permissions',
+              where: { is_active: true },
+              required: false
+            }
+          ]
+        },
+        {
+          model: dataPetani,
+          as: 'petani'
+        }
+      ]
+    });
+
     res.status(200).json({
       message: 'Berhasil Registrasi Silahkan Login',
-      user: daftarTani,
+      user: userWithRelations,
       token
     });
   } catch (error) {

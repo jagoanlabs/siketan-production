@@ -46,12 +46,42 @@ module.exports = (sequelize, DataTypes) => {
 
     // Basic permission checking
     hasPermission(permissionName) {
+      if (this.isPetani()) {
+        const allowedPetaniPermissions = [
+          'profile_user_detail',
+          'profile_user_edit',
+          'isi_form_create',
+          'isi_form_detail',
+          'dashboard_index',
+          'tanaman_petani_index',
+          'tanaman_petani_create',
+          'tanaman_petani_detail',
+          'tanaman_petani_edit'
+        ];
+        return allowedPetaniPermissions.includes(permissionName);
+      }
       if (!this.role || !this.role.permissions) return false;
       return this.role.permissions.some((permission) => permission.name === permissionName);
     }
 
     // Multiple permissions checking (OR logic)
     hasAnyPermission(permissionNames) {
+      if (this.isPetani()) {
+        const allowedPetaniPermissions = [
+          'profile_user_detail',
+          'profile_user_edit',
+          'isi_form_create',
+          'isi_form_detail',
+          'dashboard_index',
+          'tanaman_petani_index',
+          'tanaman_petani_create',
+          'tanaman_petani_detail',
+          'tanaman_petani_edit'
+        ];
+        return permissionNames.some((permissionName) =>
+          allowedPetaniPermissions.includes(permissionName)
+        );
+      }
       if (!this.role || !this.role.permissions) return false;
       return permissionNames.some((permissionName) =>
         this.role.permissions.some((permission) => permission.name === permissionName)
@@ -60,6 +90,22 @@ module.exports = (sequelize, DataTypes) => {
 
     // Check all permissions (AND logic)
     hasAllPermissions(permissionNames) {
+      if (this.isPetani()) {
+        const allowedPetaniPermissions = [
+          'profile_user_detail',
+          'profile_user_edit',
+          'isi_form_create',
+          'isi_form_detail',
+          'dashboard_index',
+          'tanaman_petani_index',
+          'tanaman_petani_create',
+          'tanaman_petani_detail',
+          'tanaman_petani_edit'
+        ];
+        return permissionNames.every((permissionName) =>
+          allowedPetaniPermissions.includes(permissionName)
+        );
+      }
       if (!this.role || !this.role.permissions) return false;
       return permissionNames.every((permissionName) =>
         this.role.permissions.some((permission) => permission.name === permissionName)

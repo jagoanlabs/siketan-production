@@ -140,6 +140,7 @@ function App() {
                 ROLES.OPERATOR_POKTAN,
                 ROLES.PENYULUH,
                 ROLES.PENYULUH_SWADAYA,
+                ROLES.PETANI,
               ]}
             />
           }
@@ -157,6 +158,10 @@ function App() {
               <Route
                 element={<DashboardAdminIndex />}
                 path="/dashboard-admin"
+              />
+              <Route
+                element={<DashboardAdminIndex />}
+                path="/dashboard"
               />
             </Route>
 
@@ -230,6 +235,11 @@ function App() {
             <Route
               element={<ProfileDashboard />}
               path="/dashboard-admin/profile"
+            />
+
+            <Route
+              element={<ProfileDashboard />}
+              path="/dashboard/profile"
             />
 
             <Route
@@ -367,6 +377,10 @@ function App() {
                 element={<DataTanamanPage />}
                 path="/dashboard-admin/data-tanaman"
               />
+              <Route
+                element={<DataTanamanPage />}
+                path="/dashboard/data-tanaman"
+              />
             </Route>
             {/* Create Data Tanaman */}
             <Route
@@ -380,6 +394,10 @@ function App() {
                 element={<CreateTanamanPage />}
                 path="/dashboard-admin/data-tanaman/create"
               />
+              <Route
+                element={<CreateTanamanPage />}
+                path="/dashboard/data-tanaman/create"
+              />
             </Route>
             {/* Edit Data Tanaman */}
             <Route
@@ -392,6 +410,10 @@ function App() {
               <Route
                 element={<EditTanamanPage />}
                 path="/dashboard-admin/data-tanaman/edit/:id"
+              />
+              <Route
+                element={<EditTanamanPage />}
+                path="/dashboard/data-tanaman/edit/:id"
               />
             </Route>
             {/* Data Petani */}

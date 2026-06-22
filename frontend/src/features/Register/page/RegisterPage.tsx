@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Select, SelectItem } from "@heroui/select";
 
 import { PenyuluhForm } from "../components/PenyuluhForm";
-
+import { PetaniForm } from "../components/PetaniForm";
 import { assets } from "@/assets/assets";
 
 type RoleType = {
@@ -15,10 +17,10 @@ export const role: RoleType[] = [
 ];
 
 export default function RegisterPage() {
-  // const [selectedRole, setSelectedRole] = useState<string>("penyuluh");
+  const [selectedRole, setSelectedRole] = useState<string>("penyuluh");
 
   // Check if Petani is selected
-  // const isPetaniSelected = selectedRole === "petani";
+  const isPetaniSelected = selectedRole === "petani";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D9EAF2] to-[#E8F3FA] flex items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -39,54 +41,54 @@ export default function RegisterPage() {
 
           {/* Dynamic Title based on role */}
           <div className="absolute px-6 xl:px-8 text-white bottom-8 lg:bottom-12">
-            {/* {isPetaniSelected ? ( */}
-            <>
-              {/* <p className="text-2xl xl:text-4xl font-light leading-snug">
-                Daftar <strong className="font-bold">Sebagai Petani</strong>{" "}
-                <br />
-                Bergabung <strong className="font-bold">Bersama Kami</strong>
-              </p>
-              <p className="mt-3 text-sm xl:text-base text-white/80">
-                Lengkapi data diri untuk bergabung dalam sistem
-              </p>
+            {isPetaniSelected ? (
+              <>
+                <p className="text-2xl xl:text-4xl font-light leading-snug">
+                  Daftar <strong className="font-bold">Sebagai Petani</strong>{" "}
+                  <br />
+                  Bergabung <strong className="font-bold">Bersama Kami</strong>
+                </p>
+                <p className="mt-3 text-sm xl:text-base text-white/80">
+                  Lengkapi data diri untuk bergabung dalam sistem
+                </p>
 
-              Stats
-              <div className="flex gap-6 mt-6">
-                <div>
-                  <p className="text-2xl font-bold">1000+</p>
-                  <p className="text-sm text-white/70">Petani Terdaftar</p>
+                {/* Stats */}
+                <div className="flex gap-6 mt-6">
+                  <div>
+                    <p className="text-2xl font-bold">1000+</p>
+                    <p className="text-sm text-white/70">Petani Terdaftar</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">50+</p>
+                    <p className="text-sm text-white/70">Kelompok Tani</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">50+</p>
-                  <p className="text-sm text-white/70">Kelompok Tani</p>
-                </div>
-              </div> */}
-            </>
-            {/* ) : ( */}
-            <>
-              <p className="text-2xl xl:text-4xl font-light leading-snug">
-                Bergabunglah{" "}
-                <strong className="font-bold">Bersama Kami</strong> <br />
-                Majukan{" "}
-                <strong className="font-bold">Pertanian Indonesia</strong>
-              </p>
-              <p className="mt-3 text-sm xl:text-base text-white/80">
-                Daftar sekarang dan dapatkan akses penuh
-              </p>
+              </>
+            ) : (
+              <>
+                <p className="text-2xl xl:text-4xl font-light leading-snug">
+                  Bergabunglah{" "}
+                  <strong className="font-bold">Bersama Kami</strong> <br />
+                  Majukan{" "}
+                  <strong className="font-bold">Pertanian Indonesia</strong>
+                </p>
+                <p className="mt-3 text-sm xl:text-base text-white/80">
+                  Daftar sekarang dan dapatkan akses penuh
+                </p>
 
-              {/* Normal Stats */}
-              <div className="flex gap-6 mt-6">
-                <div>
-                  <p className="text-2xl font-bold">1000+</p>
-                  <p className="text-sm text-white/70">Petani Terdaftar</p>
+                {/* Normal Stats */}
+                <div className="flex gap-6 mt-6">
+                  <div>
+                    <p className="text-2xl font-bold">1000+</p>
+                    <p className="text-sm text-white/70">Petani Terdaftar</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">50+</p>
+                    <p className="text-sm text-white/70">Penyuluh Aktif</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">50+</p>
-                  <p className="text-sm text-white/70">Penyuluh Aktif</p>
-                </div>
-              </div>
-            </>
-            {/* )} */}
+              </>
+            )}
           </div>
         </div>
 
@@ -115,7 +117,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Role Selector */}
-            {/* <div className="flex items-center gap-2 justify-center sm:justify-end">
+            <div className="flex items-center gap-2 justify-center sm:justify-end">
               <span className="text-xs sm:text-sm text-gray-600">
                 Daftar sebagai
               </span>
@@ -146,19 +148,17 @@ export default function RegisterPage() {
                   </SelectItem>
                 ))}
               </Select>
-            </div> */}
+            </div>
           </div>
 
-          {/* Register Forms
+          {/* Register Forms */}
           {isPetaniSelected ? (
-          Petani Register Form 
+            /* Petani Register Form */
             <PetaniForm key="petani-form" />
           ) : (
-            Regular Register Form for Penyuluh 
-          <PenyuluhForm key="penyuluh-form" />
-          )} */}
-
-          <PenyuluhForm key="penyuluh-form" />
+            /* Regular Register Form for Penyuluh */
+            <PenyuluhForm key="penyuluh-form" />
+          )}
         </div>
       </div>
     </div>

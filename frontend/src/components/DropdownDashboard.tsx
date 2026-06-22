@@ -64,13 +64,22 @@ export const DropdownDashboard = () => {
           user?.role.name === ROLES.OPERATOR_ADMIN ||
           user?.role.name === ROLES.OPERATOR_POKTAN ||
           user?.role.name === ROLES.PENYULUH ||
-          user?.role.name === ROLES.PENYULUH_SWADAYA ? (
+          user?.role.name === ROLES.PENYULUH_SWADAYA ||
+          user?.role.name === ROLES.PETANI ? (
             <DropdownItem
               key="dashboard"
               startContent={<MdOutlineDashboard size={14} />}
-              onClick={() => navigate("/dashboard-admin")}
+              onClick={() =>
+                navigate(
+                  user?.role.name === ROLES.PETANI
+                    ? "/dashboard"
+                    : "/dashboard-admin",
+                )
+              }
             >
-              Dashboard Admin
+              {user?.role.name === ROLES.PETANI
+                ? "Dashboard Petani"
+                : "Dashboard Admin"}
             </DropdownItem>
           ) : null}
           {/* Conditional rendering langsung tanpa wrapper */}

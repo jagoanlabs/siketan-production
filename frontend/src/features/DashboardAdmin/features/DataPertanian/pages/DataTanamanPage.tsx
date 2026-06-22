@@ -30,6 +30,7 @@ import { LoadingModal } from "@/components/LoadingModal";
 import { exportAllDataToExcel } from "@/service/DashboardAdmin/tanaman/excel-export-service";
 import { PERMISSIONS } from "@/helpers/RoleHelper/roleHelpers";
 import PermissionWrapper from "@/components/PermissionWrapper";
+import { useAuth } from "@/hook/UseAuth";
 
 // Types
 interface DataTanaman {
@@ -79,6 +80,7 @@ const useBulkDeleteTanaman = (isBulkAction: boolean) => {
 export const DataTanamanPage = () => {
   // Navigation
   const navigate = useNavigate();
+  const { isPetani } = useAuth();
 
   // State management
   const [currentPage, setCurrentPage] = useState(1);
@@ -247,19 +249,7 @@ export const DataTanamanPage = () => {
         return index + 1;
       },
     },
-    {
-      key: "dataId",
-      title: "ID Data",
-      align: "center",
-      width: "80px",
-      render: (item) => (
-        <Tooltip content="ID unik data ini, diperlukan untuk realisasi langsung">
-          <span className="font-semibold text-gray-700 dark:text-gray-300 cursor-help underline decoration-dotted">
-            {item.id}
-          </span>
-        </Tooltip>
-      ),
-    },
+
     {
       key: "kategori",
       title: "Kategori Tanaman",
@@ -629,7 +619,7 @@ export const DataTanamanPage = () => {
         // Search props
         debouncedSearchTerm={debouncedSearchTerm}
         emptyStateMessage="Tidak ada data tanaman yang ditemukan"
-        enableMultiSelect={true}
+        enableMultiSelect={!isPetani()}
         getItemId={(item) => item.id}
         searchPlaceholder="Cari kategori atau komoditas..."
 

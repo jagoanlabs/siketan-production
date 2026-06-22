@@ -21,10 +21,6 @@ const getAllTanamanPetani = async (req, res) => {
   const { page, limit, petaniId, isExport, search, tahun, bulan } = req.query;
 
   try {
-    if (peran === 'petani') {
-      throw new ApiError(403, 'Anda tidak memiliki akses.');
-    }
-
     // Include petaniId in the query if it's provided
     const limitFilter = Number(limit);
     const pageFilter = Number(page);
@@ -35,10 +31,15 @@ const getAllTanamanPetani = async (req, res) => {
       limit: limitFilter,
       offset: (pageFilter - 1) * limitFilter,
       order: [['createdAt', 'DESC']]
-      // limit: parseInt(limit),
     };
 
-    if (petaniId) {
+    if (peran === 'petani') {
+      const petani = await dataPetani.findOne({ where: { accountID: req.user.accountID } });
+      if (!petani) {
+        throw new ApiError(404, 'Data petani Anda tidak ditemukan.');
+      }
+      query.where = { fk_petaniId: petani.id };
+    } else if (petaniId) {
       query.where = { fk_petaniId: petaniId };
     }
 
@@ -204,9 +205,18 @@ const tambahDataTanamanPetani = async (req, res) => {
     if (!prakiraanProduksiPanen)
       throw new ApiError(400, 'Prakiraan hasil panen tidak boleh kosong.');
     if (!prakiraanBulanPanen) throw new ApiError(400, 'Prakiraan bulan panen tidak boleh kosong.');
-    if (!fk_petaniId) throw new ApiError(400, 'Kelompok tidak boleh kosong.');
+    let resolvedPetaniId = fk_petaniId;
+    if (req.user?.peran === 'petani') {
+      const petani = await dataPetani.findOne({ where: { accountID: req.user.accountID } });
+      if (!petani) {
+        throw new ApiError(404, 'Data petani Anda tidak ditemukan.');
+      }
+      resolvedPetaniId = petani.id;
+    } else {
+      if (!resolvedPetaniId) throw new ApiError(400, 'Kelompok tidak boleh kosong.');
+    }
 
-    const Petani = await dataPetani.findOne({ where: { id: fk_petaniId } });
+    const Petani = await dataPetani.findOne({ where: { id: resolvedPetaniId } });
     if (!Petani) throw new ApiError(400, 'Data Petani tidak ditemukan');
 
     const data = await tanamanPetani.create({
@@ -220,7 +230,7 @@ const tambahDataTanamanPetani = async (req, res) => {
       prakiraanLuasPanen,
       prakiraanProduksiPanen,
       prakiraanBulanPanen,
-      fk_petaniId
+      fk_petaniId: resolvedPetaniId
     });
 
     res.status(200).json({ message: 'Data berhasil ditambahkan.', data });
@@ -450,10 +460,6 @@ const getDetailedDataTanamanPetani = async (req, res) => {
   const { peran } = req.user || {};
 
   try {
-    if (peran === 'petani') {
-      throw new ApiError(403, 'Anda tidak memiliki akses.');
-    }
-
     const data = await tanamanPetani.findOne({
       where: { id },
       include: [
@@ -474,6 +480,13 @@ const getDetailedDataTanamanPetani = async (req, res) => {
       throw new ApiError(404, 'Data tanaman petani tidak ditemukan.');
     }
 
+    if (peran === 'petani') {
+      const petani = await dataPetani.findOne({ where: { accountID: req.user.accountID } });
+      if (!petani || data.fk_petaniId !== petani.id) {
+        throw new ApiError(403, 'Anda tidak memiliki akses ke data tanaman ini.');
+      }
+    }
+
     res.status(200).json({ message: 'Data berhasil didapatkan.', data });
   } catch (error) {
     console.error('Error in getDetailedDataTanamanPetani:', error);
@@ -486,9 +499,20 @@ const editDataTanamanPetani = async (req, res) => {
   const { peran } = req.user || {};
 
   try {
-    if (peran === 'petani') {
-      throw new ApiError(403, 'Anda tidak memiliki akses.');
+    const targetCrop = await tanamanPetani.findOne({ where: { id } });
+    if (!targetCrop) {
+      throw new ApiError(404, 'Data tanaman tidak ditemukan.');
     }
+
+    let resolvedPetaniId = req.body.fk_petaniId;
+    if (peran === 'petani') {
+      const petani = await dataPetani.findOne({ where: { accountID: req.user.accountID } });
+      if (!petani || targetCrop.fk_petaniId !== petani.id) {
+        throw new ApiError(403, 'Anda tidak memiliki akses untuk mengubah data ini.');
+      }
+      resolvedPetaniId = petani.id;
+    }
+
     const {
       statusKepemilikanLahan,
       luasLahan,
@@ -499,8 +523,7 @@ const editDataTanamanPetani = async (req, res) => {
       periodeBulanTanam,
       prakiraanLuasPanen,
       prakiraanProduksiPanen,
-      prakiraanBulanPanen,
-      fk_petaniId
+      prakiraanBulanPanen
     } = req.body;
     if (!statusKepemilikanLahan) throw new ApiError(400, 'Status Tanah tidak boleh kosong');
     if (!kategori) throw new ApiError(400, 'Kategori tidak boleh kosong.');
@@ -512,10 +535,12 @@ const editDataTanamanPetani = async (req, res) => {
     if (!prakiraanProduksiPanen)
       throw new ApiError(400, 'Prakiraan hasil panen tidak boleh kosong.');
     if (!prakiraanBulanPanen) throw new ApiError(400, 'Prakiraan bulan panen tidak boleh kosong.');
-    if (!fk_petaniId) throw new ApiError(400, 'Kelompok tidak boleh kosong.');
+    if (peran !== 'petani' && !resolvedPetaniId) throw new ApiError(400, 'Kelompok tidak boleh kosong.');
 
-    const Petani = await dataPetani.findOne({ where: { id: fk_petaniId } });
-    if (!Petani) throw new ApiError(400, 'Data Petani tidak ditemukan');
+    if (resolvedPetaniId) {
+      const Petani = await dataPetani.findOne({ where: { id: resolvedPetaniId } });
+      if (!Petani) throw new ApiError(400, 'Data Petani tidak ditemukan');
+    }
 
     const data = await tanamanPetani.update(
       {
@@ -529,7 +554,7 @@ const editDataTanamanPetani = async (req, res) => {
         prakiraanLuasPanen,
         prakiraanProduksiPanen,
         prakiraanBulanPanen,
-        fk_petaniId
+        fk_petaniId: resolvedPetaniId
       },
       { where: { id } }
     );
@@ -604,17 +629,22 @@ const uploadDataTanamanPetani = async (req, res) => {
 const getTanamanPetaniYears = async (req, res) => {
   const { peran } = req.user || {};
   try {
-    if (peran === 'petani') {
-      throw new ApiError(403, 'Anda tidak memiliki akses.');
-    }
-
-    const data = await tanamanPetani.findAll({
+    const query = {
       attributes: [
         [Sequelize.fn('YEAR', Sequelize.col('createdAt')), 'year']
       ],
       group: [Sequelize.fn('YEAR', Sequelize.col('createdAt'))],
       raw: true
-    });
+    };
+
+    if (peran === 'petani') {
+      const petani = await dataPetani.findOne({ where: { accountID: req.user.accountID } });
+      if (petani) {
+        query.where = { fk_petaniId: petani.id };
+      }
+    }
+
+    const data = await tanamanPetani.findAll(query);
 
     const years = data.map((item) => item.year).filter(Boolean).sort((a, b) => b - a);
 

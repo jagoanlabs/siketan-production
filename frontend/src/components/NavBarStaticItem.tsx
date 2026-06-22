@@ -6,6 +6,7 @@ import { DropdownDashboard } from "./DropdownDashboard";
 
 import { assets } from "@/assets/assets";
 import { useAuth } from "@/hook/UseAuth";
+import { ROLES } from "@/helpers/RoleHelper/constants/role";
 
 const navItems = [
   { name: "Beranda", id: "beranda", link: "/" },
@@ -255,13 +256,17 @@ export const NavbarStaticItem: React.FC<NavbarStaticItemProps> = ({
               <Link
                 className="block px-4 py-3 text-gray-700 transition-colors rounded-lg hover:bg-white"
                 to={
-                  "/dashboard-admin"
+                  user?.role?.name === ROLES.PETANI
+                    ? "/dashboard"
+                    : "/dashboard-admin"
                 }
                 onClick={toggleMobileMenu}
               >
                 <span className="flex items-center gap-3">
                   <span className="text-gray-500">📊</span>
-                  Dashboard Admin
+                  {user?.role?.name === ROLES.PETANI
+                    ? "Dashboard Petani"
+                    : "Dashboard Admin"}
                 </span>
               </Link>
 

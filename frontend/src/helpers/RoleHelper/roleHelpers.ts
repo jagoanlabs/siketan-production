@@ -55,7 +55,24 @@ export class RoleHelper {
 
   // Check if user has specific permission
   static hasPermission(user: User | null, permissionName: string): boolean {
-    if (!user || !user.role || !user.role.permissions) return false;
+    if (!user || !user.role) return false;
+
+    if (user.role.name === ROLES.PETANI) {
+      const allowedPetaniPermissions = [
+        "profile_user_detail",
+        "profile_user_edit",
+        "isi_form_create",
+        "isi_form_detail",
+        "dashboard_index",
+        "tanaman_petani_index",
+        "tanaman_petani_create",
+        "tanaman_petani_detail",
+        "tanaman_petani_edit",
+      ];
+      return allowedPetaniPermissions.includes(permissionName);
+    }
+
+    if (!user.role.permissions) return false;
 
     // Cek berdasarkan nama permission
     return user.role.permissions.some(
@@ -69,7 +86,26 @@ export class RoleHelper {
     user: User | null,
     permissionNames: string[],
   ): boolean {
-    if (!user || !user.role || !user.role.permissions) return false;
+    if (!user || !user.role) return false;
+
+    if (user.role.name === ROLES.PETANI) {
+      const allowedPetaniPermissions = [
+        "profile_user_detail",
+        "profile_user_edit",
+        "isi_form_create",
+        "isi_form_detail",
+        "dashboard_index",
+        "tanaman_petani_index",
+        "tanaman_petani_create",
+        "tanaman_petani_detail",
+        "tanaman_petani_edit",
+      ];
+      return permissionNames.some((permissionName) =>
+        allowedPetaniPermissions.includes(permissionName)
+      );
+    }
+
+    if (!user.role.permissions) return false;
 
     return permissionNames.some((permissionName) =>
       user.role.permissions.some(
@@ -84,7 +120,26 @@ export class RoleHelper {
     user: User | null,
     permissionNames: string[],
   ): boolean {
-    if (!user || !user.role || !user.role.permissions) return false;
+    if (!user || !user.role) return false;
+
+    if (user.role.name === ROLES.PETANI) {
+      const allowedPetaniPermissions = [
+        "profile_user_detail",
+        "profile_user_edit",
+        "isi_form_create",
+        "isi_form_detail",
+        "dashboard_index",
+        "tanaman_petani_index",
+        "tanaman_petani_create",
+        "tanaman_petani_detail",
+        "tanaman_petani_edit",
+      ];
+      return permissionNames.every((permissionName) =>
+        allowedPetaniPermissions.includes(permissionName)
+      );
+    }
+
+    if (!user.role.permissions) return false;
 
     return permissionNames.every((permissionName) =>
       user.role.permissions.some(

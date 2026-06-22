@@ -5,7 +5,7 @@ import TawkMessengerReact from "@tawk.to/tawk-messenger-react";
 
 export default function TawkToWrapper() {
   const location = useLocation();
-  const allowedPaths = ["/", "/dashboard"];
+  const allowedPaths = ["/", "/dashboard", "/dashboard-admin"];
   const [tawkReady, setTawkReady] = useState(false);
 
   useEffect(() => {

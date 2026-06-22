@@ -258,7 +258,14 @@ module.exports = {
 
         // Forms
         'isi_form_create',
-        'isi_form_detail'
+        'isi_form_detail',
+
+        // Dashboard and crop management
+        'dashboard_index',
+        'tanaman_petani_index',
+        'tanaman_petani_create',
+        'tanaman_petani_detail',
+        'tanaman_petani_edit'
       ];
 
       addRolePermissions('petani', petaniPermissions);

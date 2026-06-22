@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LuLayoutDashboard } from "react-icons/lu";
 
@@ -214,7 +214,40 @@ const navItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
-  const { logout, hasPermission } = useAuth(); // Tambahkan hasPermission dari useAuth
+  const { logout, hasPermission, isPetani } = useAuth(); // Tambahkan hasPermission dari useAuth
+
+  const resolvedNavItems = useMemo(() => {
+    const isUserPetani = isPetani ? isPetani() : false;
+    return navItems.map((item) => {
+      let name = item.name;
+      if (isUserPetani && item.name === "Data Pertanian") {
+        name = "Data Petani";
+      }
+
+      let path = item.path;
+      if (isUserPetani && path?.startsWith("/dashboard-admin")) {
+        path = path.replace("/dashboard-admin", "/dashboard");
+      }
+
+      let subItems = item.subItems;
+      if (subItems) {
+        subItems = subItems.map((sub) => {
+          let subPath = sub.path;
+          if (isUserPetani && subPath.startsWith("/dashboard-admin")) {
+            subPath = subPath.replace("/dashboard-admin", "/dashboard");
+          }
+          return { ...sub, path: subPath };
+        });
+      }
+
+      return {
+        ...item,
+        name,
+        path,
+        subItems,
+      };
+    });
+  }, [isPetani]);
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -521,7 +554,7 @@ const AppSidebar: React.FC = () => {
                   <HiDotsHorizontal className="size-6" />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(resolvedNavItems, "main")}
             </div>
           </div>
         </nav>

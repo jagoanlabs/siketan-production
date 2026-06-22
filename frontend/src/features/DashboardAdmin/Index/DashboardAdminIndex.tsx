@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ReactSelect from "react-select";
 
 import { DashboardCardAdmin } from "./components/DashboardCardAdmin";
@@ -15,8 +15,13 @@ import {
 } from "@/types/dashboard/tableTanaman";
 import { useTanamanData } from "@/hook/dashboard/useDashboardDataTable";
 import { ColumnConfig, PaginationInfo } from "@/types/table";
+import { useAuth } from "@/hook/UseAuth";
+import { DashboardPetani } from "./components/DashboardPetani";
 
 export const DashboardAdminIndex = () => {
+  const { isPetani } = useAuth();
+  const isUserPetani = isPetani ? isPetani() : false;
+
   // AsyncSelect state
   const [selectedOption, setSelectedOption] = useState<any>(null);
 
@@ -71,7 +76,7 @@ export const DashboardAdminIndex = () => {
     data: tanamanResponse,
     isLoading: isTanamanLoading,
     error: tanamanError,
-  } = useTanamanData(tanamanParams);
+  } = useTanamanData(tanamanParams, !isUserPetani);
 
   // Options for ReactSelect (all poktans)
   const poktanOptions = useMemo(() => {
@@ -210,6 +215,21 @@ export const DashboardAdminIndex = () => {
 
     return null;
   }, [selectedOption]);
+
+
+
+  if (isUserPetani) {
+    return (
+      <div className="min-h-screen max-w-6xl container mx-auto py-6">
+        <PageMeta
+          description="Dashboard Petani untuk memantau aktivitas pertanian"
+          title="Dashboard Petani | Sistem Manajemen Pertanian"
+        />
+        <PageBreadcrumb items={[{ label: "Dashboard Petani" }]} />
+        <DashboardPetani />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen max-w-6xl container mx-auto py-6">

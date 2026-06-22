@@ -6,7 +6,7 @@ import {
   TanamanQueryParams,
 } from "@/types/dashboard/tableTanaman";
 
-export const useTanamanData = (params: TanamanQueryParams = {}) => {
+export const useTanamanData = (params: TanamanQueryParams = {}, enabled: boolean = true) => {
   // ✅ QUERY KEY - include search in query key untuk proper caching
   const queryKey = [
     "tanamanData",
@@ -38,7 +38,7 @@ export const useTanamanData = (params: TanamanQueryParams = {}) => {
     staleTime: 30 * 1000, // 30 seconds
 
     // ✅ ENABLED - always enabled, even with empty search
-    enabled: true,
+    enabled,
 
     // ✅ KEEP PREVIOUS DATA - smooth transition saat search
 
