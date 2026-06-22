@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tooltip } from "@heroui/tooltip";
 import { FaPlus, FaFileExcel, FaRegTrashAlt } from "react-icons/fa";
-import { FiEye, FiEdit2 } from "react-icons/fi";
+import { FiEye, FiEdit2, FiRefreshCw } from "react-icons/fi";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -138,7 +138,7 @@ export const DataTanamanPage = () => {
   const bulkDeleteMutation = useBulkDeleteTanaman(true); // Bulk delete
 
   // Fetch data tanaman using TanStack Query
-  const { data, isLoading, error, refetch } = useQuery<TanamanResponse>({
+  const { data, isLoading, error, refetch, isFetching } = useQuery<TanamanResponse>({
     queryKey: ["dataTanaman", currentPage, itemsPerPage, debouncedSearchTerm],
     queryFn: async () => {
       const response = await axiosClient.get("/list-tanaman", {
@@ -582,6 +582,18 @@ export const DataTanamanPage = () => {
           </Button>
         </Tooltip>
       </PermissionWrapper>
+
+      <Tooltip content="Refresh Data">
+        <Button
+          color="primary"
+          isLoading={isFetching}
+          startContent={!isFetching && <FiRefreshCw className="w-4 h-4" />}
+          variant="bordered"
+          onPress={() => refetch()}
+        >
+          <span className="hidden sm:inline">Refresh</span>
+        </Button>
+      </Tooltip>
     </div>
   );
 
