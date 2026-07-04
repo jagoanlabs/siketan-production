@@ -560,6 +560,40 @@ export const DashboardStatistika = () => {
       ),
     },
     {
+      key: "createdAt",
+      title: "Waktu Pembuatan Data",
+      sortable: true,
+      align: "center",
+      render: (item) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {new Date(item.createdAt).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}
+        </span>
+      ),
+    },
+    {
+      key: "updatedAt",
+      title: "Waktu Terakhir Diperbaharui",
+      sortable: true,
+      align: "center",
+      render: (item) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {new Date(item.updatedAt).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}
+        </span>
+      ),
+    },
+    {
       key: "actions",
       title: "Aksi",
       align: "center",
