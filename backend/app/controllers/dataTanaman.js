@@ -60,13 +60,15 @@ const getAllDataTanaman = async (req, res) => {
       }
     }
 
-    // pencarian umum (kategori / komoditas / periodeTanam / kelompok.namaKelompok)
+    // pencarian umum (kategori / komoditas / periodeTanam / kelompok.namaKelompok / kelompok.kecamatan / kelompok.desa)
     if (search && search !== 'undefined') {
       whereClause[Op.or] = [
         { kategori: { [Op.like]: `%${search}%` } },
         { komoditas: { [Op.like]: `%${search}%` } },
         { periodeTanam: { [Op.like]: `%${search}%` } },
-        { '$kelompok.namaKelompok$': { [Op.like]: `%${search}%` } }
+        { '$kelompok.namaKelompok$': { [Op.like]: `%${search}%` } },
+        { '$kelompok.kecamatan$': { [Op.like]: `%${search}%` } },
+        { '$kelompok.desa$': { [Op.like]: `%${search}%` } }
       ];
     }
 

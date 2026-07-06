@@ -374,6 +374,22 @@ export const DashboardStatistika = () => {
                   {item.periodeTanam}
                 </span>
               </div>
+              <div className="flex flex-col">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Kecamatan
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {item.kelompok?.kecamatan || "-"}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Desa
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {item.kelompok?.desa || "-"}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -534,6 +550,24 @@ export const DashboardStatistika = () => {
           </div>
           <div className="text-xs text-gray-400">{item.kelompok.gapoktan}</div>
         </div>
+      ),
+    },
+    {
+      key: "kecamatan",
+      title: "Kecamatan",
+      render: (item) => (
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {item.kelompok.kecamatan || "-"}
+        </span>
+      ),
+    },
+    {
+      key: "desa",
+      title: "Desa",
+      render: (item) => (
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {item.kelompok.desa || "-"}
+        </span>
       ),
     },
     {
