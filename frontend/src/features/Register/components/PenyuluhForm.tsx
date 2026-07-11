@@ -1,18 +1,18 @@
+import { Checkbox } from "../../../components/Form/HeroCheckbox";
+import { Input, Textarea } from "../../../components/Form/HeroInput";
+import { Button } from "../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../components/Form/HeroModal";
+import { Select, SelectItem } from "../../../components/Form/HeroSelect";
+
 // components/PenyuluhForm.tsx
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@heroui/button";
+
 import { Link } from "react-router-dom";
-import { Select, SelectItem } from "@heroui/select";
-import { Input, Textarea } from "@heroui/input";
-import { Checkbox } from "@heroui/checkbox";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@heroui/modal";
+
+
+
+
 import { GoHomeFill } from "react-icons/go";
 import {
   FiCheck,
@@ -124,7 +124,7 @@ export function PenyuluhForm() {
       // Create preview
       const reader = new FileReader();
 
-      reader.onloadend = () => {
+      reader.onloadend = (_e: any) => {
         setFilePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
@@ -390,10 +390,6 @@ export function PenyuluhForm() {
               {/* NIP */}
               <Input
                 required
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.NIP ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
                 errorMessage={errors.NIP}
                 isInvalid={!!errors.NIP}
                 label="NIP/NIK Penyuluh"
@@ -401,16 +397,12 @@ export function PenyuluhForm() {
                 placeholder="Masukkan NIP/NIK"
                 value={formData.NIP}
                 variant="bordered"
-                onChange={(e) => handleInputChange("NIP", e.target.value)}
+                onChange={(e: any) => handleInputChange("NIP", e.target.value)}
               />
 
               {/* Nama Lengkap */}
               <Input
                 required
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.nama ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
                 errorMessage={errors.nama}
                 isInvalid={!!errors.nama}
                 label="Nama Lengkap"
@@ -418,7 +410,7 @@ export function PenyuluhForm() {
                 placeholder="Masukkan nama lengkap"
                 value={formData.nama}
                 variant="bordered"
-                onChange={(e) => handleInputChange("nama", e.target.value)}
+                onChange={(e: any) => handleInputChange("nama", e.target.value)}
               />
             </div>
 
@@ -426,10 +418,6 @@ export function PenyuluhForm() {
               {/* Email */}
               <Input
                 required
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.email ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
                 errorMessage={errors.email}
                 isInvalid={!!errors.email}
                 label="Email"
@@ -438,16 +426,12 @@ export function PenyuluhForm() {
                 type="email"
                 value={formData.email}
                 variant="bordered"
-                onChange={(e) => handleInputChange("email", e.target.value)}
+                onChange={(e: any) => handleInputChange("email", e.target.value)}
               />
 
               {/* WhatsApp */}
               <Input
                 required
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.NoWa ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
                 errorMessage={errors.NoWa}
                 isInvalid={!!errors.NoWa}
                 label="No. HP/WhatsApp"
@@ -456,7 +440,7 @@ export function PenyuluhForm() {
                 type="tel"
                 value={formData.NoWa}
                 variant="bordered"
-                onChange={(e) => handleInputChange("NoWa", e.target.value)}
+                onChange={(e: any) => handleInputChange("NoWa", e.target.value)}
               />
             </div>
 
@@ -465,10 +449,6 @@ export function PenyuluhForm() {
               <div>
                 <Input
                   required
-                  classNames={{
-                    label: "font-semibold text-sm",
-                    inputWrapper: `px-4 py-3 border-1 ${errors.password ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                  }}
                   endContent={
                     <button
                       className="focus:outline-none"
@@ -490,7 +470,7 @@ export function PenyuluhForm() {
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   variant="bordered"
-                  onChange={(e) =>
+                  onChange={(e: any) =>
                     handleInputChange("password", e.target.value)
                   }
                 />
@@ -547,10 +527,6 @@ export function PenyuluhForm() {
               {/* Confirm Password */}
               <Input
                 required
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
                 endContent={
                   <button
                     className="focus:outline-none"
@@ -572,7 +548,7 @@ export function PenyuluhForm() {
                 type={showConfirmPassword ? "text" : "password"}
                 value={formData.confirmPassword}
                 variant="bordered"
-                onChange={(e) =>
+                onChange={(e: any) =>
                   handleInputChange("confirmPassword", e.target.value)
                 }
               />
@@ -583,14 +559,11 @@ export function PenyuluhForm() {
               <p className="block text-sm font-semibold text-gray-700 mb-2">
                 Tipe Penyuluh *
               </p>
-              <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.tipe ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+              <Select isInvalid={!!errors.tipe}
                 placeholder="Pilih tipe penyuluh"
                 selectedKeys={formData.tipe ? [formData.tipe] : []}
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as string;
 
                   handleInputChange("tipe", selected);
@@ -611,10 +584,6 @@ export function PenyuluhForm() {
             {/* Alamat */}
             <Textarea
               required
-              classNames={{
-                label: "font-semibold text-sm",
-                inputWrapper: `px-4 py-3 border-1 ${errors.alamat ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-              }}
               errorMessage={errors.alamat}
               isInvalid={!!errors.alamat}
               label="Alamat Lengkap"
@@ -623,7 +592,7 @@ export function PenyuluhForm() {
               rows={3}
               value={formData.alamat}
               variant="bordered"
-              onChange={(e) => handleInputChange("alamat", e.target.value)}
+              onChange={(e: any) => handleInputChange("alamat", e.target.value)}
             />
           </div>
         </div>
@@ -641,16 +610,14 @@ export function PenyuluhForm() {
                 Kecamatan *
               </p>
               <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.kecamatan ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                isInvalid={!!errors.kecamatan}
                 isLoading={loadingKecamatan}
                 placeholder="Pilih kecamatan"
                 selectedKeys={
                   formData.kecamatanId ? [formData.kecamatanId.toString()] : []
                 }
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const value = Array.from(keys)[0] as string;
 
                   if (value) handleKecamatanChange(value);
@@ -673,9 +640,7 @@ export function PenyuluhForm() {
                 Desa *
               </p>
               <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.desa ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                isInvalid={!!errors.desa}
                 isDisabled={!formData.kecamatanId}
                 isLoading={loadingDesa}
                 placeholder={
@@ -685,7 +650,7 @@ export function PenyuluhForm() {
                   formData.desaId ? [formData.desaId.toString()] : []
                 }
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const value = Array.from(keys)[0] as string;
 
                   if (value) handleDesaChange(value);
@@ -717,9 +682,7 @@ export function PenyuluhForm() {
                 Kecamatan Binaan *
               </p>
               <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.kecamatanBinaan ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                isInvalid={!!errors.kecamatanBinaan}
                 isLoading={loadingKecamatan}
                 placeholder="Pilih kecamatan binaan"
                 selectedKeys={
@@ -728,7 +691,7 @@ export function PenyuluhForm() {
                     : []
                 }
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const value = Array.from(keys)[0] as string;
 
                   if (value) handleKecamatanBinaanChange(value);
@@ -753,9 +716,7 @@ export function PenyuluhForm() {
                 Desa Wilayah Binaan *
               </p>
               <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.desaBinaan ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                isInvalid={!!errors.desaBinaan}
                 isDisabled={!formData.kecamatanBinaanId}
                 isLoading={loadingDesaBinaan}
                 isMultiline={true}
@@ -764,9 +725,9 @@ export function PenyuluhForm() {
                     ? "Pilih desa binaan"
                     : "Pilih kecamatan binaan dulu"
                 }
-                renderValue={(items) => (
+                renderValue={(items: any) => (
                   <div className="flex flex-wrap gap-2">
-                    {items.map((item) => (
+                    {items.map((item: any) => (
                       <div
                         key={item.key}
                         className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
@@ -779,7 +740,7 @@ export function PenyuluhForm() {
                 selectedKeys={formData.desaBinaan}
                 selectionMode="multiple"
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   handleInputChange("desaBinaan", Array.from(keys));
                 }}
               >
@@ -800,16 +761,14 @@ export function PenyuluhForm() {
                 Kelompok Tani Binaan *
               </p>
               <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.selectedKelompokIds ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                isInvalid={!!errors.selectedKelompokIds}
                 isDisabled={!formData.kecamatanBinaanId}
                 isLoading={loadingKelompok}
                 isMultiline={true}
                 placeholder="Pilih kelompok yang akan dibina"
-                renderValue={(items) => (
+                renderValue={(items: any) => (
                   <div className="flex flex-wrap gap-2">
-                    {items.map((item) => (
+                    {items.map((item: any) => (
                       <div
                         key={item.key}
                         className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full"
@@ -822,7 +781,7 @@ export function PenyuluhForm() {
                 selectedKeys={formData.selectedKelompokIds}
                 selectionMode="multiple"
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   handleInputChange("selectedKelompokIds", Array.from(keys));
                 }}
               >
@@ -851,17 +810,12 @@ export function PenyuluhForm() {
 
             {/* Nama Produk */}
             <Input
-              classNames={{
-                label: "font-semibold text-sm",
-                inputWrapper:
-                  "px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500",
-              }}
               label="Nama Produk (Opsional)"
               labelPlacement="outside"
               placeholder="Masukkan nama produk yang dibina"
               value={formData.namaProduct}
               variant="bordered"
-              onChange={(e) => handleInputChange("namaProduct", e.target.value)}
+              onChange={(e: any) => handleInputChange("namaProduct", e.target.value)}
             />
           </div>
         </div>
@@ -895,7 +849,7 @@ export function PenyuluhForm() {
         onClose={() => setIsPrivacyModalOpen(false)}
       >
         <ModalContent>
-          {(onClose) => (
+          {(onClose: any) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
                 Kebijakan Privasi

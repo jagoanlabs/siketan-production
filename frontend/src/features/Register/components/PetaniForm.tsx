@@ -1,9 +1,13 @@
+import { Input, Textarea } from "../../../components/Form/HeroInput";
+import { Button } from "../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../components/Form/HeroSelect";
+
 import { useState, useEffect } from "react";
-import { Button } from "@heroui/button";
+
 import { Link } from "react-router-dom";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Textarea } from "@heroui/input";
+
+
+
 import { forwardRef, useImperativeHandle } from "react";
 import { GoHomeFill } from "react-icons/go";
 import {
@@ -152,7 +156,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
       // Create preview
       const reader = new FileReader();
 
-      reader.onloadend = () => {
+      reader.onloadend = (_e: any) => {
         setFilePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
@@ -358,10 +362,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               <Input
                 required
                 className="mb-4"
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.NIK ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                classNames={{ label: "font-semibold text-sm" }}
                 errorMessage={errors.NIK}
                 isInvalid={!!errors.NIK}
                 label="NIK"
@@ -370,7 +371,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 type="text"
                 value={petaniForm.NIK}
                 variant="bordered"
-                onChange={(e) => {
+                onChange={(e: any) => {
                   const value = e.target.value.replace(/\D/g, "").slice(0, 16);
 
                   handleInputChange("NIK", value);
@@ -379,18 +380,14 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
 
               {/* NKK */}
               <Input
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper:
-                    "px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500",
-                }}
+                classNames={{ label: "font-semibold text-sm" }}
                 label="NKK (Opsional)"
                 labelPlacement="outside"
                 placeholder="16 digit NKK"
                 type="text"
                 value={petaniForm.NKK}
                 variant="bordered"
-                onChange={(e) => {
+                onChange={(e: any) => {
                   const value = e.target.value.replace(/\D/g, "").slice(0, 16);
 
                   handleInputChange("NKK", value);
@@ -401,10 +398,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             {/* Nama Lengkap */}
             <Input
               required
-              classNames={{
-                label: "font-semibold text-sm",
-                inputWrapper: `px-4 py-3 border-1 ${errors.nama ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-              }}
+              classNames={{ label: "font-semibold text-sm" }}
               errorMessage={errors.nama}
               isInvalid={!!errors.nama}
               label="Nama Lengkap"
@@ -413,17 +407,14 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               type="text"
               value={petaniForm.nama}
               variant="bordered"
-              onChange={(e) => handleInputChange("nama", e.target.value)}
+                onChange={(e: any) => handleInputChange("nama", e.target.value)}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* No WhatsApp */}
               <Input
                 required
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.NoWa ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                classNames={{ label: "font-semibold text-sm" }}
                 errorMessage={errors.NoWa}
                 isInvalid={!!errors.NoWa}
                 label="Nomor WhatsApp"
@@ -435,23 +426,19 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 type="tel"
                 value={petaniForm.NoWa}
                 variant="bordered"
-                onChange={(e) => handleInputChange("NoWa", e.target.value)}
+                onChange={(e: any) => handleInputChange("NoWa", e.target.value)}
               />
 
               {/* Email */}
               <Input
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper:
-                    "px-4 py-3 border-1 border-gray-300 hover:border-gray-400 data-[focus=true]:border-green-500",
-                }}
+                classNames={{ label: "font-semibold text-sm" }}
                 label="Email (Opsional)"
                 labelPlacement="outside"
                 placeholder="email@example.com"
                 type="email"
                 value={petaniForm.email}
                 variant="bordered"
-                onChange={(e) => handleInputChange("email", e.target.value)}
+                onChange={(e: any) => handleInputChange("email", e.target.value)}
               />
             </div>
 
@@ -459,10 +446,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               {/* Password */}
               <Input
                 required
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.password ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                classNames={{ label: "font-semibold text-sm" }}
                 endContent={
                   <button
                     className="focus:outline-none"
@@ -484,16 +468,13 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 type={showPassword ? "text" : "password"}
                 value={petaniForm.password}
                 variant="bordered"
-                onChange={(e) => handleInputChange("password", e.target.value)}
+                onChange={(e: any) => handleInputChange("password", e.target.value)}
               />
 
               {/* Confirm Password */}
               <Input
                 required
-                classNames={{
-                  label: "font-semibold text-sm",
-                  inputWrapper: `px-4 py-3 border-1 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                classNames={{ label: "font-semibold text-sm" }}
                 endContent={
                   <button
                     className="focus:outline-none"
@@ -515,7 +496,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 type={showConfirmPassword ? "text" : "password"}
                 value={petaniForm.confirmPassword}
                 variant="bordered"
-                onChange={(e) =>
+                onChange={(e: any) =>
                   handleInputChange("confirmPassword", e.target.value)
                 }
               />
@@ -616,10 +597,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
           {/* Alamat */}
           <Textarea
             required
-            classNames={{
-              label: "font-semibold text-sm",
-              inputWrapper: `px-4 py-3 border-1 ${errors.alamat ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-            }}
+            classNames={{ label: "font-semibold text-sm" }}
             errorMessage={errors.alamat}
             isInvalid={!!errors.alamat}
             label="Alamat Lengkap"
@@ -628,7 +606,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             rows={3}
             value={petaniForm.alamat}
             variant="bordered"
-            onChange={(e) => handleInputChange("alamat", e.target.value)}
+              onChange={(e: any) => handleInputChange("alamat", e.target.value)}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -637,17 +615,14 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               <p className="block text-sm font-semibold text-gray-700 mb-2">
                 Kecamatan *
               </p>
-              <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.kecamatan ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+              <Select isInvalid={!!errors.kecamatan}
                 isLoading={loadingKecamatan}
                 placeholder="Pilih kecamatan"
                 selectedKeys={
                   petaniForm.kecamatan ? [petaniForm.kecamatan] : []
                 }
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as string;
 
                   handleInputChange("kecamatan", selected);
@@ -669,10 +644,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               <p className="block text-sm font-semibold text-gray-700 mb-2">
                 Desa *
               </p>
-              <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.desa ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+              <Select isInvalid={!!errors.desa}
                 isDisabled={!petaniForm.kecamatan}
                 isLoading={loadingDesa}
                 placeholder={
@@ -680,7 +652,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 }
                 selectedKeys={petaniForm.desa ? [petaniForm.desa] : []}
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as string;
 
                   handleInputChange("desa", selected);
@@ -712,17 +684,14 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             <p className="block text-sm font-semibold text-gray-700 mb-2">
               Penyuluh *
             </p>
-            <Select
-              classNames={{
-                trigger: `px-4 py-3 border-1 ${errors.penyuluh ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-              }}
+            <Select isInvalid={!!errors.penyuluh}
               isLoading={loadingPenyuluh}
               placeholder="Pilih penyuluh"
               selectedKeys={
                 petaniForm.penyuluh ? [petaniForm.penyuluh.toString()] : []
               }
               variant="bordered"
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const selected = Number(Array.from(keys)[0]);
 
                 handleInputChange("penyuluh", selected);
@@ -749,11 +718,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Gapoktan - Auto populated dan disabled */}
             <Input
-              classNames={{
-                label: "font-semibold text-sm",
-                inputWrapper:
-                  "px-4 py-3 border-1 border-gray-300 bg-gray-50 hover:border-gray-400",
-              }}
+              classNames={{ label: "font-semibold text-sm" }}
               isDisabled={true}
               label="Gapoktan"
               labelPlacement="outside"
@@ -775,9 +740,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                 Nama Kelompok Tani *
               </p>
               <Select
-                classNames={{
-                  trigger: `px-4 py-3 border-1 ${errors.namaKelompok ? "border-red-500" : "border-gray-300"} hover:border-gray-400 data-[focus=true]:border-green-500`,
-                }}
+                isInvalid={!!errors.namaKelompok}
                 isDisabled={
                   !kelompokTaniData?.kelompokTani ||
                   kelompokTaniData.kelompokTani.length === 0
@@ -796,7 +759,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
                   petaniForm.namaKelompok ? [petaniForm.namaKelompok] : []
                 }
                 variant="bordered"
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as string;
 
                   handleInputChange("namaKelompok", selected);
