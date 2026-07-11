@@ -182,8 +182,8 @@ export function ReusableTable<T = any>({
   const defaultRowClassName = (item: any, index: number) => {
     const baseClass =
       index % 2 === 0
-        ? "bg-white dark:bg-gray-800"
-        : "bg-gray-50 dark:bg-gray-700";
+        ? "bg-white"
+        : "bg-gray-50";
 
     // Highlight selected rows
     if (enableMultiSelect && getItemId && selectedIds.has(getItemId(item))) {
@@ -237,9 +237,9 @@ export function ReusableTable<T = any>({
     if (!enableMultiSelect || selectedItems.length === 0) return null;
 
     return (
-      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-700">
+       <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+          <span className="text-sm font-medium text-blue-800">
             {selectedItems.length} item dipilih
           </span>
           <div className="flex gap-2">
@@ -263,7 +263,7 @@ export function ReusableTable<T = any>({
               </PermissionWrapper>
             ))}
             <Button
-              className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+               className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800"
               onPress={() => onSelectionChange && onSelectionChange([])}
             >
               Batal Pilih
@@ -276,13 +276,13 @@ export function ReusableTable<T = any>({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow p-4 dark:bg-gray-800 ${className}`}
+      className={`bg-white rounded-lg shadow p-4 ${className}`}
     >
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
         <div>
           {title && (
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2 md:mb-0">
+            <h2 className="text-xl font-bold text-gray-800 mb-2 md:mb-0">
               {title}
             </h2>
           )}
@@ -308,8 +308,8 @@ export function ReusableTable<T = any>({
 
       {/* Search Status Info */}
       {searchTerm && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm dark:bg-blue-900/20 dark:border-blue-700">
-          <p className="text-blue-800 dark:text-blue-200">
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+          <p className="text-blue-800">
             {loading ? (
               <span className="animate-pulse">
                 🔍 Mencari &quot;{debouncedSearchTerm}&quot;...
@@ -335,7 +335,7 @@ export function ReusableTable<T = any>({
       {loading && (
         <div className="flex justify-center items-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-          <span className="ml-2 text-gray-600 dark:text-gray-300">
+          <span className="ml-2 text-gray-600">
             {searchTerm
               ? `Mencari "${debouncedSearchTerm}"...`
               : "Loading data..."}
@@ -345,7 +345,7 @@ export function ReusableTable<T = any>({
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded dark:bg-red-900/20 dark:border-red-700 dark:text-red-400">
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded">
           <strong>Error:</strong> {error.message}
         </div>
       )}
@@ -354,15 +354,15 @@ export function ReusableTable<T = any>({
       {!loading && !error && (
         <>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
                   {enhancedColumns.map((column, index) => (
                     <th
                       key={`${column.key}-${index}`}
-                      className={`px-6 py-3 text-${column.align || "left"} text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 ${
+                      className={`px-6 py-3 text-${column.align || "left"} text-xs font-medium text-gray-500 uppercase tracking-wider ${
                         column.sortable && onSort
-                          ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                          ? "cursor-pointer hover:bg-gray-100"
                           : ""
                       }`}
                       style={{ width: column.width }}
@@ -376,7 +376,7 @@ export function ReusableTable<T = any>({
                   ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {data.length > 0 ? (
                   data.map((item, index) => (
                     <tr
@@ -386,7 +386,7 @@ export function ReusableTable<T = any>({
                       {enhancedColumns.map((column, colIndex) => (
                         <td
                           key={`cell-${index}-${colIndex}`}
-                          className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-${column.align || "left"}`}
+                          className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-${column.align || "left"}`}
                         >
                           {column.render
                             ? column.render(item, index, paginationInfo)
@@ -398,7 +398,7 @@ export function ReusableTable<T = any>({
                 ) : (
                   <tr>
                     <td
-                      className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-300"
+                       className="px-6 py-8 text-center text-sm text-gray-500"
                       colSpan={enhancedColumns.length}
                     >
                       {searchTerm ? (
@@ -408,7 +408,7 @@ export function ReusableTable<T = any>({
                           <br />
                           {onClearSearch && (
                             <button
-                              className="mt-2 text-blue-600 hover:text-blue-800 underline dark:text-blue-400 dark:hover:text-blue-300"
+                               className="mt-2 text-blue-600 hover:text-blue-800 underline"
                               onClick={onClearSearch}
                             >
                               Hapus pencarian

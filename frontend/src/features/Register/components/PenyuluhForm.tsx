@@ -1,7 +1,7 @@
 import { Checkbox } from "../../../components/Form/HeroCheckbox";
 import { Input, Textarea } from "../../../components/Form/HeroInput";
 import { Button } from "../../../components/Form/HeroButton";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../components/Form/HeroModal";
+import { Modal } from "@heroui/react";
 import { Select, SelectItem } from "../../../components/Form/HeroSelect";
 
 // components/PenyuluhForm.tsx
@@ -24,6 +24,12 @@ import {
   FiMapPin,
   FiUsers,
 } from "react-icons/fi";
+import {
+  penyuluhRegisterSchema,
+  type PenyuluhRegisterFormValues,
+  type FieldErrors,
+  flattenZodErrors,
+} from "@/lib/validations/auth.schema";
 import { toast } from "sonner";
 
 // @ts-ignore
@@ -31,6 +37,7 @@ import privacyPolicyContent from "@/assets/privacy-policy.md?raw";
 import { MarkdownViewer } from "../../Legal/components/MarkdownViewer";
 
 import { useRegisterPenyuluh } from "@/hook/useAuthApi";
+import { useDebouncedCallback } from "@/utils/debounce";
 import {
   useKecamatan,
   useDesaByKecamatan,
@@ -64,7 +71,7 @@ export function PenyuluhForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<FieldErrors<PenyuluhRegisterFormValues>>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -148,17 +155,71 @@ export function PenyuluhForm() {
 
   const passwordStrength = checkPasswordStrength(formData.password);
 
-  // Handle input changes
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+  // Validate a single field with zod
+  const validateField = (field: string, newFormData: any) => {
+    // Abaikan validasi email selama belum ada "@" (kecuali kosong)
+    if (typeof newFormData.email === "string" && newFormData.email.length > 0 && !newFormData.email.includes("@")) {
+      if (field === "email") return;
+      setErrors((prev) => ({ ...prev, email: undefined }));
     }
+
+    // Abaikan validasi NoWa selama belum minimal 4 digit (kecuali kosong)
+    if (field === "NoWa" && typeof newFormData.NoWa === "string" && newFormData.NoWa.length > 0 && newFormData.NoWa.replace(/\D/g, "").length < 4) {
+      return;
+    }
+
+    const result = penyuluhRegisterSchema.safeParse(newFormData);
+
+    if (result.success) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    } else {
+      const fieldIssue = result.error.issues.find(
+        (issue: any) => issue.path.join(".") === field,
+      );
+
+      if (fieldIssue) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: fieldIssue.message,
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    }
+  };
+
+  // Debounced validator
+  const debouncedValidate = useDebouncedCallback(
+    (field: string, newFormData: any) => {
+      validateField(field, newFormData);
+    },
+    500,
+  );
+
+  // Handle input changes with debounce
+  const handleInputChange = (field: string, value: any) => {
+    const newFormData = { ...formData, [field]: value };
+
+    setFormData(newFormData);
+
+    // For email: skip validation until "@" is present (tapi tetap validasi kalau kosong)
+    if (field === "email" && value.length > 0 && value.indexOf("@") === -1) {
+      setErrors((prev) => ({ ...prev, email: undefined }));
+      return;
+    }
+
+    // For NoWa: skip validation until at least 4 digits (tapi tetap validasi kalau kosong)
+    if (field === "NoWa" && value.length > 0 && value.replace(/\D/g, "").length < 4) {
+      setErrors((prev) => ({ ...prev, NoWa: undefined }));
+      return;
+    }
+
+    // Clear error immediately, then debounce validation
+    if ((errors as Record<string, string | undefined>)[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+
+    debouncedValidate(field, newFormData);
   };
 
   // Handle kecamatan selection
@@ -208,84 +269,16 @@ export function PenyuluhForm() {
     }
   };
 
-  // Form validation
-  const validatePenyuluhForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    // Basic validation
-    if (!formData.NIP) {
-      newErrors.NIP = "NIP wajib diisi";
-    }
-
-    if (!formData.nama) {
-      newErrors.nama = "Nama lengkap wajib diisi";
-    } else if (formData.nama.length < 3) {
-      newErrors.nama = "Nama lengkap minimal 3 karakter";
-    }
-
-    if (!formData.email) {
-      newErrors.email = "Email wajib diisi";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email tidak valid";
-    }
-
-    if (!formData.NoWa) {
-      newErrors.NoWa = "Nomor WhatsApp wajib diisi";
-    } else if (!/^[0-9]{10,13}$/.test(formData.NoWa.replace(/\D/g, ""))) {
-      newErrors.NoWa = "Nomor WhatsApp tidak valid";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password wajib diisi";
-    } else if (passwordStrength.strength < 3) {
-      newErrors.password = "Password terlalu lemah";
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Konfirmasi password wajib diisi";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Password tidak cocok";
-    }
-
-    if (!formData.alamat) {
-      newErrors.alamat = "Alamat wajib diisi";
-    }
-
-    if (!formData.kecamatanId) {
-      newErrors.kecamatan = "Kecamatan wajib dipilih";
-    }
-
-    if (!formData.desaId) {
-      newErrors.desa = "Desa wajib dipilih";
-    }
-
-    if (!formData.kecamatanBinaanId) {
-      newErrors.kecamatanBinaan = "Kecamatan binaan wajib dipilih";
-    }
-
-    if (formData.desaBinaan.length === 0) {
-      newErrors.desaBinaan = "Minimal pilih satu desa binaan";
-    }
-
-    if (formData.selectedKelompokIds.length === 0) {
-      newErrors.selectedKelompokIds = "Minimal pilih satu kelompok tani";
-    }
-
-    if (!formData.tipe) {
-      newErrors.tipe = "Tipe penyuluh wajib dipilih";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  };
-
   // Handle form submission
   const handlePenyuluhSubmit = async (e: React.FormEvent) => {
     console.log(formData);
     e.preventDefault();
 
-    if (!validatePenyuluhForm()) {
+    const result = penyuluhRegisterSchema.safeParse(formData);
+
+    if (!result.success) {
+      setErrors(flattenZodErrors(result.error));
+
       toast.error("Form Tidak Valid", {
         description: "Mohon periksa kembali data yang Anda masukkan.",
         duration: 3000,
@@ -293,6 +286,8 @@ export function PenyuluhForm() {
 
       return;
     }
+
+    setErrors({});
 
     registerMutation.mutate(formData as unknown as CreatePenyuluhData, {
       onSuccess: () => {
@@ -321,6 +316,31 @@ export function PenyuluhForm() {
         setTimeout(() => {
           navigate("/login");
         }, 2000);
+      },
+      onError: (err: any) => {
+        const message =
+          err?.response?.data?.message || err?.message || "Terjadi kesalahan saat mendaftar";
+        const isEmailUsed =
+          typeof message === "string" &&
+          (message.toLowerCase().includes("email") ||
+            message.toLowerCase().includes("sudah") ||
+            message.toLowerCase().includes("already") ||
+            message.toLowerCase().includes("exist") ||
+            message.toLowerCase().includes("duplicate"));
+
+        if (isEmailUsed) {
+          setErrors((prev) => ({
+            ...prev,
+            email: "Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.",
+          }));
+        }
+
+        toast.error("Registrasi Gagal", {
+          description: isEmailUsed
+            ? "Email sudah digunakan oleh akun lain. Gunakan email yang berbeda."
+            : message,
+          duration: 4000,
+        });
       },
     });
   };
@@ -394,10 +414,16 @@ export function PenyuluhForm() {
                 isInvalid={!!errors.NIP}
                 label="NIP/NIK Penyuluh"
                 labelPlacement="outside"
-                placeholder="Masukkan NIP/NIK"
+                maxLength={18}
+                placeholder="Masukkan NIP/NIK (maks. 18 digit angka)"
+                type="text"
                 value={formData.NIP}
                 variant="bordered"
-                onChange={(e: any) => handleInputChange("NIP", e.target.value)}
+                onChange={(e: any) => {
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 18);
+
+                  handleInputChange("NIP", value);
+                }}
               />
 
               {/* Nama Lengkap */}
@@ -436,11 +462,16 @@ export function PenyuluhForm() {
                 isInvalid={!!errors.NoWa}
                 label="No. HP/WhatsApp"
                 labelPlacement="outside"
-                placeholder="08xxxxxxxxxx"
+                maxLength={13}
+                placeholder="08xxxxxxxxxx (10-13 digit)"
                 type="tel"
                 value={formData.NoWa}
                 variant="bordered"
-                onChange={(e: any) => handleInputChange("NoWa", e.target.value)}
+                onChange={(e: any) => {
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 13);
+
+                  handleInputChange("NoWa", value);
+                }}
               />
             </div>
 
@@ -557,7 +588,7 @@ export function PenyuluhForm() {
             {/* Tipe Penyuluh */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Tipe Penyuluh *
+                Tipe Penyuluh <span className="text-red-500">*</span>
               </p>
               <Select isInvalid={!!errors.tipe}
                 placeholder="Pilih tipe penyuluh"
@@ -607,7 +638,7 @@ export function PenyuluhForm() {
             {/* Kecamatan */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Kecamatan *
+                Kecamatan <span className="text-red-500">*</span>
               </p>
               <Select
                 isInvalid={!!errors.kecamatan}
@@ -637,7 +668,7 @@ export function PenyuluhForm() {
             {/* Desa */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Desa *
+                Desa <span className="text-red-500">*</span>
               </p>
               <Select
                 isInvalid={!!errors.desa}
@@ -679,7 +710,7 @@ export function PenyuluhForm() {
             {/* Kecamatan Binaan */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Kecamatan Binaan *
+                Kecamatan Binaan <span className="text-red-500">*</span>
               </p>
               <Select
                 isInvalid={!!errors.kecamatanBinaan}
@@ -713,7 +744,7 @@ export function PenyuluhForm() {
             {/* Desa Binaan - Multiple Select */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Desa Wilayah Binaan *
+                Desa Wilayah Binaan <span className="text-red-500">*</span>
               </p>
               <Select
                 isInvalid={!!errors.desaBinaan}
@@ -758,7 +789,7 @@ export function PenyuluhForm() {
             {/* Kelompok Binaan - Multiple Select */}
             <div className="mb-10">
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Kelompok Tani Binaan *
+                Kelompok Tani Binaan <span className="text-red-500">*</span>
               </p>
               <Select
                 isInvalid={!!errors.selectedKelompokIds}
@@ -828,39 +859,37 @@ export function PenyuluhForm() {
           isSelected={privacyAccepted}
           onValueChange={setPrivacyAccepted}
         >
-        </Checkbox>
-        <span className="text-sm text-gray-600">
-          Saya menyetujui{" "}
-          <span
-            className="text-green-600 hover:underline font-medium cursor-pointer"
-            onClick={() => setIsPrivacyModalOpen(true)}
-          >
-            Kebijakan Privasi
+          <span className="text-sm text-gray-600">
+            Saya menyetujui{" "}
+            <span
+              className="text-green-600 hover:underline font-medium cursor-pointer"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                setIsPrivacyModalOpen(true);
+              }}
+            >
+              Kebijakan Privasi
+            </span>
           </span>
-        </span>
+        </Checkbox>
       </div>
 
       {/* Privacy Policy Modal */}
-      <Modal
-        backdrop="blur"
-        isOpen={isPrivacyModalOpen}
-        scrollBehavior="inside"
-        size="2xl"
-        onClose={() => setIsPrivacyModalOpen(false)}
-      >
-        <ModalContent>
-          {(onClose: any) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Kebijakan Privasi
-              </ModalHeader>
-              <ModalBody>
+      <Modal isOpen={isPrivacyModalOpen} onOpenChange={setIsPrivacyModalOpen}>
+        <Modal.Backdrop variant="blur">
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-xl">
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <Modal.Heading>Kebijakan Privasi</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className="p-6">
                 <div className="prose prose-sm max-w-none">
                   <MarkdownViewer content={privacyPolicyContent} />
                 </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button color="danger" variant="light" onPress={() => setIsPrivacyModalOpen(false)}>
                   Tutup
                 </Button>
                 <Button
@@ -868,21 +897,38 @@ export function PenyuluhForm() {
                   color="success"
                   onPress={() => {
                     setPrivacyAccepted(true);
-                    onClose();
+                    setIsPrivacyModalOpen(false);
                   }}
                 >
                   Setuju
                 </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
 
       {/* Submit Button */}
       <Button
-        className="w-full py-5 sm:py-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
-        isDisabled={registerMutation.isPending || !privacyAccepted}
+        className="w-full py-3 sm:py-4 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
+        isDisabled={
+          registerMutation.isPending ||
+          !privacyAccepted ||
+          !formData.NIP ||
+          !formData.nama ||
+          !formData.email ||
+          !formData.NoWa ||
+          !formData.password ||
+          !formData.confirmPassword ||
+          !formData.alamat ||
+          !formData.kecamatanId ||
+          !formData.desaId ||
+          !formData.kecamatanBinaanId ||
+          formData.desaBinaan.length === 0 ||
+          formData.selectedKelompokIds.length === 0 ||
+          !formData.tipe ||
+          Object.values(errors).some(e => !!e)
+        }
         isLoading={registerMutation.isPending}
         type="submit"
       >

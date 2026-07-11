@@ -29,6 +29,13 @@ import {
   usePenyuluh,
   usePetaniRegister,
 } from "@/hook/usePetaniAuth";
+
+import {
+  petaniRegisterSchema,
+  type PetaniRegisterFormValues,
+  type FieldErrors,
+  flattenZodErrors,
+} from "@/lib/validations/auth.schema";
 type PetaniFormRef = {
   resetForm?: () => void;
 };
@@ -80,7 +87,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<FieldErrors<PetaniRegisterFormValues>>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
 
@@ -180,73 +187,17 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
 
   const passwordStrength = checkPasswordStrength(petaniForm.password);
 
-  // Form validation for petani
-  const validatePetaniForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!petaniForm.NIK) {
-      newErrors.NIK = "NIK wajib diisi";
-    } else if (petaniForm.NIK.length !== 16) {
-      newErrors.NIK = "NIK harus 16 digit";
-    }
-
-    if (!petaniForm.nama) {
-      newErrors.nama = "Nama lengkap wajib diisi";
-    } else if (petaniForm.nama.length < 3) {
-      newErrors.nama = "Nama minimal 3 karakter";
-    }
-
-    if (!petaniForm.NoWa) {
-      newErrors.NoWa = "Nomor WhatsApp wajib diisi";
-    } else if (!/^[0-9]{10,13}$/.test(petaniForm.NoWa.replace(/\D/g, ""))) {
-      newErrors.NoWa = "Nomor WhatsApp tidak valid";
-    }
-
-    if (!petaniForm.password) {
-      newErrors.password = "Password wajib diisi";
-    } else if (petaniForm.password.length < 6) {
-      newErrors.password = "Password minimal 6 karakter";
-    }
-
-    if (!petaniForm.confirmPassword) {
-      newErrors.confirmPassword = "Konfirmasi password wajib diisi";
-    } else if (petaniForm.password !== petaniForm.confirmPassword) {
-      newErrors.confirmPassword = "Password tidak cocok";
-    }
-
-    if (!petaniForm.alamat) {
-      newErrors.alamat = "Alamat wajib diisi";
-    }
-
-    if (!petaniForm.kecamatan) {
-      newErrors.kecamatan = "Kecamatan wajib dipilih";
-    }
-
-    if (!petaniForm.desa) {
-      newErrors.desa = "Desa wajib dipilih";
-    }
-
-    if (!petaniForm.penyuluh) {
-      newErrors.penyuluh = "Penyuluh wajib dipilih";
-    }
-
-    if (!petaniForm.gapoktan) {
-      newErrors.gapoktan = "Gapoktan wajib diisi";
-    }
-
-    if (!petaniForm.namaKelompok) {
-      newErrors.namaKelompok = "Nama kelompok wajib diisi";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handlePetaniSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validatePetaniForm()) {
+    const result = petaniRegisterSchema.safeParse({
+      ...petaniForm,
+      penyuluh: petaniForm.penyuluh,
+    });
+
+    if (!result.success) {
+      setErrors(flattenZodErrors(result.error));
+
       toast.error("Form Tidak Valid", {
         description: "Mohon periksa kembali data yang Anda masukkan.",
         duration: 3000,
@@ -254,6 +205,8 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
 
       return;
     }
+
+    setErrors({});
 
     // Create FormData for multipart upload
     const submitData = new FormData();
@@ -285,7 +238,33 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
       submitData.append("foto", selectedFile);
     }
 
-    petaniRegisterMutation.mutate(submitData);
+    petaniRegisterMutation.mutate(submitData, {
+      onError: (err: any) => {
+        const message =
+          err?.response?.data?.message || err?.message || "Terjadi kesalahan saat mendaftar";
+        const isEmailUsed =
+          typeof message === "string" &&
+          (message.toLowerCase().includes("email") ||
+            message.toLowerCase().includes("sudah") ||
+            message.toLowerCase().includes("already") ||
+            message.toLowerCase().includes("exist") ||
+            message.toLowerCase().includes("duplicate"));
+
+        if (isEmailUsed) {
+          setErrors((prev) => ({
+            ...prev,
+            email: "Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.",
+          }));
+        }
+
+        toast.error("Pendaftaran Gagal", {
+          description: isEmailUsed
+            ? "Email sudah digunakan oleh akun lain. Gunakan email yang berbeda."
+            : message,
+          duration: 4000,
+        });
+      },
+    });
   };
 
   const handleInputChange = (field: string, value: string | number) => {
@@ -323,8 +302,8 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
     }
 
     // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+    if ((errors as Record<string, string | undefined>)[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -431,8 +410,11 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
 
               {/* Email */}
               <Input
+                required
                 classNames={{ label: "font-semibold text-sm" }}
-                label="Email (Opsional)"
+                errorMessage={errors.email}
+                isInvalid={!!errors.email}
+                label="Email"
                 labelPlacement="outside"
                 placeholder="email@example.com"
                 type="email"
@@ -613,7 +595,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             {/* Kecamatan */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Kecamatan *
+                Kecamatan <span className="text-red-500">*</span>
               </p>
               <Select isInvalid={!!errors.kecamatan}
                 isLoading={loadingKecamatan}
@@ -642,7 +624,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             {/* Desa */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Desa *
+                Desa <span className="text-red-500">*</span>
               </p>
               <Select isInvalid={!!errors.desa}
                 isDisabled={!petaniForm.kecamatan}
@@ -679,11 +661,11 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
           Kelompok Tani
         </h3>
         <div className="space-y-4">
-          {/* Penyuluh */}
-          <div>
-            <p className="block text-sm font-semibold text-gray-700 mb-2">
-              Penyuluh *
-            </p>
+            {/* Penyuluh */}
+            <div>
+              <p className="block text-sm font-semibold text-gray-700 mb-2">
+                Penyuluh <span className="text-red-500">*</span>
+              </p>
             <Select isInvalid={!!errors.penyuluh}
               isLoading={loadingPenyuluh}
               placeholder="Pilih penyuluh"
@@ -734,10 +716,10 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               variant="bordered"
             />
 
-            {/* Nama Kelompok - Select dropdown */}
+              {/* Nama Kelompok - Select dropdown */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Nama Kelompok Tani *
+                Nama Kelompok Tani <span className="text-red-500">*</span>
               </p>
               <Select
                 isInvalid={!!errors.namaKelompok}

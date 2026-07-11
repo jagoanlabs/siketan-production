@@ -18,6 +18,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
+import { toast } from "sonner";
 import { useStatistikaDetailComplete } from "@/hook/dashboard/Statistika/useDetailStatistika";
 import { useUpdateRealisasiStatistika } from "@/hook/dashboard/Statistika/useRealisasiStatistika";
 import { BULAN_OPTIONS } from "@/types/Statistika/statistika.d";
@@ -95,6 +96,10 @@ export const RealisasiStatistika = () => {
     if (!validateForm() || !detailData) return;
 
     try {
+      toast.loading("Menyimpan data realisasi panen...", {
+        id: "save-realisasi",
+      });
+
       await updateMutation.mutateAsync({
         id: detailData.statistika.id,
         realisasiData: formData,
@@ -103,9 +108,24 @@ export const RealisasiStatistika = () => {
       });
 
       // Refresh data and show success
-      refetch();
+      await refetch();
+
+      toast.success("Data realisasi panen berhasil disimpan", {
+        id: "save-realisasi",
+        description: `${formData.realisasiLuasPanen?.toLocaleString()} HA • ${formData.realisasiHasilPanen?.toLocaleString()} TON • ${formData.realisasiBulanPanen}`,
+        duration: 3000,
+      });
+
+      setTimeout(() => {
+        navigate("/dashboard-admin/statistik-pertanian");
+      }, 0);
     } catch (error) {
       console.error("Error updating realisasi:", error);
+
+      toast.error("Gagal menyimpan data realisasi panen", {
+        id: "save-realisasi",
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
     }
   };
 
@@ -310,7 +330,7 @@ export const RealisasiStatistika = () => {
                       {statistika.kategori === "jenis_sayur" || statistika.kategori === "sayur"
                         ? "Sayur"
                         : statistika.kategori.charAt(0).toUpperCase() +
-                          statistika.kategori.slice(1)}
+                        statistika.kategori.slice(1)}
                     </Chip>
                   </div>
                   <div>
@@ -483,78 +503,76 @@ export const RealisasiStatistika = () => {
           {/* Current Realisasi Status */}
           {(statistika.realisasiLuasPanen ||
             statistika.realisasiHasilPanen) && (
-            <Card className="p-5">
-              <CardHeader>
-                <h3 className="text-lg font-semibold">Realisasi Saat Ini</h3>
-              </CardHeader>
-              <CardBody>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Luas Panen
-                    </span>
-                    <span className="font-medium">
-                      {statistika.realisasiLuasPanen?.toLocaleString() || 0} HA
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Hasil Panen
-                    </span>
-                    <span className="font-medium">
-                      {statistika.realisasiHasilPanen?.toLocaleString() || 0}{" "}
-                      TON
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Bulan Panen
-                    </span>
-                    <span className="font-medium">
-                      {statistika.realisasiBulanPanen || "-"}
-                    </span>
-                  </div>
-
-                  <Divider className="my-3" />
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Pencapaian Luas
+              <Card className="p-5">
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Realisasi Saat Ini</h3>
+                </CardHeader>
+                <CardBody>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Luas Panen
                       </span>
-                      <span
-                        className={`font-medium ${
-                          metrics.persentaseRealisasiLuas >= 100
-                            ? "text-green-600"
-                            : metrics.persentaseRealisasiLuas >= 80
-                              ? "text-yellow-600"
-                              : "text-red-600"
-                        }`}
-                      >
-                        {metrics.persentaseRealisasiLuas.toFixed(1)}%
+                      <span className="font-medium">
+                        {statistika.realisasiLuasPanen?.toLocaleString() || 0} HA
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Pencapaian Hasil
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Hasil Panen
                       </span>
-                      <span
-                        className={`font-medium ${
-                          metrics.persentaseRealisasiHasil >= 100
-                            ? "text-green-600"
-                            : metrics.persentaseRealisasiHasil >= 80
-                              ? "text-yellow-600"
-                              : "text-red-600"
-                        }`}
-                      >
-                        {metrics.persentaseRealisasiHasil.toFixed(1)}%
+                      <span className="font-medium">
+                        {statistika.realisasiHasilPanen?.toLocaleString() || 0}{" "}
+                        TON
                       </span>
                     </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Bulan Panen
+                      </span>
+                      <span className="font-medium">
+                        {statistika.realisasiBulanPanen || "-"}
+                      </span>
+                    </div>
+
+                    <Divider className="my-3" />
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Pencapaian Luas
+                        </span>
+                        <span
+                          className={`font-medium ${metrics.persentaseRealisasiLuas >= 100
+                              ? "text-green-600"
+                              : metrics.persentaseRealisasiLuas >= 80
+                                ? "text-yellow-600"
+                                : "text-red-600"
+                            }`}
+                        >
+                          {metrics.persentaseRealisasiLuas.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Pencapaian Hasil
+                        </span>
+                        <span
+                          className={`font-medium ${metrics.persentaseRealisasiHasil >= 100
+                              ? "text-green-600"
+                              : metrics.persentaseRealisasiHasil >= 80
+                                ? "text-yellow-600"
+                                : "text-red-600"
+                            }`}
+                        >
+                          {metrics.persentaseRealisasiHasil.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </CardBody>
-            </Card>
-          )}
+                </CardBody>
+              </Card>
+            )}
         </div>
       </div>
     </div>

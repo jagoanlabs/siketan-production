@@ -5,7 +5,7 @@ export const Chip = ({ variant, className, children, ...props }: any) => {
   let borderClass = "";
   if (variant === "bordered") {
     mappedVariant = "secondary";
-    borderClass = "border border-gray-300 dark:border-gray-600";
+    borderClass = "border border-gray-300";
   } else if (variant === "flat" || variant === "faded") {
     mappedVariant = "soft";
   }

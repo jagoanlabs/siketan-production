@@ -10,64 +10,34 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 
 import { assets } from "@/assets/assets";
 import { useLogin } from "@/hook/useAuthApi";
-// import { usePetaniLogin } from "@/hook/usePetaniAuth";
-
-type RoleType = {
-  key: string;
-  label: string;
-};
-
-export const role: RoleType[] = [
-  { key: "petani", label: "Petani" },
-  { key: "penyuluh", label: "Penyuluh" },
-];
+import { loginSchema, flattenZodErrors, type FieldErrors, type LoginFormValues } from "@/lib/validations/auth.schema";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  // const [selectedRole, setSelectedRole] = useState<string>("penyuluh");
 
-  // Penyuluh login states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Petani login states
-  // const [nik, setNik] = useState("");
-  // const [petaniPassword, setPetaniPassword] = useState("");
-
-  // Common states
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<LoginFormValues>>({});
+  const [backendError, setBackendError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Hooks
   const loginMutation = useLogin();
-  // const petaniLoginMutation = usePetaniLogin();
-
-  // Check if Petani is selected
-  // const isPetaniSelected = selectedRole === "petani";
-  // Check if Petani is selected
-
-  // const handlePetaniLogin = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
-
-  //   petaniLoginMutation.mutate(
-  //     { NIK: nik, password: petaniPassword },
-  //     {
-  //       onError: (err: any) => {
-  //         setError(
-  //           err?.response?.data?.message || "Terjadi kesalahan saat login",
-  //         );
-  //       },
-  //       onSettled: () => {
-  //         setIsLoading(false);
-  //       },
-  //     },
-  //   );
-  // };
 
   const handlePenyuluhLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setBackendError("");
+    setFieldErrors({});
+
+    const result = loginSchema.safeParse({ email, password });
+
+    if (!result.success) {
+      setFieldErrors(flattenZodErrors(result.error));
+
+      return;
+    }
+
     setIsLoading(true);
 
     loginMutation.mutate(
@@ -77,9 +47,10 @@ export default function LoginPage() {
           navigate("/");
         },
         onError: (err: any) => {
-          setError(
-            err?.response?.data?.message || "Terjadi kesalahan saat login",
-          );
+          const message =
+            err?.response?.data?.message || "Terjadi kesalahan saat login";
+
+          setBackendError(message);
         },
         onSettled: () => {
           setIsLoading(false);
@@ -87,20 +58,6 @@ export default function LoginPage() {
       },
     );
   };
-
-  // Handle role change
-  // const handleRoleChange = (keys: any) => {
-  //   const key = Array.from(keys)[0] as string;
-
-  //   setSelectedRole(key);
-  //   setError(""); // Clear error when switching roles
-
-  //   // Reset form fields
-  //   setEmail("");
-  //   setPassword("");
-  //   setNik("");
-  //   setPetaniPassword("");
-  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D9EAF2] to-[#E8F3FA] flex items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -352,13 +309,21 @@ export default function LoginPage() {
                 <Input
                   required
                   autoComplete="email"
+                  errorMessage={fieldErrors.email}
+                  isInvalid={!!fieldErrors.email}
                   label="Email"
                   labelPlacement="outside"
                   placeholder="Masukkan email anda"
                   type="email"
                   value={email}
                   variant="bordered"
-                  onChange={(e: any) => setEmail(e.target.value)}
+                  onChange={(e: any) => {
+                    setEmail(e.target.value);
+
+                    if (fieldErrors.email) {
+                      setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                    }
+                  }}
                 />
               </div>
 
@@ -386,20 +351,31 @@ export default function LoginPage() {
                       )}
                     </button>
                   }
+                  errorMessage={fieldErrors.password}
+                  isInvalid={!!fieldErrors.password}
                   label="Password"
                   labelPlacement="outside"
                   placeholder="Masukkan password anda"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   variant="bordered"
-                  onChange={(e: any) => setPassword(e.target.value)}
+                  onChange={(e: any) => {
+                    setPassword(e.target.value);
+
+                    if (fieldErrors.password) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        password: undefined,
+                      }));
+                    }
+                  }}
                 />
               </div>
 
               {/* Error Message */}
-              {error && (
+              {backendError && (
                 <div className="mb-4 p-3 text-xs sm:text-sm text-red-600 bg-red-50 rounded-lg">
-                  {error}
+                  {backendError}
                 </div>
               )}
 
@@ -421,7 +397,7 @@ export default function LoginPage() {
 
               {/* Submit Button */}
               <Button
-                className="w-full py-5 sm:py-6 mt-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-full py-3 sm:py-4 mt-6 text-sm sm:text-base font-semibold text-white rounded-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl"
                 isDisabled={!email || !password || isLoading}
                 isLoading={isLoading}
                 type="submit"

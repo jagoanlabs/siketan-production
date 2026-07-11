@@ -1,18 +1,19 @@
 import React from "react";
 import { Checkbox as RACCheckbox } from "@heroui/react";
 
-export const Checkbox = React.forwardRef<HTMLInputElement, any>((props, ref) => {
+export const Checkbox = React.forwardRef<any, any>((props, ref) => {
   const { color, isSelected, onValueChange, children, className, ...rest } = props;
-  
-  const handleChange = (e: any) => {
+
+  const handleChange = (isChecked: boolean) => {
     if (onValueChange) {
-      onValueChange(e.target.checked);
+      onValueChange(isChecked);
     }
   };
 
-  let colorClass = "accent-green-600";
-  if (color === "primary") colorClass = "accent-blue-600";
-  if (color === "danger") colorClass = "accent-red-600";
+  const colorClass = color === "success" ? "accent-green-600"
+    : color === "primary" ? "accent-blue-600"
+    : color === "danger" ? "accent-red-600"
+    : "accent-green-600";
 
   return (
     <RACCheckbox
@@ -22,7 +23,12 @@ export const Checkbox = React.forwardRef<HTMLInputElement, any>((props, ref) => 
       className={`${colorClass} ${className || ""}`}
       {...rest}
     >
-      {children}
+      <RACCheckbox.Content>
+        <RACCheckbox.Control>
+          <RACCheckbox.Indicator />
+        </RACCheckbox.Control>
+        {children}
+      </RACCheckbox.Content>
     </RACCheckbox>
   );
 });

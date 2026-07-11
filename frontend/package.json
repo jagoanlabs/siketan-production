@@ -38,6 +38,7 @@
     "tailwind-variants": "2.0.1",
     "tailwindcss": "4.1.11",
     "xlsx": "^0.18.5",
+    "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

@@ -40,7 +40,7 @@ export const Pagination = ({ total, page, onChange, className, showControls, ...
       <PaginationContent className="flex gap-1 items-center justify-center list-none pl-0">
         {showControls && (
           <PaginationPrevious
-            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded disabled:opacity-50 text-xs"
+            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50 text-xs"
             onPress={() => handlePageChange(Math.max(1, page - 1))}
             isDisabled={page <= 1}
           >
@@ -64,7 +64,7 @@ export const Pagination = ({ total, page, onChange, className, showControls, ...
                 className={`w-8 h-8 flex items-center justify-center text-xs rounded font-medium cursor-pointer ${
                   isActive
                     ? "bg-green-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 {p}
@@ -74,7 +74,7 @@ export const Pagination = ({ total, page, onChange, className, showControls, ...
         })}
         {showControls && (
           <PaginationNext
-            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded disabled:opacity-50 text-xs"
+            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50 text-xs"
             onPress={() => handlePageChange(Math.min(total, page + 1))}
             isDisabled={page >= total}
           >

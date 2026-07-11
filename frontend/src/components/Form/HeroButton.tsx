@@ -50,11 +50,11 @@ const getButtonClasses = (
   let variantClass = "";
   if (isPrimary || isSuccess) {
     if (variant === "flat") {
-      variantClass = "bg-green-50 hover:bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400";
+      variantClass = "bg-green-50 hover:bg-green-100 text-green-700";
     } else if (variant === "bordered") {
-      variantClass = "border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/10";
+      variantClass = "border border-green-600 text-green-600 hover:bg-green-50";
     } else if (variant === "light") {
-      variantClass = "text-green-600 hover:bg-green-50/50 dark:hover:bg-green-950/10";
+      variantClass = "text-green-600 hover:bg-green-50/50";
     } else if (variant === "ghost") {
       variantClass = "border border-green-600 text-green-600 hover:bg-green-600 hover:text-white";
     } else { // solid
@@ -62,11 +62,11 @@ const getButtonClasses = (
     }
   } else if (isSecondary) {
     if (variant === "flat") {
-      variantClass = "bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400";
+      variantClass = "bg-blue-50 hover:bg-blue-100 text-blue-700";
     } else if (variant === "bordered") {
-      variantClass = "border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/10";
+      variantClass = "border border-blue-600 text-blue-600 hover:bg-blue-50";
     } else if (variant === "light") {
-      variantClass = "text-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-950/10";
+      variantClass = "text-blue-600 hover:bg-blue-50/50";
     } else if (variant === "ghost") {
       variantClass = "border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white";
     } else { // solid
@@ -74,11 +74,11 @@ const getButtonClasses = (
     }
   } else if (isDanger) {
     if (variant === "flat") {
-      variantClass = "bg-red-50 hover:bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400";
+      variantClass = "bg-red-50 hover:bg-red-100 text-red-700";
     } else if (variant === "bordered") {
-      variantClass = "border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/10";
+      variantClass = "border border-red-600 text-red-600 hover:bg-red-50";
     } else if (variant === "light") {
-      variantClass = "text-red-600 hover:bg-red-50/50 dark:hover:bg-red-950/10";
+      variantClass = "text-red-600 hover:bg-red-50/50";
     } else if (variant === "ghost") {
       variantClass = "border border-red-600 text-red-600 hover:bg-red-600 hover:text-white";
     } else { // solid
@@ -86,11 +86,11 @@ const getButtonClasses = (
     }
   } else if (isWarning) {
     if (variant === "flat") {
-      variantClass = "bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400";
+      variantClass = "bg-amber-50 hover:bg-amber-100 text-amber-700";
     } else if (variant === "bordered") {
-      variantClass = "border border-amber-600 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/10";
+      variantClass = "border border-amber-600 text-amber-600 hover:bg-amber-50";
     } else if (variant === "light") {
-      variantClass = "text-amber-600 hover:bg-amber-50/50 dark:hover:bg-amber-950/10";
+      variantClass = "text-amber-600 hover:bg-amber-50/50";
     } else if (variant === "ghost") {
       variantClass = "border border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white";
     } else { // solid
@@ -98,15 +98,15 @@ const getButtonClasses = (
     }
   } else { // default (gray)
     if (variant === "flat") {
-      variantClass = "bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+      variantClass = "bg-gray-100 hover:bg-gray-200 text-gray-700";
     } else if (variant === "bordered") {
-      variantClass = "border border-gray-300 hover:bg-gray-50 text-gray-700 dark:border-gray-700 dark:text-gray-300";
+      variantClass = "border border-gray-300 hover:bg-gray-50 text-gray-700";
     } else if (variant === "light") {
-      variantClass = "text-gray-700 hover:bg-gray-100 dark:text-gray-300";
+      variantClass = "text-gray-700 hover:bg-gray-100";
     } else if (variant === "ghost") {
       variantClass = "border border-gray-300 text-gray-700 hover:bg-gray-700 hover:text-white";
     } else { // solid
-      variantClass = "bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200";
+      variantClass = "bg-gray-200 hover:bg-gray-300 text-gray-800";
     }
   }
 

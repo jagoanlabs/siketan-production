@@ -32,8 +32,8 @@ const getSelectTriggerClasses = (variant: string, classNames: any, isDisabled?: 
   const hasRounded = /\brounded-/.test(customTrigger);
 
   // Default values based on variant
-  let bgClass = hasBg ? "" : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600";
-  let borderClass = hasBorder ? "" : "border border-gray-300 dark:border-gray-600 focus:border-green-500";
+  let bgClass = hasBg ? "" : "bg-gray-100 hover:bg-gray-200";
+  let borderClass = hasBorder ? "" : "border border-gray-300 focus:border-green-500";
   let paddingClass = hasPadding ? "" : "px-3.5 py-3";
   let roundedClass = hasRounded ? "" : "rounded-xl";
 
@@ -41,18 +41,18 @@ const getSelectTriggerClasses = (variant: string, classNames: any, isDisabled?: 
     borderClass = "border-red-500 focus:border-red-500";
   } else if (variant === "bordered") {
     bgClass = hasBg ? "" : "bg-transparent";
-    borderClass = hasBorder ? "" : "border-2 border-gray-200 dark:border-gray-700 focus:border-green-500";
+    borderClass = hasBorder ? "" : "border-2 border-gray-200 focus:border-green-500";
   } else if (variant === "flat") {
-    bgClass = hasBg ? "" : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700";
+    bgClass = hasBg ? "" : "bg-gray-100 hover:bg-gray-200";
     borderClass = hasBorder ? "" : "border-none focus:border-green-500";
   } else if (variant === "underlined") {
     bgClass = hasBg ? "" : "bg-transparent";
-    borderClass = hasBorder ? "" : "border-b border-gray-200 dark:border-gray-700 focus:border-green-500";
+    borderClass = hasBorder ? "" : "border-b border-gray-200 focus:border-green-500";
     roundedClass = "";
     paddingClass = "";
   }
 
-  return `w-full flex justify-between items-center text-gray-700 dark:text-gray-200 text-sm min-h-[40px] transition-colors outline-none focus:outline-none ${bgClass} ${borderClass} ${paddingClass} ${roundedClass} ${customTrigger} ${isDisabled ? "opacity-60 cursor-not-allowed" : ""}`;
+  return `w-full flex justify-between items-center text-gray-700 text-sm min-h-[40px] transition-colors outline-none focus:outline-none ${bgClass} ${borderClass} ${paddingClass} ${roundedClass} ${customTrigger} ${isDisabled ? "opacity-60 cursor-not-allowed" : ""}`;
 };
 
 export const Select = React.forwardRef<HTMLDivElement, SelectProps>((props, ref) => {
@@ -137,7 +137,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>((props, ref)
         {isInvalid && errorMessage && (
           <span className="text-xs text-red-500 pl-1">{errorMessage}</span>
         )}
-        <SelectPopover className="p-1 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg min-w-[200px]">
+        <SelectPopover className="p-1 bg-white border border-gray-150 rounded-xl shadow-lg min-w-[200px]">
           <ListBox className="outline-none max-h-60 overflow-y-auto">
             {items.map((item, idx) => {
               const itemKey = String(item.key !== null && item.key !== undefined ? item.key : (item.props.value || item.props.id || idx));
@@ -146,7 +146,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>((props, ref)
                   id={itemKey}
                   key={itemKey}
                   textValue={typeof item.props.children === "string" ? item.props.children : itemKey}
-                  className="px-3 py-2 text-sm rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 outline-none text-gray-700 dark:text-gray-200 block w-full"
+                  className="px-3 py-2 text-sm rounded-lg cursor-pointer hover:bg-gray-100 outline-none text-gray-700 block w-full"
                 >
                   {item.props.children}
                 </ListBoxItem>

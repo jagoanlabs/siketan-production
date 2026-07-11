@@ -1,6 +1,5 @@
 // hook/dashboard/Statistika/useRealisasiStatistika.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import {
   RealisasiStatistikaFormData,
@@ -61,8 +60,6 @@ export const useUpdateRealisasiStatistika = () => {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Data realisasi berhasil disimpan!");
-
       queryClient.invalidateQueries({
         queryKey: ["tanaman-data"], // Sesuaikan dengan key di useTanamanData
         exact: false,
@@ -76,10 +73,6 @@ export const useUpdateRealisasiStatistika = () => {
       });
     },
     onError: (error: any) => {
-      const message =
-        error.response?.data?.message || "Gagal menyimpan data realisasi";
-
-      toast.error(message);
       console.error("Update realisasi error:", error);
     },
   });
