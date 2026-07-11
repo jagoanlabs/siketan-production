@@ -27,6 +27,9 @@ export const getAllDataTanaman = async (
     if (params.isExport !== undefined) {
       queryParams.append("isExport", params.isExport.toString());
     }
+    if (params.kategori) {
+      queryParams.append("kategori", params.kategori);
+    }
     if (params.komoditas) {
       queryParams.append("komoditas", params.komoditas);
     }

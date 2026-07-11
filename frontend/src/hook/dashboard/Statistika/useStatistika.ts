@@ -187,12 +187,14 @@ export const useExportStatistika = () => {
     mutationFn: async ({
       poktanId,
       tahun,
+      kategori,
       komoditas,
       prakiraanMin,
       prakiraanMax,
     }: {
       poktanId?: number | null;
       tahun?: string | null;
+      kategori?: string | null;
       komoditas?: string | null;
       prakiraanMin?: string | null;
       prakiraanMax?: string | null;
@@ -209,6 +211,11 @@ export const useExportStatistika = () => {
       // Tambahkan tahun jika ada filter tahun
       if (tahun) {
         params.append("tahun", tahun);
+      }
+
+      // Tambahkan kategori jika ada filter
+      if (kategori) {
+        params.append("kategori", kategori);
       }
 
       // Tambahkan komoditas jika ada filter

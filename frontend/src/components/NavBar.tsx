@@ -113,12 +113,12 @@ export const Navbar: React.FC<{ index: number | null }> = ({
         {/* Desktop Auth Section */}
         <div className="hidden lg:block">
           {isAuthenticated ? (
-            <div className="flex items-center gap-3 xl:gap-4">
+            <div className="flex items-center gap-3 xl:gap-4 flex-shrink-0">
 
               {/* Profile Info */}
               <div className="flex items-center gap-2 xl:gap-3">
                 {/* Profile Picture */}
-                <div className="overflow-hidden border border-gray-300 rounded-full w-9 h-9 xl:w-10 xl:h-10">
+                <div className="overflow-hidden border border-gray-300 rounded-full w-9 h-9 xl:w-10 xl:h-10 flex-shrink-0">
                   <img
                     alt="Profile"
                     className="object-cover w-full h-full"
@@ -130,9 +130,9 @@ export const Navbar: React.FC<{ index: number | null }> = ({
                 </div>
 
                 {/* Name and Role */}
-                <div className="hidden leading-tight xl:block">
+                <div className="hidden leading-tight xl:block whitespace-nowrap">
                   <h1 className="text-sm font-medium">Halo, {user?.nama}</h1>
-                  <p className="text-xs text-green-400 uppercase">
+                  <p className="text-xs text-green-500 font-semibold uppercase">
                     {user?.peran}
                   </p>
                 </div>

@@ -1,7 +1,5 @@
 import { Chip } from "../../../../../components/Form/HeroChip";
-import { Input } from "../../../../../components/Form/HeroInput";
 import { Button } from "../../../../../components/Form/HeroButton";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../components/Form/HeroModal";
 import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
 // pages/DashboardStatistika.tsx - Enhanced dengan bulk actions
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -13,7 +11,7 @@ import AsyncSelect from "react-select/async";
 
 
 
-import { Popover, PopoverContent, PopoverTrigger, RangeCalendar, Tooltip } from "@heroui/react";
+import { Modal, Popover, PopoverContent, PopoverTrigger, RangeCalendar, SearchField, Tooltip } from "@heroui/react";
 import { CalendarDate } from "@internationalized/date";
 import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { TbTableExport } from "react-icons/tb";
@@ -83,6 +81,7 @@ export const DashboardStatistika = () => {
   const { data: availableYears = [] } = useStatistikaYears();
 
   // New Filter States
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedCommodity, setSelectedCommodity] = useState<string>("");
   const [prakiraanMin, setPrakiraanMin] = useState<string>("");
   const [prakiraanMax, setPrakiraanMax] = useState<string>("");
@@ -131,6 +130,7 @@ export const DashboardStatistika = () => {
   };
 
   const handleClearAllFilters = () => {
+    setSelectedCategory("");
     setSelectedCommodity("");
     setPrakiraanMin("");
     setPrakiraanMax("");
@@ -177,6 +177,7 @@ export const DashboardStatistika = () => {
       sortType: sortConfig.direction,
       poktan_id: selectedOption?.value || undefined,
       search: debouncedTableSearch || "",
+      kategori: selectedCategory || undefined,
       komoditas: selectedCommodity || undefined,
       prakiraanMin: prakiraanMin || undefined,
       prakiraanMax: prakiraanMax || undefined,
@@ -187,6 +188,7 @@ export const DashboardStatistika = () => {
       sortConfig,
       selectedOption,
       debouncedTableSearch,
+      selectedCategory,
       selectedCommodity,
       prakiraanMin,
       prakiraanMax,
@@ -509,6 +511,7 @@ export const DashboardStatistika = () => {
       await exportMutation.mutateAsync({
         poktanId: selectedOption?.value || null,
         tahun: exportType === "year" ? selectedExportYear : null,
+        kategori: selectedCategory || null,
         komoditas: selectedCommodity || null,
         prakiraanMin: prakiraanMin || null,
         prakiraanMax: prakiraanMax || null,
@@ -817,11 +820,11 @@ export const DashboardStatistika = () => {
         <Tooltip>
           <Tooltip.Trigger>
             <Button
-              color="primary"
+              color="secondary"
               startContent={<FaPlus className="w-4 h-4" />}
               onPress={handleCreate}
             >
-              <span className="hidden sm:inline">Tambah</span>
+              <span className="hidden sm:inline-flex items-center">Tambah</span>
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>Tambah Data Baru</Tooltip.Content>
@@ -837,7 +840,7 @@ export const DashboardStatistika = () => {
               variant="flat"
               onPress={handleExport}
             >
-              <span className="hidden sm:inline">Export</span>
+              <span className="hidden sm:inline-flex items-center">Export</span>
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>Export Data ke XLSX</Tooltip.Content>
@@ -853,7 +856,7 @@ export const DashboardStatistika = () => {
               variant="flat"
               onPress={handleUploadXLSX}
             >
-              <span className="hidden sm:inline">Upload</span>
+              <span className="hidden sm:inline-flex items-center">Upload</span>
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>Upload Data dari XLSX</Tooltip.Content>
@@ -892,11 +895,28 @@ export const DashboardStatistika = () => {
         <AsyncSelect
           cacheOptions
           isClearable
+          unstyled
           classNames={{
-            control: () =>
-              "w-full px-1 py-2 border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700",
-            menu: () => "z-[9999]",
-            menuPortal: () => "z-[9999]",
+            control: ({ isFocused }) =>
+              `w-full px-3.5 py-3 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[40px] ${isFocused
+                ? "border-green-500 ring-1 ring-green-500"
+                : "border-gray-300 dark:border-gray-600"
+              }`,
+            placeholder: () => "text-gray-400 text-sm",
+            singleValue: () => "text-gray-700 dark:text-gray-200 text-sm",
+            input: () => "text-gray-700 dark:text-gray-200 text-sm outline-none",
+            menu: () => "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
+            option: ({ isFocused, isSelected }) =>
+              `px-3 py-2.5 text-sm rounded-lg cursor-pointer ${isSelected
+                ? "bg-green-600 text-white"
+                : isFocused
+                  ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  : "text-gray-700 dark:text-gray-200"
+              }`,
+            valueContainer: () => "flex items-center gap-1.5 flex-1",
+            indicatorsContainer: () => "flex items-center gap-1.5 text-gray-400",
+            clearIndicator: () => "hover:text-red-500 cursor-pointer p-0.5",
+            dropdownIndicator: () => "hover:text-gray-600 cursor-pointer p-0.5"
           }}
           defaultOptions={defaultOptions}
           isLoading={isPotkanLoading}
@@ -928,16 +948,54 @@ export const DashboardStatistika = () => {
       {/* Search and Filters Flex Container */}
       <div className="flex flex-col md:flex-row gap-4 items-end mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
         {/* Search */}
-        <div className="flex-1 w-full">
-          <Input
-            isClearable
-            className="w-full"
-            label="Pencarian"
-            placeholder="Cari kategori, komoditas, dll..."
+        <div className="flex-1 w-full flex flex-col gap-1.5">
+          <SearchField
             value={tableSearchTerm}
-            onClear={handleClearSearch}
-            onValueChange={handleTableSearchChange}
-          />
+            onChange={handleTableSearchChange}
+          >
+            <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 pl-1">Pencarian</span>
+            <SearchField.Group className="w-full  bg-transparent border border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 transition-colors flex items-center gap-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 min-h-[46px]">
+              <SearchField.SearchIcon className="text-gray-400" />
+              <SearchField.Input
+                placeholder="Cari kategori, poktan/kelompok, kecamatan, desa..."
+                className="bg-transparent outline-none border-none ring-0 focus:ring-0 focus:outline-none w-full text-sm text-gray-700 dark:text-gray-200"
+              />
+              {tableSearchTerm && (
+                <SearchField.ClearButton
+                  className="text-gray-400 hover:text-gray-600 cursor-pointer flex items-center justify-center"
+                  onClick={handleClearSearch}
+                />
+              )}
+            </SearchField.Group>
+          </SearchField>
+        </div>
+
+        {/* Jenis Pangan Select */}
+        <div className="w-full md:w-52">
+          <Select
+            label="Jenis Pangan"
+            placeholder="Semua Jenis"
+            variant="bordered"
+            selectedKeys={selectedCategory ? [selectedCategory] : []}
+            onSelectionChange={(keys: any) => {
+              const selected = Array.from(keys)[0] as string;
+              setSelectedCategory(selected || "");
+              setCurrentPage(1);
+            }}
+          >
+            <SelectItem key="pangan" textValue="Tanaman Pangan">
+              Tanaman Pangan
+            </SelectItem>
+            <SelectItem key="perkebunan" textValue="Perkebunan">
+              Perkebunan
+            </SelectItem>
+            <SelectItem key="sayur" textValue="Sayur">
+              Sayur
+            </SelectItem>
+            <SelectItem key="buah" textValue="Buah">
+              Buah
+            </SelectItem>
+          </Select>
         </div>
 
         {/* Commodity Select */}
@@ -945,8 +1003,9 @@ export const DashboardStatistika = () => {
           <Select
             label="Komoditas"
             placeholder="Semua Komoditas"
+            variant="bordered"
             selectedKeys={selectedCommodity ? [selectedCommodity] : []}
-                  onSelectionChange={(keys: any) => {
+            onSelectionChange={(keys: any) => {
               const selected = Array.from(keys)[0] as string;
               setSelectedCommodity(selected || "");
               setCurrentPage(1);
@@ -966,57 +1025,54 @@ export const DashboardStatistika = () => {
           <Popover>
             <PopoverTrigger>
               <Button
-                className="w-full justify-between bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 py-6 border border-gray-300 dark:border-gray-600 rounded"
-                variant="flat"
-                endContent={<span className="text-gray-400">📅</span>}
+                className="w-full justify-center md:justify-between px-3.5 py-3 rounded-xl min-h-[46px] text-sm hover:border-gray-400 transition-colors font-normal text-center md:text-left"
+                color="default"
+                variant="bordered"
+                endContent={<span className="text-gray-400 text-sm">📅</span>}
               >
                 {calendarRange.start && calendarRange.end
                   ? `${formatCalendarDate(calendarRange.start)} - ${formatCalendarDate(calendarRange.end)}`
                   : "Pilih Rentang Waktu"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg flex flex-col gap-3">
-              <div className="w-full flex justify-between items-center border-b pb-2 mb-2 dark:border-gray-700">
-                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
-                  Lompat ke Tahun
-                </span>
-                <Select
-                  aria-label="Pilih Tahun"
-                  size="sm"
-                  className="w-28"
-                  selectedKeys={[calendarFocusedValue.year.toString()]}
-            onSelectionChange={(keys: any) => {
-                    const selectedYear = Array.from(keys)[0] as string;
-                    if (selectedYear) {
-                      setCalendarFocusedValue(
-                        new CalendarDate(parseInt(selectedYear), calendarFocusedValue.month, 1)
-                      );
-                    }
-                  }}
-                >
-                  {["2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030"].map((y) => (
-                    <SelectItem key={y} textValue={y}>
-                      {y}
-                    </SelectItem>
-                  ))}
-                </Select>
-              </div>
+            <PopoverContent className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg">
               <RangeCalendar
                 aria-label="Rentang Prakiraan Panen"
-                visibleDuration={{ months: 2 }}
                 value={calendarRange.start && calendarRange.end ? calendarRange : null}
                 focusedValue={calendarFocusedValue}
                 onFocusChange={(value) => setCalendarFocusedValue(value)}
                 onChange={handleCalendarRangeChange}
-              />
+              >
+                <RangeCalendar.Header>
+                  <RangeCalendar.YearPickerTrigger>
+                    <RangeCalendar.YearPickerTriggerHeading />
+                    <RangeCalendar.YearPickerTriggerIndicator />
+                  </RangeCalendar.YearPickerTrigger>
+                  <RangeCalendar.NavButton slot="previous" />
+                  <RangeCalendar.NavButton slot="next" />
+                </RangeCalendar.Header>
+                <RangeCalendar.Grid>
+                  <RangeCalendar.GridHeader>
+                    {(day) => <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>}
+                  </RangeCalendar.GridHeader>
+                  <RangeCalendar.GridBody>
+                    {(date) => <RangeCalendar.Cell date={date} />}
+                  </RangeCalendar.GridBody>
+                </RangeCalendar.Grid>
+                <RangeCalendar.YearPickerGrid>
+                  <RangeCalendar.YearPickerGridBody>
+                    {({ year }) => <RangeCalendar.YearPickerCell year={year} />}
+                  </RangeCalendar.YearPickerGridBody>
+                </RangeCalendar.YearPickerGrid>
+              </RangeCalendar>
             </PopoverContent>
           </Popover>
         </div>
 
         {/* Reset Filters */}
-        {(selectedCommodity || prakiraanMin || prakiraanMax) && (
+        {(selectedCategory || selectedCommodity || prakiraanMin || prakiraanMax) && (
           <Button
-            className="w-full md:w-auto"
+            className="w-full min-h-[46px] md:w-auto"
             color="danger"
             variant="flat"
             onPress={handleClearAllFilters}
@@ -1072,10 +1128,14 @@ export const DashboardStatistika = () => {
 
       {/* Export Options Modal */}
       <Modal isOpen={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
-        <ModalContent>
-          {(onClose: any) => (            <>
-              <ModalHeader className="flex flex-col gap-1">Export Data Statistika</ModalHeader>
-              <ModalBody className="space-y-4">
+        <Modal.Backdrop variant="blur">
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-md">
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <Modal.Heading>Export Data Statistika</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className="space-y-4 p-6">
                 <div className="flex flex-col gap-2">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Pilih tipe export:
@@ -1123,18 +1183,18 @@ export const DashboardStatistika = () => {
                     </Select>
                   </div>
                 )}
-              </ModalBody>
-              <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button color="danger" variant="light" onPress={() => setIsExportModalOpen(false)}>
                   Batal
                 </Button>
                 <Button className="text-gray-100" color="success" onPress={executeExport}>
                   Export ke Excel
                 </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );

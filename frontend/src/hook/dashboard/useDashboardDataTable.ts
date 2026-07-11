@@ -18,6 +18,7 @@ export const useTanamanData = (params: TanamanQueryParams = {}) => {
       sortType: params.sortType || "DESC",
       search: params.search || "", // ✅ Include search in cache key
       isExport: params.isExport || false,
+      kategori: params.kategori || "",
       komoditas: params.komoditas || "",
       prakiraanMin: params.prakiraanMin || "",
       prakiraanMax: params.prakiraanMax || "",

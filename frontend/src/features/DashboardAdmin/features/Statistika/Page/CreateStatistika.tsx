@@ -230,28 +230,28 @@ export const CreateStatistika = () => {
   // Get kelompok data from selected option
   const selectedKelompokData: Kelompok | null = selectedOption?.data
     ? {
-        id: selectedOption.data.id,
-        gapoktan: selectedOption.data.gapoktan,
-        namaKelompok: selectedOption.data.namaKelompok,
-        desa: selectedOption.data.desa,
-        kecamatan: selectedOption.data.kecamatan || "",
-        penyuluh: selectedOption.data.penyuluh || null,
-        createdAt: selectedOption.data.createdAt || null,
-        updatedAt: selectedOption.data.updatedAt || new Date().toISOString(),
-        kecamatanId: selectedOption.data.kecamatanId || 0,
-        desaId: selectedOption.data.desaId || 0,
-      }
+      id: selectedOption.data.id,
+      gapoktan: selectedOption.data.gapoktan,
+      namaKelompok: selectedOption.data.namaKelompok,
+      desa: selectedOption.data.desa,
+      kecamatan: selectedOption.data.kecamatan || "",
+      penyuluh: selectedOption.data.penyuluh || null,
+      createdAt: selectedOption.data.createdAt || null,
+      updatedAt: selectedOption.data.updatedAt || new Date().toISOString(),
+      kecamatanId: selectedOption.data.kecamatanId || 0,
+      desaId: selectedOption.data.desaId || 0,
+    }
     : null;
 
   // Pagination info
   const paginationInfo: PaginationInfo | undefined = statistikaData?.data
     ? {
-        total: statistikaData.data.total,
-        currentPages: statistikaData.data.currentPages,
-        maxPages: statistikaData.data.maxPages,
-        from: statistikaData.data.from,
-        to: statistikaData.data.to,
-      }
+      total: statistikaData.data.total,
+      currentPages: statistikaData.data.currentPages,
+      maxPages: statistikaData.data.maxPages,
+      from: statistikaData.data.from,
+      to: statistikaData.data.to,
+    }
     : undefined;
 
   return (
@@ -282,11 +282,28 @@ export const CreateStatistika = () => {
             <AsyncSelect
               cacheOptions
               isClearable
+              unstyled
               classNames={{
-                control: () =>
-                  "w-full px-1 py-2 border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700",
-                menu: () => "z-[9999]",
-                menuPortal: () => "z-[9999]",
+                control: ({ isFocused }) =>
+                  `w-full px-3.5 py-3 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[40px] ${isFocused
+                    ? "border-green-500 ring-1 ring-green-500"
+                    : "border-gray-300 dark:border-gray-600"
+                  }`,
+                placeholder: () => "text-gray-400 text-sm",
+                singleValue: () => "text-gray-700 dark:text-gray-200 text-sm",
+                input: () => "text-gray-700 dark:text-gray-200 text-sm outline-none",
+                menu: () => "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
+                option: ({ isFocused, isSelected }) =>
+                  `px-3 py-2.5 text-sm rounded-lg cursor-pointer ${isSelected
+                    ? "bg-green-600 text-white"
+                    : isFocused
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      : "text-gray-700 dark:text-gray-200"
+                  }`,
+                valueContainer: () => "flex items-center gap-1.5 flex-1",
+                indicatorsContainer: () => "flex items-center gap-1.5 text-gray-400",
+                clearIndicator: () => "hover:text-red-500 cursor-pointer p-0.5",
+                dropdownIndicator: () => "hover:text-gray-600 cursor-pointer p-0.5"
               }}
               defaultOptions={defaultOptions}
               isLoading={isPotkanLoading}

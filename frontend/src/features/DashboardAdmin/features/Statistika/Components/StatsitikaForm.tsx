@@ -254,10 +254,38 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
             });
           }}
         >
-          <Radio value="pangan">Tanaman Pangan</Radio>
-          <Radio value="perkebunan">Perkebunan</Radio>
-          <Radio value="jenis_sayur">Sayur</Radio>
-          <Radio value="buah">Buah</Radio>
+          <Radio value="pangan">
+            <Radio.Content>
+              <Radio.Control>
+                <Radio.Indicator />
+              </Radio.Control>
+              Tanaman Pangan
+            </Radio.Content>
+          </Radio>
+          <Radio value="perkebunan">
+            <Radio.Content>
+              <Radio.Control>
+                <Radio.Indicator />
+              </Radio.Control>
+              Perkebunan
+            </Radio.Content>
+          </Radio>
+          <Radio value="jenis_sayur">
+            <Radio.Content>
+              <Radio.Control>
+                <Radio.Indicator />
+              </Radio.Control>
+              Sayur
+            </Radio.Content>
+          </Radio>
+          <Radio value="buah">
+            <Radio.Content>
+              <Radio.Control>
+                <Radio.Indicator />
+              </Radio.Control>
+              Buah
+            </Radio.Content>
+          </Radio>
         </RadioGroup>
         {errors.kategoriTanaman && (
           <p className="text-red-500 text-sm mt-1">{errors.kategoriTanaman}</p>
@@ -274,6 +302,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           {/* Komoditas Semusim */}
           <div>
             <Select
+              variant="flat"
               errorMessage={errors.komoditasSemusim}
               isDisabled={formData.kategoriTanaman === "jenis_sayur"}
               isInvalid={!!errors.komoditasSemusim}
@@ -315,6 +344,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           {/* Komoditas Tahunan */}
           <div>
             <Select
+              variant="flat"
               errorMessage={errors.komoditasTahunan}
               isInvalid={!!errors.komoditasTahunan}
               isRequired={formData.jenisTanaman === "tahunan"}
@@ -352,6 +382,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
       {/* Periode Tanam */}
       <div>
         <Select
+          variant="flat"
           isRequired
           errorMessage={errors.periodeTanam}
           isInvalid={!!errors.periodeTanam}
@@ -375,6 +406,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
       {/* Luas Lahan Tanam */}
       <div>
         <Input
+          variant="flat"
           isRequired
           errorMessage={errors.luasLahanTanam}
           isInvalid={!!errors.luasLahanTanam}
@@ -398,6 +430,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
+            variant="flat"
             isRequired
             errorMessage={errors.prakiraanLuasPanen}
             isInvalid={!!errors.prakiraanLuasPanen}
@@ -416,6 +449,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           />
 
           <Input
+            variant="flat"
             isRequired
             errorMessage={errors.prakiraanHasilPanen}
             isInvalid={!!errors.prakiraanHasilPanen}
@@ -435,6 +469,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
         </div>
 
         <Select
+          variant="flat"
           isRequired
           errorMessage={errors.prakiraanBulanPanen}
           isInvalid={!!errors.prakiraanBulanPanen}

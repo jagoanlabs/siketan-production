@@ -85,3 +85,48 @@ import { Select, SelectItem } from "@/components/Form/HeroSelect";
   ))}
 </Select>
 ```
+
+### 3. AsyncSelect (React-Select Integration)
+
+For search-based select inputs using `react-select/async`, configure them in unstyled mode with custom styling mappings to match the design system:
+
+```tsx
+import AsyncSelect from "react-select/async";
+
+<AsyncSelect
+  cacheOptions
+  isClearable
+  unstyled
+  classNames={{
+    control: ({ isFocused }) =>
+      `w-full px-3.5 py-3 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[40px] ${
+        isFocused
+          ? "border-green-500 ring-1 ring-green-500"
+          : "border-gray-300 dark:border-gray-600"
+      }`,
+    placeholder: () => "text-gray-400 text-sm",
+    singleValue: () => "text-gray-700 dark:text-gray-200 text-sm",
+    input: () => "text-gray-700 dark:text-gray-200 text-sm outline-none",
+    menu: () => "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-50",
+    option: ({ isFocused, isSelected }) =>
+      `px-3 py-2.5 text-sm rounded-lg cursor-pointer ${
+        isSelected
+          ? "bg-green-600 text-white"
+          : isFocused
+          ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          : "text-gray-700 dark:text-gray-200"
+      }`,
+    valueContainer: () => "flex items-center gap-1.5 flex-1",
+    indicatorsContainer: () => "flex items-center gap-1.5 text-gray-400",
+    clearIndicator: () => "hover:text-red-500 cursor-pointer p-0.5",
+    dropdownIndicator: () => "hover:text-gray-600 cursor-pointer p-0.5"
+  }}
+  placeholder="Cari..."
+  defaultOptions={defaultOptions}
+  isLoading={isLoading}
+  loadOptions={loadOptions}
+  value={value}
+  onChange={handleChange}
+/>
+```
+
