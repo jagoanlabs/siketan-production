@@ -1,6 +1,7 @@
+import { Pagination } from "../../../components/Form/HeroPagination";
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Breadcrumbs, BreadcrumbItem } from "@heroui/breadcrumbs";
-import { Pagination } from "@heroui/pagination";
 
 import { ActivityCardSkeleton } from "../components/SkeletonComponent";
 
@@ -141,7 +142,7 @@ export const HomeInformasiPage = () => {
             {/* Breadcrumbs - Responsive */}
             <div className="mt-4 sm:mt-6">
               <Breadcrumbs className="sm:text-base" size="sm">
-                <BreadcrumbItem
+                <BreadcrumbsItem
                   classNames={{
                     base: "hover:cursor-pointer text-[#003F75] font-semibold text-xs sm:text-sm",
                     item: "hover:cursor-pointer text-[#003F75]",
@@ -150,8 +151,8 @@ export const HomeInformasiPage = () => {
                   href="/"
                 >
                   Home
-                </BreadcrumbItem>
-                <BreadcrumbItem
+                </BreadcrumbsItem>
+                <BreadcrumbsItem
                   classNames={{
                     base: "text-[#003F75] font-semibold text-xs sm:text-sm",
                     item: "text-[#003F75]",
@@ -159,7 +160,7 @@ export const HomeInformasiPage = () => {
                   }}
                 >
                   Informasi Pertanian
-                </BreadcrumbItem>
+                </BreadcrumbsItem>
               </Breadcrumbs>
             </div>
           </div>
@@ -311,7 +312,7 @@ export const HomeInformasiPage = () => {
                     page={activityPage}
                     size="sm"
                     total={totalActivityPages}
-                    onChange={(page) => setActivityPage(page)}
+                    onChange={(page: any) => setActivityPage(page)}
                   />
                 )
               : totalNewsPages > 1 && (
@@ -322,7 +323,7 @@ export const HomeInformasiPage = () => {
                     page={newsPage}
                     size="sm"
                     total={totalNewsPages}
-                    onChange={(page) => setNewsPage(page)}
+                    onChange={(page: any) => setNewsPage(page)}
                   />
                 )}
           </div>

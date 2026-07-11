@@ -1,17 +1,12 @@
+import { User } from "../../../../../components/Form/HeroUser";
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../components/Form/HeroModal";
+
 // components/modals/OperatorDetailModal.tsx
 import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@heroui/modal";
-import { Button } from "@heroui/button";
-import { Chip } from "@heroui/chip";
-import { User } from "@heroui/user";
-import { Card, CardBody } from "@heroui/card";
-import { Divider } from "@heroui/divider";
 
 import { OperatorDetailModalProps } from "@/types/Operator/operator";
 

@@ -1,10 +1,10 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Spinner } from "@heroui/react";
 // pages/EditStatistika.tsx (Updated Final)
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardBody } from "@heroui/card";
-import { Button } from "@heroui/button";
-import { Spinner } from "@heroui/spinner";
-import { Chip } from "@heroui/chip";
 
 import { StatistikaForm } from "../Components/StatsitikaForm";
 import { GapoktanInfo } from "../Components/GapoktanInfo";

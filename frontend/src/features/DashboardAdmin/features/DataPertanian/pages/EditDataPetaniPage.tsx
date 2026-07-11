@@ -1,14 +1,14 @@
+import { Image } from "../../../../../components/Form/HeroImage";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Input, Textarea } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+import { Skeleton } from "@heroui/react";
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 // HeroUI Components
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input, Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Image } from "@heroui/image";
-import { Skeleton } from "@heroui/skeleton";
 
 import {
   DataPetaniFormData,
@@ -451,7 +451,7 @@ export const EditDataPetaniPage: React.FC = () => {
                       maxLength={16}
                       placeholder="Masukkan NIK 16 digit"
                       value={formData.nik}
-                      onValueChange={(value) => handleInputChange("nik", value)}
+                      onValueChange={(value: any) => handleInputChange("nik", value)}
                     />
                   </div>
 
@@ -462,7 +462,7 @@ export const EditDataPetaniPage: React.FC = () => {
                     maxLength={16}
                     placeholder="Masukkan NKK 16 digit (Opsional)"
                     value={formData.nkk || ""}
-                    onValueChange={(value) => handleInputChange("nkk", value)}
+                    onValueChange={(value: any) => handleInputChange("nkk", value)}
                   />
 
                   <Input
@@ -472,7 +472,7 @@ export const EditDataPetaniPage: React.FC = () => {
                     label="Nama Lengkap"
                     placeholder="Masukkan nama lengkap"
                     value={formData.nama}
-                    onValueChange={(value) => handleInputChange("nama", value)}
+                    onValueChange={(value: any) => handleInputChange("nama", value)}
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -490,7 +490,7 @@ export const EditDataPetaniPage: React.FC = () => {
                         </div>
                       }
                       value={formData.noTelp}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("noTelp", value)
                       }
                     />
@@ -502,7 +502,7 @@ export const EditDataPetaniPage: React.FC = () => {
                       placeholder="email@example.com (Opsional)"
                       type="email"
                       value={formData.email || ""}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("email", value)
                       }
                     />
@@ -516,7 +516,7 @@ export const EditDataPetaniPage: React.FC = () => {
                     placeholder="Kosongkan jika tidak ingin mengubah password"
                     type="password"
                     value={formData.password || ""}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("password", value)
                     }
                   />
@@ -539,7 +539,7 @@ export const EditDataPetaniPage: React.FC = () => {
                     minRows={3}
                     placeholder="Masukkan alamat lengkap..."
                     value={formData.alamat}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("alamat", value)
                     }
                   />
@@ -742,7 +742,7 @@ export const EditDataPetaniPage: React.FC = () => {
                       label="Nama Kelompok"
                       placeholder="Masukkan nama kelompok"
                       value={formData.gapoktan || ""}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("gapoktan", value)
                       }
                     />
@@ -756,7 +756,7 @@ export const EditDataPetaniPage: React.FC = () => {
                         label="Nama Gapoktan"
                         placeholder="Masukkan nama gapoktan"
                         value={formData.gapoktan || ""}
-                        onValueChange={(value) =>
+                        onValueChange={(value: any) =>
                           handleInputChange("gapoktan", value)
                         }
                       />
@@ -766,7 +766,7 @@ export const EditDataPetaniPage: React.FC = () => {
                         label="Nama Kelompok"
                         placeholder="Masukkan nama kelompok"
                         value={formData.namaKelompok || ""}
-                        onValueChange={(value) =>
+                        onValueChange={(value: any) =>
                           handleInputChange("namaKelompok", value)
                         }
                       />

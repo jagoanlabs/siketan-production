@@ -27,6 +27,15 @@ export const getAllDataTanaman = async (
     if (params.isExport !== undefined) {
       queryParams.append("isExport", params.isExport.toString());
     }
+    if (params.komoditas) {
+      queryParams.append("komoditas", params.komoditas);
+    }
+    if (params.prakiraanMin) {
+      queryParams.append("prakiraanMin", params.prakiraanMin);
+    }
+    if (params.prakiraanMax) {
+      queryParams.append("prakiraanMax", params.prakiraanMax);
+    }
 
     const url = `/statistik?${queryParams.toString()}`;
 

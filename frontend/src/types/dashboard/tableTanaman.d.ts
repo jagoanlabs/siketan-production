@@ -52,4 +52,7 @@ export interface TanamanQueryParams {
   sortType?: "ASC" | "DESC";
   poktan_id?: string | number;
   isExport?: boolean;
+  komoditas?: string;
+  prakiraanMin?: string;
+  prakiraanMax?: string;
 }

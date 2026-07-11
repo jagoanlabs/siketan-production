@@ -1,6 +1,7 @@
-import { Modal, ModalContent } from "@heroui/modal";
-import { Spinner } from "@heroui/spinner";
-import { Progress } from "@heroui/progress";
+import { Modal, ModalContent } from "./Form/HeroModal";
+import { Spinner } from "@heroui/react";
+import { Progress } from "./Form/HeroProgress";
+
 import { useEffect, useState } from "react";
 import { FiDownload, FiUpload, FiDatabase } from "react-icons/fi";
 
@@ -143,11 +144,7 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
               {/* Spinner dengan icon */}
               <div className="relative flex items-center justify-center">
                 <Spinner
-                  classNames={{
-                    circle1: "border-b-current",
-                    circle2: "border-b-current",
-                  }}
-                  color={getSpinnerColor()}
+                  color={getSpinnerColor() as "accent" | "danger" | "success" | "warning"}
                   size="lg"
                 />
 
@@ -187,7 +184,7 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
                     label: "tracking-wider font-medium",
                     value: "text-foreground/60",
                   }}
-                  color={getSpinnerColor()}
+                  color={getSpinnerColor() as "accent" | "danger" | "success" | "warning"}
                   showValueLabel={true}
                   size="sm"
                   value={progress}

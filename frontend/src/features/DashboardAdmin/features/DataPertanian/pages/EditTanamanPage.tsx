@@ -1,10 +1,10 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+import { Skeleton } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Skeleton } from "@heroui/skeleton";
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
@@ -230,9 +230,9 @@ export const EditTanamanPage = () => {
                       min={1}
                       placeholder="Masukkan luas lahan"
                       type="number"
-                      value={formData.luasLahan}
-                      onValueChange={(value) =>
-                        handleInputChange("luasLahan", value)
+                       value={formData.luasLahan}
+                       onValueChange={(value: any) =>
+                         handleInputChange("luasLahan", value)
                       }
                     />
                   </div>
@@ -298,7 +298,7 @@ export const EditTanamanPage = () => {
                     label="Komoditas"
                     placeholder="Masukkan nama komoditas"
                     value={formData.komoditas}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("komoditas", value)
                     }
                   />
@@ -382,12 +382,12 @@ export const EditTanamanPage = () => {
                       min={1}
                       placeholder="0"
                       type="number"
-                      value={(formData.prakiraanLuasPanen || 0).toString()}
-                      onValueChange={(value) =>
-                        handleInputChange(
-                          "prakiraanLuasPanen",
-                          parseInt(value) || 0,
-                        )
+                       value={(formData.prakiraanLuasPanen || 0).toString()}
+                       onValueChange={(value: any) =>
+                         handleInputChange(
+                           "prakiraanLuasPanen",
+                           parseInt(value) || 0,
+                         )
                       }
                     />
 
@@ -399,12 +399,12 @@ export const EditTanamanPage = () => {
                       min={1}
                       placeholder="0"
                       type="number"
-                      value={(formData.prakiraanProduksiPanen || 0).toString()}
-                      onValueChange={(value) =>
-                        handleInputChange(
-                          "prakiraanProduksiPanen",
-                          parseInt(value) || 0,
-                        )
+                       value={(formData.prakiraanProduksiPanen || 0).toString()}
+                       onValueChange={(value: any) =>
+                         handleInputChange(
+                           "prakiraanProduksiPanen",
+                           parseInt(value) || 0,
+                         )
                       }
                     />
 

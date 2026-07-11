@@ -1,13 +1,20 @@
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+import { Spinner } from "@heroui/react";
 // pages/RealisasiStatistika.tsx
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Chip } from "@heroui/chip";
-import { Spinner } from "@heroui/spinner";
-import { Divider } from "@heroui/divider";
+
+
+
+
+
+
+
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
@@ -402,7 +409,7 @@ export const RealisasiStatistika = () => {
                   step="0.01"
                   type="number"
                   value={formData.realisasiLuasPanen?.toString() || ""}
-                  onChange={(e) => {
+                  onChange={(e: any) => {
                     const value = e.target.value;
 
                     handleInputChange(
@@ -422,7 +429,7 @@ export const RealisasiStatistika = () => {
                   step="0.01"
                   type="number"
                   value={formData.realisasiHasilPanen?.toString() || ""}
-                  onChange={(e) => {
+                  onChange={(e: any) => {
                     const value = e.target.value;
 
                     handleInputChange(
@@ -443,7 +450,7 @@ export const RealisasiStatistika = () => {
                       ? [formData.realisasiBulanPanen]
                       : []
                   }
-                  onSelectionChange={(keys) => {
+                  onSelectionChange={(keys: any) => {
                     const selected = Array.from(keys)[0] as string;
 
                     handleInputChange("realisasiBulanPanen", selected);

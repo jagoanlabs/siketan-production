@@ -1,10 +1,11 @@
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Card, CardBody, CardFooter, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+
 // components/BeritaCard.tsx
 import React from "react";
-import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Button } from "@heroui/button";
-import { Avatar } from "@heroui/avatar";
-import { Divider } from "@heroui/divider";
 
 import {
   BeritaData,

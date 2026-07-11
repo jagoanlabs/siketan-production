@@ -1,6 +1,9 @@
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+import { Button } from "../../../components/Form/HeroButton";
+
 import { useParams } from "react-router-dom";
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
-import { Button } from "@heroui/button";
+
+
 import { IoMdShare } from "react-icons/io";
 import { useEffect, useState } from "react";
 
@@ -199,7 +202,7 @@ export const DetailProductPage = () => {
             {/* Responsive Breadcrumbs */}
             <div className="hidden sm:block">
               <Breadcrumbs>
-                <BreadcrumbItem
+                <BreadcrumbsItem
                   classNames={{
                     base: "hover:cursor-pointer text-[#003F75] font-semibold",
                     item: "hover:cursor-pointer text-[#003F75]",
@@ -208,8 +211,8 @@ export const DetailProductPage = () => {
                   href="/"
                 >
                   Home
-                </BreadcrumbItem>
-                <BreadcrumbItem
+                </BreadcrumbsItem>
+                <BreadcrumbsItem
                   classNames={{
                     base: "text-[#003F75] font-semibold",
                     item: "text-[#003F75]",
@@ -218,8 +221,8 @@ export const DetailProductPage = () => {
                   href="home/toko"
                 >
                   Toko
-                </BreadcrumbItem>
-                <BreadcrumbItem
+                </BreadcrumbsItem>
+                <BreadcrumbsItem
                   classNames={{
                     base: "text-[#003F75] font-semibold",
                     item: "text-[#003F75]",
@@ -227,7 +230,7 @@ export const DetailProductPage = () => {
                   }}
                 >
                   {productData.namaProducts}
-                </BreadcrumbItem>
+                </BreadcrumbsItem>
               </Breadcrumbs>
             </div>
 

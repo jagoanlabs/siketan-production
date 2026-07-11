@@ -1,5 +1,6 @@
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+
 import { useContext } from "react";
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
 
 import { DetailRiwayatLaporanPenyuluh } from "../components/DetailRiwayatLaporanPenyuluh";
 import { DetailRiwayatLaporanPetani } from "../components/DetailRiwayatLaporanPetani";
@@ -20,11 +21,11 @@ const DetailRiwayatLaporanPage = () => {
       <div className="container mx-auto p-4 md:p-8">
         <div className="mb-6">
           <Breadcrumbs>
-            <BreadcrumbItem href="/">Home</BreadcrumbItem>
-            <BreadcrumbItem href="/riwayat-laporan">
+            <BreadcrumbsItem href="/">Home</BreadcrumbsItem>
+            <BreadcrumbsItem href="/riwayat-laporan">
               Riwayat Laporan
-            </BreadcrumbItem>
-            <BreadcrumbItem>Detail Laporan</BreadcrumbItem>
+            </BreadcrumbsItem>
+            <BreadcrumbsItem>Detail Laporan</BreadcrumbsItem>
           </Breadcrumbs>
         </div>
 

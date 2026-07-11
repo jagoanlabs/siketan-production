@@ -1,7 +1,8 @@
+import { Button } from "../Form/HeroButton";
+
 import { confirmDialog } from "primereact/confirmdialog";
 import { toast } from "sonner";
 import { useMemo } from "react";
-import { Button } from "@heroui/button";
 
 import PermissionWrapper from "../PermissionWrapper";
 

@@ -1,3 +1,9 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Card } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../components/Form/HeroModal";
+import { Tooltip } from "@heroui/react";
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "primereact/confirmdialog";
@@ -5,18 +11,6 @@ import AsyncSelect from "react-select/async";
 import { toast } from "sonner";
 
 // HeroUI Components
-import { Button } from "@heroui/button";
-import { Card } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Avatar } from "@heroui/avatar";
-import { Tooltip } from "@heroui/tooltip";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/modal";
 
 // Icons
 import { FiEye, FiEdit2 } from "react-icons/fi";
@@ -574,68 +568,83 @@ export const DataPetaniPage: React.FC = () => {
               PERMISSIONS.DATA_PETANI_INDEX,
             ]}
           >
-            <Tooltip content="Lihat Detail">
-              <Button
-                isIconOnly
-                color="primary"
-                size="sm"
-                variant="light"
-                onPress={() => handleViewDetail(petani)}
-              >
-                <FiEye className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="primary"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleViewDetail(petani)}
+                >
+                  <FiEye className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Lihat Detail</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           <PermissionWrapper permissions={[PERMISSIONS.DATA_PETANI_EDIT]}>
-            <Tooltip content="Edit Data">
-              <Button
-                isIconOnly
-                color="warning"
-                size="sm"
-                variant="light"
-                onPress={() => handleEdit(petani)}
-              >
-                <FiEdit2 className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="warning"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleEdit(petani)}
+                >
+                  <FiEdit2 className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Edit Data</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           {!petani.tbl_akun.isVerified && (
             <PermissionWrapper permissions={[PERMISSIONS.DATA_PETANI_APPROVE]}>
-              <Tooltip content="Verifikasi">
-                <Button
-                  isIconOnly
-                  className="text-gray-400"
-                  size="sm"
-                  variant="light"
-                  onPress={() => handleToggleVerification(petani)}
-                >
-                  <MdVerified className="w-4 h-4" />
-                </Button>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <Button
+                    isIconOnly
+                    className="text-gray-400"
+                    size="sm"
+                    variant="light"
+                    onPress={() => handleToggleVerification(petani)}
+                  >
+                    <MdVerified className="w-4 h-4" />
+                  </Button>
+                </Tooltip.Trigger>
+                <Tooltip.Content>Verifikasi</Tooltip.Content>
               </Tooltip>
             </PermissionWrapper>
           )}
 
           {petani.tbl_akun.isVerified && (
-            <Tooltip content="Terverifikasi">
-              <div className="p-2 rounded-lg">
-                <MdVerified className="w-4 h-4 text-green-600" />
-              </div>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <div className="p-2 rounded-lg">
+                  <MdVerified className="w-4 h-4 text-green-600" />
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Terverifikasi</Tooltip.Content>
             </Tooltip>
           )}
 
           <PermissionWrapper permissions={[PERMISSIONS.DATA_PETANI_DELETE]}>
-            <Tooltip content="Hapus Data">
-              <Button
-                isIconOnly
-                color="danger"
-                size="sm"
-                variant="light"
-                onPress={() => handleDelete(petani)}
-              >
-                <FaRegTrashAlt className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="danger"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleDelete(petani)}
+                >
+                  <FaRegTrashAlt className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Hapus Data</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
         </div>
@@ -672,27 +681,33 @@ export const DataPetaniPage: React.FC = () => {
       )}
 
       <PermissionWrapper permissions={[PERMISSIONS.DATA_PETANI_CREATE]}>
-        <Tooltip content="Tambah Data Petani">
-          <Button
-            color="primary"
-            startContent={<FaPlus className="w-4 h-4" />}
-            onPress={handleCreateNew}
-          >
-            <span className="hidden sm:inline">Tambah Data</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              color="primary"
+              startContent={<FaPlus className="w-4 h-4" />}
+              onPress={handleCreateNew}
+            >
+              <span className="hidden sm:inline">Tambah Data</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Tambah Data Petani</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
 
       <PermissionWrapper permissions={[PERMISSIONS.DATA_PETANI_IMPORT]}>
-        <Tooltip content="Upload File Excel">
-          <Button
-            color="success"
-            startContent={<FaFileExcel className="w-4 h-4" />}
-            variant="flat"
-            onPress={handleUploadExcel}
-          >
-            <span className="hidden sm:inline">Upload Excel</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              color="success"
+              startContent={<FaFileExcel className="w-4 h-4" />}
+              variant="flat"
+              onPress={handleUploadExcel}
+            >
+              <span className="hidden sm:inline">Upload Excel</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Upload File Excel</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
 
@@ -849,9 +864,9 @@ export const DataPetaniPage: React.FC = () => {
           onOpenChange={setIsDetailModalOpen}
         >
           <ModalContent>
-            {(onClose) => (
-              <>
-                <ModalHeader className="flex flex-col gap-1">
+          {(onClose: any) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 mb-2">
                     <Chip
                       color={getVerificationColor(

@@ -1,12 +1,18 @@
+import { Image } from "../../../../../components/Form/HeroImage";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Input, Textarea } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // HeroUI Components
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input, Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Image } from "@heroui/image";
+
+
+
+
+
 
 import {
   DataPetaniFormData,
@@ -128,7 +134,7 @@ export const CreateDataPetaniPage: React.FC = () => {
       const gapoktanId = value ? parseInt(value) : null;
 
       // Find the selected gapoktan data to get gapoktan and namaKelompok
-      const selectedGapoktan = gapoktanList.find((g) => g.id === gapoktanId);
+      const selectedGapoktan = gapoktanList.find((g: any) => g.id === gapoktanId);
 
       setFormData((prev) => ({
         ...prev,
@@ -305,7 +311,7 @@ export const CreateDataPetaniPage: React.FC = () => {
                     maxLength={16}
                     placeholder="Masukkan NIK 16 digit"
                     value={formData.nik}
-                    onValueChange={(value) => handleInputChange("nik", value)}
+                    onValueChange={(value: any) => handleInputChange("nik", value)}
                   />
 
                   <Input
@@ -316,7 +322,7 @@ export const CreateDataPetaniPage: React.FC = () => {
                     maxLength={16}
                     placeholder="16 digit NKK"
                     value={formData.nkk || ""}
-                    onValueChange={(value) => handleInputChange("nkk", value)}
+                    onValueChange={(value: any) => handleInputChange("nkk", value)}
                   />
 
                   <Input
@@ -326,7 +332,7 @@ export const CreateDataPetaniPage: React.FC = () => {
                     label="Nama Lengkap"
                     placeholder="Masukkan nama lengkap"
                     value={formData.nama}
-                    onValueChange={(value) => handleInputChange("nama", value)}
+                    onValueChange={(value: any) => handleInputChange("nama", value)}
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -337,7 +343,7 @@ export const CreateDataPetaniPage: React.FC = () => {
                       label="Nomor Telepon"
                       placeholder="08xx-xxxx-xxxx"
                       value={formData.noTelp}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("noTelp", value)
                       }
                     />
@@ -350,7 +356,7 @@ export const CreateDataPetaniPage: React.FC = () => {
                       placeholder="email@example.com"
                       type="email"
                       value={formData.email || ""}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("email", value)
                       }
                     />
@@ -364,7 +370,7 @@ export const CreateDataPetaniPage: React.FC = () => {
                     placeholder="Minimal 6 karakter"
                     type="password"
                     value={formData.password || ""}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("password", value)
                     }
                   />
@@ -387,7 +393,7 @@ export const CreateDataPetaniPage: React.FC = () => {
                     minRows={3}
                     placeholder="Masukkan alamat lengkap..."
                     value={formData.alamat}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("alamat", value)
                     }
                   />
@@ -461,14 +467,6 @@ export const CreateDataPetaniPage: React.FC = () => {
                 <CardBody className="space-y-4">
 
                   <Select
-                    disableAnimation
-                    popoverProps={{
-                      shouldBlockScroll: false,
-                      shouldCloseOnScroll: false,
-                    }}
-                    listboxProps={{
-                      style: { maxHeight: "200px", overflowY: "auto" },
-                    }}
                     isRequired
                     isLoading={isLoadingPenyuluh}
                     label="Penyuluh"
@@ -520,14 +518,6 @@ export const CreateDataPetaniPage: React.FC = () => {
                   {!isManualGapoktan ? (
                     <div className="space-y-3">
                       <Select
-                        disableAnimation
-                        popoverProps={{
-                          shouldBlockScroll: false,
-                          shouldCloseOnScroll: false,
-                        }}
-                        listboxProps={{
-                          style: { maxHeight: "200px", overflowY: "auto" },
-                        }}
                         isRequired
                         isDisabled={!formData.desaId}
                         isLoading={isLoadingGapoktan}

@@ -1,9 +1,10 @@
+import { Tooltip } from "@heroui/react";
 // hooks/useVerifikasiTableState.ts
 
 import React, { useMemo, useState, useEffect } from "react";
 import { confirmDialog } from "primereact/confirmdialog";
 import { toast } from "sonner";
-import { Tooltip } from "@heroui/tooltip";
+
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { FaRegTrashAlt } from "react-icons/fa";
 
@@ -560,66 +561,72 @@ export const VerifikasiUserPage = () => {
                 <PermissionWrapper
                   permissions={[PERMISSIONS.VERIFIKASI_USER_APPROVE]}
                 >
-                  <Tooltip content="Terima dan verifikasi user">
-                    <button
-                      className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={
-                        approveMutation.isPending || rejectMutation.isPending
-                      }
-                      onClick={() => showApproveDialog(item)}
-                    >
-                      {approveMutation.isPending &&
-                      approveDialog.user?.id === item.id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600" />
-                      ) : (
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M5 13l4 4L19 7"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                          />
-                        </svg>
-                      )}
-                    </button>
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <button
+                        className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={
+                          approveMutation.isPending || rejectMutation.isPending
+                        }
+                        onClick={() => showApproveDialog(item)}
+                      >
+                        {approveMutation.isPending &&
+                        approveDialog.user?.id === item.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600" />
+                        ) : (
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M5 13l4 4L19 7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Terima dan verifikasi user</Tooltip.Content>
                   </Tooltip>
                 </PermissionWrapper>
 
                 <PermissionWrapper
                   permissions={[PERMISSIONS.VERIFIKASI_USER_REJECT]}
                 >
-                  <Tooltip content="Tolak dan hapus user">
-                    <button
-                      className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={
-                        approveMutation.isPending || rejectMutation.isPending
-                      }
-                      onClick={() => showRejectDialog(item)}
-                    >
-                      {rejectMutation.isPending &&
-                      rejectDialog.user?.id === item.id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600" />
-                      ) : (
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M6 18L18 6M6 6l12 12"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                          />
-                        </svg>
-                      )}
-                    </button>
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <button
+                        className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={
+                          approveMutation.isPending || rejectMutation.isPending
+                        }
+                        onClick={() => showRejectDialog(item)}
+                      >
+                        {rejectMutation.isPending &&
+                        rejectDialog.user?.id === item.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600" />
+                        ) : (
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M6 18L18 6M6 6l12 12"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Tolak dan hapus user</Tooltip.Content>
                   </Tooltip>
                 </PermissionWrapper>
               </>

@@ -1,18 +1,14 @@
+import { User } from "../../../../../components/Form/HeroUser";
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../components/Form/HeroModal";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+
 // src/features/DashboardAdmin/features/HakAkses/Components/UbahAksesUserModal.tsx
-import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/modal";
+
 import React, { useState, useEffect } from "react";
-import { Divider } from "@heroui/divider";
-import { User } from "@heroui/user";
-import { Select, SelectItem } from "@heroui/select";
-import { Button } from "@heroui/button";
 
 import {
   USER_ROLES,
@@ -89,7 +85,7 @@ export const UbahRoleModal: React.FC<UbahRoleModalProps> = ({
   return (
     <Modal isOpen={isOpen} placement="center" size="lg" onOpenChange={onClose}>
       <ModalContent>
-        {(onClose) => (
+        {(onClose: any) => (
           <>
             <ModalHeader className="flex gap-3">
               <div className="flex items-center gap-3">
@@ -154,12 +150,11 @@ export const UbahRoleModal: React.FC<UbahRoleModalProps> = ({
                     isDisabled={isLoading}
                     placeholder="Pilih role..."
                     selectedKeys={[selectedRole]}
-                    startContent={getRoleIcon()}
-                    value={selectedRole}
                     variant="bordered"
-                    onChange={(e) =>
-                      setSelectedRole(e.target.value as UserRole)
-                    }
+                    onSelectionChange={(keys: any) => {
+                      const val = Array.from(keys)[0] as string;
+                      if (val) setSelectedRole(val as UserRole);
+                    }}
                   >
                     {USER_ROLES.map((role) => (
                       <SelectItem

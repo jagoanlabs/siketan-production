@@ -1,9 +1,11 @@
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
-import { Input, Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Button } from "@heroui/button";
+import { DatePicker } from "../../../components/Form/HeroDatePicker";
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+import { Input, Textarea } from "../../../components/Form/HeroInput";
+import { Button } from "../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../components/Form/HeroSelect";
+
 import { useState } from "react";
-import { DatePicker } from "@heroui/date-picker";
+
 import { DateValue } from "@internationalized/date";
 
 import { Footer } from "@/features/Home/components/Footer";
@@ -57,7 +59,7 @@ export const FormLaporanPenyuluhPage = () => {
               <NavbarStaticItem index={2} />
             </div>
             <Breadcrumbs>
-              <BreadcrumbItem
+              <BreadcrumbsItem
                 classNames={{
                   base: "hover:cursor-pointer text-[#003F75] font-semibold",
                   item: "hover:cursor-pointer text-[#003F75] ",
@@ -66,8 +68,8 @@ export const FormLaporanPenyuluhPage = () => {
                 href="/"
               >
                 Home
-              </BreadcrumbItem>
-              <BreadcrumbItem
+              </BreadcrumbsItem>
+              <BreadcrumbsItem
                 classNames={{
                   base: " text-[#003F75] font-semibold",
                   item: " text-[#003F75]",
@@ -75,7 +77,7 @@ export const FormLaporanPenyuluhPage = () => {
                 }}
               >
                 Informasi Pertanian
-              </BreadcrumbItem>
+              </BreadcrumbsItem>
             </Breadcrumbs>
           </div>
         </div>
@@ -144,7 +146,7 @@ export const FormLaporanPenyuluhPage = () => {
                     label="Umur Tanaman"
                     name="umurTanaman"
                     selectedKeys={form.umurTanaman ? [form.umurTanaman] : []}
-                    onSelectionChange={(keys) =>
+                    onSelectionChange={(keys: any) =>
                       setForm((prev) => ({
                         ...prev,
                         umurTanaman: Array.from(keys)[0] as string,
@@ -158,14 +160,14 @@ export const FormLaporanPenyuluhPage = () => {
                 </div>
 
                 <div className="area-tanggal-kunjungan">
-                  <DatePicker
-                    label="Tanggal Kunjungan"
-                    name="tanggalKunjungan"
-                    value={form.tanggalKunjungan}
-                    onChange={(value) =>
-                      handleDateChange("tanggalKunjungan", value)
-                    }
-                  />
+                    <DatePicker
+                      label="Tanggal Kunjungan"
+                      name="tanggalKunjungan"
+                      value={form.tanggalKunjungan}
+                      onChange={(value: any) =>
+                        handleDateChange("tanggalKunjungan", value)
+                      }
+                    />
                 </div>
 
                 <div className="area-kendala">
@@ -197,7 +199,7 @@ export const FormLaporanPenyuluhPage = () => {
                     selectedKeys={
                       form.statusKepemilikan ? [form.statusKepemilikan] : []
                     }
-                    onSelectionChange={(keys) =>
+                    onSelectionChange={(keys: any) =>
                       setForm((prev) => ({
                         ...prev,
                         statusKepemilikan: Array.from(keys)[0] as string,
@@ -237,7 +239,7 @@ export const FormLaporanPenyuluhPage = () => {
                       label="Tanggal Tanam"
                       name="tamggalTanam"
                       value={form.tanggalTanam}
-                      onChange={(value) =>
+                      onChange={(value: any) =>
                         handleDateChange("tanggalTanam", value)
                       }
                     />
@@ -245,7 +247,7 @@ export const FormLaporanPenyuluhPage = () => {
                       label="Estimasi Panen"
                       name="estimasiPanen"
                       value={form.estimasiPanen}
-                      onChange={(value) =>
+                      onChange={(value: any) =>
                         handleDateChange("estimasiPanen", value)
                       }
                     />

@@ -1,7 +1,10 @@
+import { Input } from "../../../components/Form/HeroInput";
+import { Button } from "../../../components/Form/HeroButton";
+
 import { useState, useEffect } from "react";
-import { Button } from "@heroui/button";
+
 import { Link, useNavigate } from "react-router-dom";
-import { Input } from "@heroui/input";
+
 import { GoHomeFill } from "react-icons/go";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { FiLock, FiCheckCircle } from "react-icons/fi";
@@ -219,7 +222,7 @@ export default function SetPasswordPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   variant="bordered"
-                  onChange={(e) => {
+                  onChange={(e: any) => {
                     setPassword(e.target.value);
                     setError(""); // Clear error saat mengetik
                   }}
@@ -332,7 +335,7 @@ export default function SetPasswordPage() {
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   variant="bordered"
-                  onChange={(e) => {
+                  onChange={(e: any) => {
                     setConfirmPassword(e.target.value);
                     setError("");
                   }}

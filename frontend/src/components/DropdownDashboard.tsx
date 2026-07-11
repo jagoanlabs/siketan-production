@@ -1,9 +1,5 @@
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-} from "@heroui/dropdown";
+import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/react";
+
 import { FaChevronDown, FaRegCircleUser } from "react-icons/fa6";
 import { RxExit } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
@@ -28,10 +24,9 @@ export const DropdownDashboard = () => {
         <DropdownMenu aria-label="Static Actions">
           <DropdownItem
             key="profile"
-            startContent={<FaRegCircleUser size={14} />}
             onClick={() => navigate("/profile")}
           >
-            Profile
+            <FaRegCircleUser size={14} /> Profile
           </DropdownItem>
           {/* {user?.role.name === ROLES.PETANI || user?.role.name === ROLES.PENYULUH || user?.role.name === ROLES.PENYULUH_SWADAYA ? (
             <DropdownItem
@@ -67,18 +62,16 @@ export const DropdownDashboard = () => {
           user?.role.name === ROLES.PENYULUH_SWADAYA ? (
             <DropdownItem
               key="dashboard"
-              startContent={<MdOutlineDashboard size={14} />}
               onClick={() => navigate("/dashboard-admin")}
             >
-              Dashboard Admin
+              <MdOutlineDashboard size={14} /> Dashboard Admin
             </DropdownItem>
           ) : null}
           {/* Conditional rendering langsung tanpa wrapper */}
           <DropdownItem
             key="delete"
             className="text-danger"
-            color="danger"
-            startContent={<RxExit size={14} />}
+            variant="danger"
             onClick={() => {
               logout();
               localStorage.removeItem("token");
@@ -86,7 +79,7 @@ export const DropdownDashboard = () => {
               window.location.reload();
             }}
           >
-            Keluar
+            <RxExit size={14} /> Keluar
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>

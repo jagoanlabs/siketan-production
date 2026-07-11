@@ -1,19 +1,19 @@
+import { Divider } from "../../../../../components/Form/HeroDivider";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@heroui/button";
-import { Avatar } from "@heroui/avatar";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Divider } from "@heroui/divider";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Chip } from "../../../../../components/Form/HeroChip";
+
 import {
   Modal,
   ModalContent,
   ModalHeader,
   ModalBody,
   ModalFooter,
-  useDisclosure,
-} from "@heroui/modal";
-import { Input } from "@heroui/input";
+} from "../../../../../components/Form/HeroModal";
+import { Input } from "../../../../../components/Form/HeroInput";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { MdLockOutline } from "react-icons/md";
 import { toast } from "sonner";
@@ -102,7 +102,8 @@ export const ProfileDashboard = () => {
     new: false,
     confirm: false,
   });
-  const { isOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
+  const onClose = () => setIsOpen(false);
 
   // Use TanStack Query mutation
   const updateProfileMutation = useUpdateProfile();

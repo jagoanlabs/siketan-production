@@ -1,11 +1,13 @@
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
+import { DatePicker } from "../../../components/Form/HeroDatePicker";
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+import { Input, Textarea } from "../../../components/Form/HeroInput";
+import { Button } from "../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../components/Form/HeroSelect";
+
 import { FaRegUserCircle } from "react-icons/fa";
 import { useState } from "react";
-import { DatePicker } from "@heroui/date-picker";
+
 import { DateValue } from "@internationalized/date";
-import { Button } from "@heroui/button";
-import { Input, Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
 
 import HomeLayout from "@/layouts/HomeLayout";
 import { Footer } from "@/features/Home/components/Footer";
@@ -56,7 +58,7 @@ export const FormLaporanPetaniPage = () => {
               <NavbarStaticItem index={2} />
             </div>
             <Breadcrumbs>
-              <BreadcrumbItem
+              <BreadcrumbsItem
                 classNames={{
                   base: "hover:cursor-pointer text-[#003F75] font-semibold",
                   item: "hover:cursor-pointer text-[#003F75] ",
@@ -66,8 +68,8 @@ export const FormLaporanPetaniPage = () => {
               >
                 <FaRegUserCircle />
                 Profile
-              </BreadcrumbItem>
-              <BreadcrumbItem
+              </BreadcrumbsItem>
+              <BreadcrumbsItem
                 classNames={{
                   base: " text-[#003F75] font-semibold",
                   item: " text-[#003F75]",
@@ -75,8 +77,8 @@ export const FormLaporanPetaniPage = () => {
                 }}
               >
                 Isi Form Laporan
-              </BreadcrumbItem>
-              <BreadcrumbItem
+              </BreadcrumbsItem>
+              <BreadcrumbsItem
                 classNames={{
                   base: " text-[#003F75] font-semibold",
                   item: " text-[#003F75]",
@@ -84,7 +86,7 @@ export const FormLaporanPetaniPage = () => {
                 }}
               >
                 Form Laporan Petani
-              </BreadcrumbItem>
+              </BreadcrumbsItem>
             </Breadcrumbs>
           </div>
         </div>
@@ -234,7 +236,7 @@ export const FormLaporanPetaniPage = () => {
                       label="Waktu tanam"
                       name="waktuTanam"
                       value={form.waktuTanam}
-                      onChange={(value) =>
+                      onChange={(value: any) =>
                         handleDateChange("waktuTanam", value)
                       }
                     />
@@ -243,7 +245,7 @@ export const FormLaporanPetaniPage = () => {
                       label="Estimasi Panen"
                       name="estimasiPanen"
                       value={form.estimasiPanen}
-                      onChange={(value) =>
+                      onChange={(value: any) =>
                         handleDateChange("estimasiPanen", value)
                       }
                     />

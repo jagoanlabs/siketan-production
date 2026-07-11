@@ -1,16 +1,17 @@
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Image } from "../../../../../components/Form/HeroImage";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Input, Textarea } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 // HeroUI Components
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input, Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Image } from "@heroui/image";
-import { Avatar } from "@heroui/avatar";
-import { Chip } from "@heroui/chip";
-import { Divider } from "@heroui/divider";
 
 import {
   CreateProductFormData,
@@ -141,7 +142,7 @@ export const CreateTokoPertanian = () => {
       // Create preview
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: any) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -381,7 +382,7 @@ export const CreateTokoPertanian = () => {
                     selectedKeys={
                       formData.profesiPenjual ? [formData.profesiPenjual] : []
                     }
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const value = Array.from(keys)[0] as string;
 
                       handleInputChange("profesiPenjual", value);
@@ -411,7 +412,7 @@ export const CreateTokoPertanian = () => {
                           : "Masukkan NIP"
                       }
                       value={formData.nik}
-                      onValueChange={(value) => {
+                      onValueChange={(value: any) => {
                         handleInputChange("nik", value);
                         // Reset user data when NIK changes
                         setUserData(null);
@@ -520,7 +521,7 @@ export const CreateTokoPertanian = () => {
                     label="Nama Produk"
                     placeholder="Masukkan nama produk"
                     value={formData.namaProducts}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("namaProducts", value)
                     }
                   />
@@ -535,7 +536,7 @@ export const CreateTokoPertanian = () => {
                       placeholder="0"
                       type="number"
                       value={formData.stok.toString()}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("stok", parseInt(value) || 0)
                       }
                     />
@@ -547,7 +548,7 @@ export const CreateTokoPertanian = () => {
                       label="Satuan"
                       placeholder="Pilih satuan"
                       selectedKeys={formData.satuan ? [formData.satuan] : []}
-                      onSelectionChange={(keys) => {
+                      onSelectionChange={(keys: any) => {
                         const value = Array.from(keys)[0] as string;
 
                         handleInputChange("satuan", value);
@@ -575,7 +576,7 @@ export const CreateTokoPertanian = () => {
                       }
                       type="number"
                       value={formData.harga}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("harga", value)
                       }
                     />
@@ -588,7 +589,7 @@ export const CreateTokoPertanian = () => {
                     label="Status Produk"
                     placeholder="Pilih status produk"
                     selectedKeys={formData.status ? [formData.status] : []}
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const value = Array.from(keys)[0] as string;
 
                       handleInputChange("status", value);
@@ -609,7 +610,7 @@ export const CreateTokoPertanian = () => {
                     minRows={4}
                     placeholder="Masukkan deskripsi lengkap produk..."
                     value={formData.deskripsi}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("deskripsi", value)
                     }
                   />

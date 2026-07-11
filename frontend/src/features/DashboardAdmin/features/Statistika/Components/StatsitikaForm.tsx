@@ -1,9 +1,13 @@
+import { Input } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+import { Radio, RadioGroup } from "@heroui/react";
 // components/StatistikaForm.tsx (Updated)
 import React, { useState, useEffect } from "react";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { RadioGroup, Radio } from "@heroui/radio";
+
+
+
+
 
 import {
   CreateStatistikaFormData,
@@ -233,7 +237,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           className="gap-4"
           orientation="horizontal"
           value={formData.kategoriTanaman}
-          onValueChange={(value) => {
+          onChange={(value: any) => {
             const val = value as "pangan" | "perkebunan" | "jenis_sayur" | "buah";
             const defaultJenis = val === "jenis_sayur" ? "tahunan" : "semusim";
             setFormData((prev) => ({
@@ -279,7 +283,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
               selectedKeys={
                 formData.komoditasSemusim ? [formData.komoditasSemusim] : []
               }
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const selected = Array.from(keys)[0] as string;
 
                 setFormData((prev) => ({
@@ -319,7 +323,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
               selectedKeys={
                 formData.komoditasTahunan ? [formData.komoditasTahunan] : []
               }
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const selected = Array.from(keys)[0] as string;
 
                 setFormData((prev) => ({
@@ -354,7 +358,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           label="Periode Tanam"
           placeholder="Pilih periode tanam"
           selectedKeys={formData.periodeTanam ? [formData.periodeTanam] : []}
-          onSelectionChange={(keys) => {
+          onSelectionChange={(keys: any) => {
             const selected = Array.from(keys)[0] as string;
 
             handleInputChange("periodeTanam", selected);
@@ -380,7 +384,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           step="0.01"
           type="number"
           value={formData.luasLahanTanam.toString()}
-          onChange={(e) =>
+          onChange={(e: any) =>
             handleInputChange("luasLahanTanam", parseFloat(e.target.value) || 0)
           }
         />
@@ -403,7 +407,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
             step="0.01"
             type="number"
             value={formData.prakiraanLuasPanen.toString()}
-            onChange={(e) =>
+            onChange={(e: any) =>
               handleInputChange(
                 "prakiraanLuasPanen",
                 parseFloat(e.target.value) || 0,
@@ -421,7 +425,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
             step="0.01"
             type="number"
             value={formData.prakiraanHasilPanen.toString()}
-            onChange={(e) =>
+            onChange={(e: any) =>
               handleInputChange(
                 "prakiraanHasilPanen",
                 parseFloat(e.target.value) || 0,
@@ -439,7 +443,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
           selectedKeys={
             formData.prakiraanBulanPanen ? [formData.prakiraanBulanPanen] : []
           }
-          onSelectionChange={(keys) => {
+          onSelectionChange={(keys: any) => {
             const selected = Array.from(keys)[0] as string;
 
             handleInputChange("prakiraanBulanPanen", selected);

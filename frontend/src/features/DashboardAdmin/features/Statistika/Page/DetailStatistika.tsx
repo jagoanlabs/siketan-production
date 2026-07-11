@@ -1,10 +1,15 @@
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Spinner } from "@heroui/react";
 // pages/DetailStatistika.tsx
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Button } from "@heroui/button";
-import { Chip } from "@heroui/chip";
-import { Spinner } from "@heroui/spinner";
-import { Divider } from "@heroui/divider";
+
+
+
+
+
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";

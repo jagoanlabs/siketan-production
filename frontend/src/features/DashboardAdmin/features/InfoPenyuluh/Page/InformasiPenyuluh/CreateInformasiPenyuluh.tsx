@@ -1,12 +1,13 @@
+import { Avatar } from "../../../../../../components/Form/HeroAvatar";
+import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { Input, Textarea } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../../components/Form/HeroSelect";
+
 // pages/CreatePenyuluh.tsx
 import React, { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Avatar } from "@heroui/avatar";
-import { Button } from "@heroui/button";
-import { Input, Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
 
 import {
   CreatePenyuluhData,
@@ -284,7 +285,7 @@ export default function CreateInformasiPenyuluh() {
                     placeholder="Masukkan NIP"
                     value={formData.NIP}
                     variant="bordered"
-                    onChange={(e) => handleInputChange("NIP", e.target.value)}
+                    onChange={(e: any) => handleInputChange("NIP", e.target.value)}
                   />
 
                   <Input
@@ -293,7 +294,7 @@ export default function CreateInformasiPenyuluh() {
                     placeholder="Masukkan nama lengkap"
                     value={formData.nama}
                     variant="bordered"
-                    onChange={(e) => handleInputChange("nama", e.target.value)}
+                    onChange={(e: any) => handleInputChange("nama", e.target.value)}
                   />
 
                   <Input
@@ -303,7 +304,7 @@ export default function CreateInformasiPenyuluh() {
                     type="email"
                     value={formData.email}
                     variant="bordered"
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    onChange={(e: any) => handleInputChange("email", e.target.value)}
                   />
 
                   <Input
@@ -312,7 +313,7 @@ export default function CreateInformasiPenyuluh() {
                     placeholder="Masukkan nomor HP"
                     value={formData.NoWa}
                     variant="bordered"
-                    onChange={(e) => handleInputChange("NoWa", e.target.value)}
+                    onChange={(e: any) => handleInputChange("NoWa", e.target.value)}
                   />
 
                   <Input
@@ -322,7 +323,7 @@ export default function CreateInformasiPenyuluh() {
                     type="password"
                     value={formData.password}
                     variant="bordered"
-                    onChange={(e) =>
+                    onChange={(e: any) =>
                       handleInputChange("password", e.target.value)
                     }
                   />
@@ -334,7 +335,7 @@ export default function CreateInformasiPenyuluh() {
                       placeholder="Pilih tipe penyuluh"
                       selectedKeys={formData.tipe ? [formData.tipe] : []}
                       variant="bordered"
-                      onSelectionChange={(keys) => {
+                      onSelectionChange={(keys: any) => {
                         const selected = Array.from(keys)[0] as string;
 
                         setFormData((prev) => ({
@@ -362,7 +363,7 @@ export default function CreateInformasiPenyuluh() {
                     placeholder="Masukkan alamat lengkap"
                     value={formData.alamat}
                     variant="bordered"
-                    onChange={(e) =>
+                    onChange={(e: any) =>
                       handleInputChange("alamat", e.target.value)
                     }
                   />
@@ -384,7 +385,7 @@ export default function CreateInformasiPenyuluh() {
                         : []
                     }
                     variant="bordered"
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const value = Array.from(keys)[0] as string;
 
                       if (value) handleKecamatanChange(value);
@@ -408,7 +409,7 @@ export default function CreateInformasiPenyuluh() {
                       formData.desaId ? [formData.desaId.toString()] : []
                     }
                     variant="bordered"
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const value = Array.from(keys)[0] as string;
 
                       if (value) handleDesaChange(value);
@@ -433,7 +434,7 @@ export default function CreateInformasiPenyuluh() {
                         : []
                     }
                     variant="bordered"
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const value = Array.from(keys)[0] as string;
 
                       if (value) handleKecamatanBinaanChange(value);
@@ -454,10 +455,10 @@ export default function CreateInformasiPenyuluh() {
                     isMultiline={true}
                     label="Desa Wilayah Binaan"
                     placeholder="Pilih desa binaan"
-                    renderValue={(items) => {
+                    renderValue={(items: any) => {
                       return (
                         <div className="flex flex-wrap gap-2">
-                          {items.map((item) => (
+                          {items.map((item: any) => (
                             <div
                               key={item.key}
                               className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
@@ -471,7 +472,7 @@ export default function CreateInformasiPenyuluh() {
                     selectedKeys={formData.desaBinaan}
                     selectionMode="multiple"
                     variant="bordered"
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       handleInputChange("desaBinaan", Array.from(keys));
                     }}
                   >
@@ -490,10 +491,10 @@ export default function CreateInformasiPenyuluh() {
                     isMultiline={true}
                     label="Pilih Kelompok"
                     placeholder="Pilih kelompok yang akan dibina"
-                    renderValue={(items) => {
+                    renderValue={(items: any) => {
                       return (
                         <div className="flex flex-wrap gap-2">
-                          {items.map((item) => (
+                          {items.map((item: any) => (
                             <div
                               key={item.key}
                               className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full"
@@ -507,7 +508,7 @@ export default function CreateInformasiPenyuluh() {
                     selectedKeys={formData.selectedKelompokIds}
                     selectionMode="multiple"
                     variant="bordered"
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       handleInputChange(
                         "selectedKelompokIds",
                         Array.from(keys),
@@ -534,7 +535,7 @@ export default function CreateInformasiPenyuluh() {
                     placeholder="Masukkan nama produk yang dibina"
                     value={formData.namaProduct}
                     variant="bordered"
-                    onChange={(e) =>
+                    onChange={(e: any) =>
                       handleInputChange("namaProduct", e.target.value)
                     }
                   />
@@ -551,7 +552,7 @@ export default function CreateInformasiPenyuluh() {
                   Batal
                 </Button>
                 <Button
-                  color="primary"
+                  variant="primary"
                   isLoading={createMutation.isPending}
                   type="submit"
                 >

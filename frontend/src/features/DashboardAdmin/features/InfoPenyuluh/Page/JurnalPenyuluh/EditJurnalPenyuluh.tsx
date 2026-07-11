@@ -1,8 +1,9 @@
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Spinner } from "@heroui/spinner";
+import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../../components/Form/HeroSelect";
+import { Spinner } from "@heroui/react";
+
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -149,7 +150,7 @@ export const EditJurnalPenyuluh = () => {
       // Create preview
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: any) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -212,7 +213,7 @@ export const EditJurnalPenyuluh = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <Spinner color="primary" size="lg" />
+              <Spinner color="accent" size="lg" />
               <p className="text-gray-600 mt-4">Memuat data jurnal...</p>
             </div>
           </div>
@@ -248,8 +249,7 @@ export const EditJurnalPenyuluh = () => {
                 Jurnal tidak ditemukan atau terjadi kesalahan.
               </p>
               <Button
-                color="primary"
-                variant="flat"
+                variant="primary"
                 onPress={() => navigate("/jurnal-kegiatan")}
               >
                 Kembali ke Daftar Jurnal
@@ -394,22 +394,7 @@ export const EditJurnalPenyuluh = () => {
                   selectedKeys={
                     formData.statusJurnal ? [formData.statusJurnal] : []
                   }
-                  startContent={
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
-                  }
-                  onSelectionChange={(keys) => {
+                  onSelectionChange={(keys: any) => {
                     const selectedKey = Array.from(keys)[0] as string;
 
                     if (selectedKey) {
@@ -449,7 +434,7 @@ export const EditJurnalPenyuluh = () => {
                   </svg>
                 }
                 value={formData.judul}
-                onValueChange={(value) => handleInputChange("judul", value)}
+                onValueChange={(value: any) => handleInputChange("judul", value)}
               />
             </CardBody>
           </Card>
@@ -540,7 +525,7 @@ export const EditJurnalPenyuluh = () => {
                     <Button
                       isIconOnly
                       className="bg-white/90 hover:bg-white text-primary"
-                      color="primary"
+                      variant="primary"
                       size="sm"
                       onPress={() => fileInputRef.current?.click()}
                     >
@@ -637,7 +622,7 @@ export const EditJurnalPenyuluh = () => {
                     Batal
                   </Button>
                   <Button
-                    color="primary"
+                    variant="primary"
                     isLoading={updateJurnalMutation.isPending}
                     startContent={
                       !updateJurnalMutation.isPending && (

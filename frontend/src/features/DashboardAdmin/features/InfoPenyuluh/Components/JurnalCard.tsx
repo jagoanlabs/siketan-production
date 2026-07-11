@@ -1,8 +1,10 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+
 // components/JurnalCard.tsx
-import { Avatar } from "@heroui/avatar";
-import { Button } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
+
 import React from "react";
 
 import { Jurnal } from "@/types/Jurnal/jurnal";

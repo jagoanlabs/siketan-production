@@ -1,12 +1,14 @@
+import { Divider } from "../../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../../components/Form/HeroAvatar";
+import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Tooltip } from "@heroui/react";
 // pages/DetailInformasiPenyuluh.tsx
 import { useNavigate, useParams } from "react-router-dom";
-import { Tooltip } from "@heroui/tooltip";
-import { Card, CardBody, CardHeader } from "@heroui/card";
+
 import { Skeleton } from "primereact/skeleton";
-import { Button } from "@heroui/button";
-import { Avatar } from "@heroui/avatar";
-import { Chip } from "@heroui/chip";
-import { Divider } from "@heroui/divider";
+
 import { Badge } from "primereact/badge";
 
 import { usePenyuluhDetail } from "@/hook/dashboard/infoPenyuluh/useEditPenyuluh";
@@ -218,29 +220,32 @@ export const DetailInformasiPenyuluh = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <Tooltip content="Edit informasi penyuluh">
-                  <Button
-                    color="primary"
-                    startContent={
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                    }
-                    variant="solid"
-                    onPress={() => navigate(`/daftar-penyuluh/${id}/edit`)}
-                  >
-                    Edit
-                  </Button>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <Button
+                      color="primary"
+                      startContent={
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                          />
+                        </svg>
+                      }
+                      variant="solid"
+                      onPress={() => navigate(`/daftar-penyuluh/${id}/edit`)}
+                    >
+                      Edit
+                    </Button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>Edit informasi penyuluh</Tooltip.Content>
                 </Tooltip>
               </div>
             </div>

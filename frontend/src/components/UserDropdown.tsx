@@ -1,8 +1,10 @@
+import { Chip } from "./Form/HeroChip";
+import { Button } from "./Form/HeroButton";
+
 import { useState } from "react";
-import { Button } from "@heroui/button";
+
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { RxExit } from "react-icons/rx";
-import { Chip } from "@heroui/chip";
 
 import { DropdownItem } from "./dropdown/DropdownItem";
 import { Dropdown } from "./dropdown/Dropdown";

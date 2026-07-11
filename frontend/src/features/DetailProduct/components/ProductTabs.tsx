@@ -1,6 +1,7 @@
+import { Button } from "../../../components/Form/HeroButton";
+
 // ProductTabs.tsx - Enhanced Responsive Version
 
-import { Button } from "@heroui/button";
 import { IoLogoWhatsapp } from "react-icons/io5";
 import { FaUser, FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 import { useState } from "react";

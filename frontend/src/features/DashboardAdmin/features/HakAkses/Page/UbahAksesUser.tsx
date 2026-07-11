@@ -1,10 +1,11 @@
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Tooltip } from "@heroui/react";
 // pages/UbahAksesUser.tsx
 import React, { useMemo, useState } from "react";
 import { ConfirmDialog } from "primereact/confirmdialog";
-import { Tooltip } from "@heroui/tooltip";
+
 import { toast } from "sonner";
-import { Card, CardBody } from "@heroui/card";
-import { Button } from "@heroui/button";
 
 import useUbahAksesTableState from "../Components/useUbahAksesUserState";
 import { UbahRoleModal } from "../Components/UbahAksesUserModal";
@@ -182,26 +183,29 @@ export const UbahAksesUser = () => {
         render: (item) => (
           <div className="flex space-x-2">
             <PermissionWrapper permissions={[PERMISSIONS.UBAH_HAK_AKSES_EDIT]}>
-              <Tooltip content="Edit role user">
-                <button
-                  className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={ubahPeranMutation.isPending}
-                  onClick={() => openEditModal(item)}
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <button
+                    className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={ubahPeranMutation.isPending}
+                    onClick={() => openEditModal(item)}
                   >
-                    <path
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Content>Edit role user</Tooltip.Content>
               </Tooltip>
             </PermissionWrapper>
           </div>

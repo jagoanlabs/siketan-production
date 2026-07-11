@@ -1,6 +1,6 @@
-import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Spinner } from "@heroui/spinner";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+import { Spinner } from "@heroui/react";
 
 import { USER_ROLES } from "@/types/HakAkses/ubahAksesUser";
 

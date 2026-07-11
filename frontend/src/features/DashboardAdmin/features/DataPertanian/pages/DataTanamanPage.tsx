@@ -1,23 +1,24 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Card } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../components/Form/HeroModal";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+import { Tooltip } from "@heroui/react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tooltip } from "@heroui/tooltip";
+
 import { FaPlus, FaFileExcel, FaRegTrashAlt } from "react-icons/fa";
 import { FiEye, FiEdit2 } from "react-icons/fi";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@heroui/modal";
-import { Select, SelectItem } from "@heroui/select";
+
+
 import { confirmDialog } from "primereact/confirmdialog";
-import { Button } from "@heroui/button";
-import { Card } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Avatar } from "@heroui/avatar";
+
+
+
+
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
@@ -324,44 +325,53 @@ export const DataTanamanPage = () => {
               PERMISSIONS.TANAMAN_PETANI_DETAIL,
             ]}
           >
-            <Tooltip content="Lihat Detail">
-              <Button
-                isIconOnly
-                color="primary"
-                size="sm"
-                variant="light"
-                onPress={() => handleViewDetail(item)}
-              >
-                <FiEye className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="primary"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleViewDetail(item)}
+                >
+                  <FiEye className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Lihat Detail</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           <PermissionWrapper permissions={[PERMISSIONS.TANAMAN_PETANI_EDIT]}>
-            <Tooltip content="Edit Data">
-              <Button
-                isIconOnly
-                color="warning"
-                size="sm"
-                variant="light"
-                onPress={() => handleEdit(item)}
-              >
-                <FiEdit2 className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="warning"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleEdit(item)}
+                >
+                  <FiEdit2 className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Edit Data</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           <PermissionWrapper permissions={[PERMISSIONS.TANAMAN_PETANI_DELETE]}>
-            <Tooltip content="Hapus Data">
-              <Button
-                isIconOnly
-                color="danger"
-                size="sm"
-                variant="light"
-                onPress={() => handleDelete(item)}
-              >
-                <FaRegTrashAlt className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="danger"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleDelete(item)}
+                >
+                  <FaRegTrashAlt className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Hapus Data</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
         </div>
@@ -539,40 +549,49 @@ export const DataTanamanPage = () => {
         </div>
       )}
       <PermissionWrapper permission={PERMISSIONS.TANAMAN_PETANI_CREATE}>
-        <Tooltip content="Tambah Data Tanaman">
-          <Button
-            color="primary"
-            startContent={<FaPlus className="w-4 h-4" />}
-            onPress={handleCreate}
-          >
-            <span className="hidden sm:inline">Tambah Data</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              color="primary"
+              startContent={<FaPlus className="w-4 h-4" />}
+              onPress={handleCreate}
+            >
+              <span className="hidden sm:inline">Tambah Data</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Tambah Data Tanaman</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
 
       <PermissionWrapper permission={PERMISSIONS.TANAMAN_PETANI_IMPORT}>
-        <Tooltip content="Upload File Excel">
-          <Button
-            className="bg-orange-500 text-white"
-            color="success"
-            startContent={<FaFileExcel className="w-4 h-4" />}
-            onPress={handleUploadExcel}
-          >
-            <span className="hidden sm:inline">Upload Excel</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              className="bg-orange-500 text-white"
+              color="success"
+              startContent={<FaFileExcel className="w-4 h-4" />}
+              onPress={handleUploadExcel}
+            >
+              <span className="hidden sm:inline">Upload Excel</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Upload File Excel</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
 
       <PermissionWrapper permission={PERMISSIONS.TANAMAN_PETANI_EXPORT}>
-        <Tooltip content="Download Data Excel">
-          <Button
-            className="bg-green-500 text-white"
-            color="success"
-            startContent={<FaFileExcel className="w-4 h-4" />}
-            onPress={handleDownload}
-          >
-            <span className="hidden sm:inline">Download Excel</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              className="bg-green-500 text-white"
+              color="success"
+              startContent={<FaFileExcel className="w-4 h-4" />}
+              onPress={handleDownload}
+            >
+              <span className="hidden sm:inline">Download Excel</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Download Data Excel</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
     </div>
@@ -644,7 +663,7 @@ export const DataTanamanPage = () => {
         onOpenChange={setIsDetailModalOpen}
       >
         <ModalContent>
-          {(onClose) => (
+          {(onClose: any) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
                 <div className="flex items-center gap-2 mb-2">
@@ -864,7 +883,7 @@ export const DataTanamanPage = () => {
       {/* Export Options Modal */}
       <Modal isOpen={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
         <ModalContent>
-          {(onClose) => (
+          {(onClose: any) => (
             <>
               <ModalHeader className="flex flex-col gap-1">Export Data Tanaman</ModalHeader>
               <ModalBody className="space-y-4">

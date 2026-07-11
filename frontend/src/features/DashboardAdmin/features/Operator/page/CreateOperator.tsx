@@ -1,11 +1,12 @@
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Input, Textarea } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+
 // pages/CreateOperator.tsx
 import React, { useState } from "react";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Textarea } from "@heroui/input";
-import { Button } from "@heroui/button";
-import { Divider } from "@heroui/divider";
+
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -210,7 +211,7 @@ export const CreateOperator = () => {
                     maxLength={16}
                     placeholder="Masukkan NIK (16 digit)"
                     value={formData.nik}
-                    onValueChange={(value) => handleInputChange("nik", value)}
+                    onValueChange={(value: any) => handleInputChange("nik", value)}
                   />
 
                   <Input
@@ -220,7 +221,7 @@ export const CreateOperator = () => {
                     maxLength={16}
                     placeholder="Masukkan No. KK (opsional)"
                     value={formData.nkk}
-                    onValueChange={(value) => handleInputChange("nkk", value)}
+                    onValueChange={(value: any) => handleInputChange("nkk", value)}
                   />
 
                   <Input
@@ -230,7 +231,7 @@ export const CreateOperator = () => {
                     label="Nama Lengkap"
                     placeholder="Masukkan nama lengkap"
                     value={formData.nama}
-                    onValueChange={(value) => handleInputChange("nama", value)}
+                    onValueChange={(value: any) => handleInputChange("nama", value)}
                   />
 
                   <Select
@@ -240,7 +241,7 @@ export const CreateOperator = () => {
                     label="Peran"
                     placeholder="Pilih peran operator"
                     selectedKeys={formData.peran ? [formData.peran] : []}
-                    onSelectionChange={(selection) => {
+                    onSelectionChange={(selection: any) => {
                       const value = Array.from(selection)[0] as string;
 
                       handleInputChange("peran", value || "");
@@ -271,7 +272,7 @@ export const CreateOperator = () => {
                     placeholder="Masukkan alamat email"
                     type="email"
                     value={formData.email}
-                    onValueChange={(value) => handleInputChange("email", value)}
+                    onValueChange={(value: any) => handleInputChange("email", value)}
                   />
 
                   <Input
@@ -281,7 +282,7 @@ export const CreateOperator = () => {
                     label="No. WhatsApp"
                     placeholder="Contoh: 08123456789"
                     value={formData.notelp}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("notelp", value)
                     }
                   />
@@ -296,7 +297,7 @@ export const CreateOperator = () => {
                     minRows={3}
                     placeholder="Masukkan alamat lengkap"
                     value={formData.alamat}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("alamat", value)
                     }
                   />
@@ -319,7 +320,7 @@ export const CreateOperator = () => {
                     placeholder="Masukkan password"
                     type="password"
                     value={formData.password}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("password", value)
                     }
                   />

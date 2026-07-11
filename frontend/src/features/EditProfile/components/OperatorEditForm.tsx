@@ -1,7 +1,8 @@
-import { Avatar } from "@heroui/avatar";
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input, Textarea } from "@heroui/input";
+import { Avatar } from "../../../components/Form/HeroAvatar";
+import { Card, CardBody, CardHeader } from "../../../components/Form/HeroCard";
+import { Input, Textarea } from "../../../components/Form/HeroInput";
+import { Button } from "../../../components/Form/HeroButton";
+
 import React, { useEffect, useState } from "react";
 
 import { OperatorPoktanProfileData } from "@/types/editProfle";
@@ -67,7 +68,7 @@ export const OperatorEditForm = () => {
       // Create preview
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: any) => {
         setPreviewImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -128,38 +129,38 @@ export const OperatorEditForm = () => {
               maxLength={16}
               placeholder="Masukkan NIK"
               value={formData.nik}
-              onChange={(e) => handleInputChange("nik", e.target.value)}
+              onChange={(e: any) => handleInputChange("nik", e.target.value)}
             />
             <Input
               label="Nama"
               placeholder="Masukkan nama"
               value={formData.nama}
-              onChange={(e) => handleInputChange("nama", e.target.value)}
+              onChange={(e: any) => handleInputChange("nama", e.target.value)}
             />
             <Input
               label="Email"
               placeholder="Masukkan email"
               type="email"
               value={formData.email}
-              onChange={(e) => handleInputChange("email", e.target.value)}
+              onChange={(e: any) => handleInputChange("email", e.target.value)}
             />
             <Input
               label="WhatsApp"
               placeholder="Masukkan nomor WhatsApp"
               value={formData.whatsapp}
-              onChange={(e) => handleInputChange("whatsapp", e.target.value)}
+              onChange={(e: any) => handleInputChange("whatsapp", e.target.value)}
             />
             <Input
               label="Kecamatan"
               placeholder="Masukkan kecamatan"
               value={formData.kecamatan}
-              onChange={(e) => handleInputChange("kecamatan", e.target.value)}
+              onChange={(e: any) => handleInputChange("kecamatan", e.target.value)}
             />
             <Input
               label="Desa"
               placeholder="Masukkan desa"
               value={formData.desa}
-              onChange={(e) => handleInputChange("desa", e.target.value)}
+              onChange={(e: any) => handleInputChange("desa", e.target.value)}
             />
           </div>
 
@@ -167,7 +168,7 @@ export const OperatorEditForm = () => {
             label="Alamat"
             placeholder="Masukkan alamat lengkap"
             value={formData.alamat}
-            onChange={(e) => handleInputChange("alamat", e.target.value)}
+            onChange={(e: any) => handleInputChange("alamat", e.target.value)}
           />
 
           {/* Password Field */}
@@ -188,7 +189,7 @@ export const OperatorEditForm = () => {
               placeholder="Masukkan password baru"
               type={showPassword ? "text" : "password"}
               value={formData.baru}
-              onChange={(e) => handleInputChange("baru", e.target.value)}
+              onChange={(e: any) => handleInputChange("baru", e.target.value)}
             />
           </div>
 

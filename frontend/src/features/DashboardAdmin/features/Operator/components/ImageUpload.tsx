@@ -1,7 +1,9 @@
+import { Button } from "../../../../../components/Form/HeroButton";
+
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 // components/form/ImageUpload.tsx
 import React, { useState, useRef } from "react";
-import { Button } from "@heroui/button";
+
 import { toast } from "sonner";
 
 interface ImageUploadProps {

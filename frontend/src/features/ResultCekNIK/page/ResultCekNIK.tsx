@@ -1,5 +1,6 @@
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
-import { Button } from "@heroui/button";
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+import { Button } from "../../../components/Form/HeroButton";
+
 import { FaMapMarkerAlt, FaPhone, FaSearch, FaUser } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -96,7 +97,7 @@ export const ResultCekNIK = () => {
             </div>
             <div className="hidden sm:block">
               <Breadcrumbs>
-                <BreadcrumbItem
+                <BreadcrumbsItem
                   classNames={{
                     base: "hover:cursor-pointer text-[#003F75] font-semibold",
                     item: "hover:cursor-pointer text-[#003F75]",
@@ -105,8 +106,8 @@ export const ResultCekNIK = () => {
                   href="/"
                 >
                   Home
-                </BreadcrumbItem>
-                <BreadcrumbItem
+                </BreadcrumbsItem>
+                <BreadcrumbsItem
                   classNames={{
                     base: "text-[#003F75] font-semibold",
                     item: "text-[#003F75]",
@@ -114,7 +115,7 @@ export const ResultCekNIK = () => {
                   }}
                 >
                   Cek NIK
-                </BreadcrumbItem>
+                </BreadcrumbsItem>
               </Breadcrumbs>
             </div>
             <div className="sm:hidden text-[#003F75] text-sm font-medium">

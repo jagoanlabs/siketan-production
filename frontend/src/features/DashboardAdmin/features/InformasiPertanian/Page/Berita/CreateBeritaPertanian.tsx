@@ -1,15 +1,16 @@
+import { Chip } from "../../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../../components/Form/HeroAvatar";
+import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../../components/Form/HeroSelect";
+
 // pages/CreateBeritaPertanian.tsx
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 // Import hooks and types
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Avatar } from "@heroui/avatar";
-import { Chip } from "@heroui/chip";
-import { Button } from "@heroui/button";
 
 import { RichTextEditor } from "@/components/RichText/RichTextComponents";
 import {
@@ -80,7 +81,7 @@ export const CreateBeritaPertanian = () => {
     // Create preview
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = (e: any) => {
       setImagePreview(e.target?.result as string);
     };
     reader.readAsDataURL(file);
@@ -219,7 +220,7 @@ export const CreateBeritaPertanian = () => {
                       placeholder="Masukkan judul berita yang menarik..."
                       value={formData.judul}
                       variant="bordered"
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("judul", value)
                       }
                     />
@@ -239,7 +240,7 @@ export const CreateBeritaPertanian = () => {
                       type="date"
                       value={formData.tanggal}
                       variant="bordered"
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("tanggal", value)
                       }
                     />
@@ -253,7 +254,7 @@ export const CreateBeritaPertanian = () => {
                       placeholder="Pilih kategori"
                       selectedKeys={[formData.kategori]}
                       variant="bordered"
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         handleInputChange("kategori", e.target.value as any)
                       }
                     >

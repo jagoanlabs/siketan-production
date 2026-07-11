@@ -1,7 +1,9 @@
+import { Input } from "../../../../../components/Form/HeroInput";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
+
 import { toast } from "sonner";
 
 import PageBreadcrumb from "@/components/Breadcrumb";

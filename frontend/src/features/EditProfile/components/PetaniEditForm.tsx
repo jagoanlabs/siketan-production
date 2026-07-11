@@ -1,14 +1,15 @@
+import { Image } from "../../../components/Form/HeroImage";
+import { Card, CardBody, CardHeader } from "../../../components/Form/HeroCard";
+import { Input, Textarea } from "../../../components/Form/HeroInput";
+import { Button } from "../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../components/Form/HeroSelect";
+import { Skeleton } from "@heroui/react";
 // components/forms/PetaniEditForm.tsx
 import React, { useState, useEffect } from "react";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Textarea } from "@heroui/input";
-import { Card, CardBody, CardHeader } from "@heroui/card";
+
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
-import { Select, SelectItem } from "@heroui/select";
-import { Image } from "@heroui/image";
-import { Skeleton } from "@heroui/skeleton";
+
 import { toast } from "sonner";
 
 import {
@@ -223,7 +224,7 @@ export const PetaniEditForm = () => {
       // Create preview
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: any) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -413,7 +414,7 @@ export const PetaniEditForm = () => {
                       maxLength={16}
                       placeholder="Masukkan NIK 16 digit"
                       value={formData.nik}
-                      onValueChange={(value) => handleInputChange("nik", value)}
+                      onValueChange={(value: any) => handleInputChange("nik", value)}
                     />
                   </div>
 
@@ -424,7 +425,7 @@ export const PetaniEditForm = () => {
                     maxLength={16}
                     placeholder="Masukkan NKK 16 digit (Opsional)"
                     value={formData.nkk || ""}
-                    onValueChange={(value) => handleInputChange("nkk", value)}
+                    onValueChange={(value: any) => handleInputChange("nkk", value)}
                   />
 
                   <Input
@@ -434,7 +435,7 @@ export const PetaniEditForm = () => {
                     label="Nama Lengkap"
                     placeholder="Masukkan nama lengkap"
                     value={formData.nama}
-                    onValueChange={(value) => handleInputChange("nama", value)}
+                    onValueChange={(value: any) => handleInputChange("nama", value)}
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -452,7 +453,7 @@ export const PetaniEditForm = () => {
                         </div>
                       }
                       value={formData.noTelp}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("noTelp", value)
                       }
                     />
@@ -464,7 +465,7 @@ export const PetaniEditForm = () => {
                       placeholder="email@example.com (Opsional)"
                       type="email"
                       value={formData.email || ""}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("email", value)
                       }
                     />
@@ -478,9 +479,9 @@ export const PetaniEditForm = () => {
                     placeholder="Kosongkan jika tidak ingin mengubah password"
                     type="password"
                     value={formData.password || ""}
-                    onValueChange={(value) =>
-                      handleInputChange("password", value)
-                    }
+onValueChange={(value: any) =>
+                        handleInputChange("password", value)
+                      }
                   />
                 </CardBody>
               </Card>
@@ -501,7 +502,7 @@ export const PetaniEditForm = () => {
                     minRows={3}
                     placeholder="Masukkan alamat lengkap..."
                     value={formData.alamat}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("alamat", value)
                     }
                   />
@@ -519,7 +520,7 @@ export const PetaniEditForm = () => {
                           ? [formData.kecamatanId.toString()]
                           : []
                       }
-                      onSelectionChange={(keys) => {
+                      onSelectionChange={(keys: any) => {
                         const value = Array.from(keys)[0] as string;
 
                         if (value) handleKecamatanChange(value);
@@ -546,7 +547,7 @@ export const PetaniEditForm = () => {
                       selectedKeys={
                         formData.desaId ? [formData.desaId.toString()] : []
                       }
-                      onSelectionChange={(keys) => {
+                      onSelectionChange={(keys: any) => {
                         const value = Array.from(keys)[0] as string;
 
                         if (value) handleDesaChange(value);
@@ -582,7 +583,7 @@ export const PetaniEditForm = () => {
                         ? [formData.fk_penyuluhId.toString()]
                         : []
                     }
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const value = Array.from(keys)[0] as string;
 
                       handlePenyuluhChange(value);
@@ -636,7 +637,7 @@ export const PetaniEditForm = () => {
                             ? [formData.fk_kelompokId.toString()]
                             : []
                         }
-                        onSelectionChange={(keys) => {
+                        onSelectionChange={(keys: any) => {
                           const value = Array.from(keys)[0] as string;
 
                           handleGapoktanChange(value);
@@ -704,7 +705,7 @@ export const PetaniEditForm = () => {
                       label="Nama Kelompok"
                       placeholder="Masukkan nama kelompok"
                       value={formData.gapoktan || ""}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("gapoktan", value)
                       }
                     />
@@ -718,7 +719,7 @@ export const PetaniEditForm = () => {
                         label="Nama Gapoktan"
                         placeholder="Masukkan nama gapoktan"
                         value={formData.gapoktan || ""}
-                        onValueChange={(value) =>
+                        onValueChange={(value: any) =>
                           handleInputChange("gapoktan", value)
                         }
                       />
@@ -728,7 +729,7 @@ export const PetaniEditForm = () => {
                         label="Nama Kelompok"
                         placeholder="Masukkan nama kelompok"
                         value={formData.namaKelompok || ""}
-                        onValueChange={(value) =>
+                        onValueChange={(value: any) =>
                           handleInputChange("namaKelompok", value)
                         }
                       />

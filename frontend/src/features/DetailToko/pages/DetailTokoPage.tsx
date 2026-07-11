@@ -1,11 +1,14 @@
+import { Pagination } from "../../../components/Form/HeroPagination";
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+import { Button } from "../../../components/Form/HeroButton";
+
 // DetailTokoPage.tsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Button } from "@heroui/button";
-import { Pagination } from "@heroui/pagination";
+
 import { IoLogoWhatsapp, IoStorefrontOutline } from "react-icons/io5";
 import { FaBox } from "react-icons/fa";
-import { Breadcrumbs, BreadcrumbItem } from "@heroui/breadcrumbs";
+
 import { IoMdShare } from "react-icons/io";
 
 import { NavbarStaticItem } from "@/components/NavBarStaticItem";
@@ -154,7 +157,7 @@ export const DetailTokoPage: React.FC = () => {
             {/* Responsive Breadcrumbs */}
             <div className="hidden sm:block">
               <Breadcrumbs>
-                <BreadcrumbItem
+                <BreadcrumbsItem
                   classNames={{
                     base: "hover:cursor-pointer text-[#003F75] font-semibold",
                     item: "hover:cursor-pointer text-[#003F75]",
@@ -163,8 +166,8 @@ export const DetailTokoPage: React.FC = () => {
                   href="/"
                 >
                   Home
-                </BreadcrumbItem>
-                <BreadcrumbItem
+                </BreadcrumbsItem>
+                <BreadcrumbsItem
                   classNames={{
                     base: "text-[#003F75] font-semibold",
                     item: "text-[#003F75]",
@@ -173,8 +176,8 @@ export const DetailTokoPage: React.FC = () => {
                   href="/home/toko"
                 >
                   Toko
-                </BreadcrumbItem>
-                <BreadcrumbItem
+                </BreadcrumbsItem>
+                <BreadcrumbsItem
                   classNames={{
                     base: "text-[#003F75] font-semibold",
                     item: "text-[#003F75]",
@@ -182,7 +185,7 @@ export const DetailTokoPage: React.FC = () => {
                   }}
                 >
                   {tokoInfo.nama}
-                </BreadcrumbItem>
+                </BreadcrumbsItem>
               </Breadcrumbs>
             </div>
 
@@ -360,7 +363,7 @@ export const DetailTokoPage: React.FC = () => {
                   }}
                   page={ProductPage}
                   total={totalProductPages}
-                  onChange={(page) => setProductPage(page)}
+                  onChange={(page: any) => setProductPage(page)}
                 />
               </div>
             )}

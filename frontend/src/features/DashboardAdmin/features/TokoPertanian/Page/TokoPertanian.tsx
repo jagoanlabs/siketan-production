@@ -1,22 +1,17 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../components/Form/HeroModal";
+import { Tooltip } from "@heroui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "primereact/confirmdialog";
 
 // HeroUI Components
-import { Button } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Avatar } from "@heroui/avatar";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/modal";
+
 import { FaRegTrashAlt } from "react-icons/fa";
 import { toast } from "sonner";
-import { Tooltip } from "@heroui/tooltip";
 
 import { useProductState } from "../Components/useTokoPertanian";
 
@@ -185,7 +180,7 @@ export const TokoPertanian = () => {
                 alt={product.namaProducts}
                 className="w-12 h-12 object-cover rounded-lg"
                 src={product.fotoTanaman}
-                onError={(e) => {
+                onError={(e: any) => {
                   e.currentTarget.src = "/images/placeholder-product.jpg";
                 }}
               />
@@ -367,86 +362,95 @@ export const TokoPertanian = () => {
               PERMISSIONS.TOKO_PETANI_DETAIL,
             ]}
           >
-            <Tooltip content="Lihat Detail">
-              <Button
-                isIconOnly
-                color="primary"
-                size="sm"
-                variant="light"
-                onPress={() => handleViewDetail(product)}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="primary"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleViewDetail(product)}
                 >
-                  <path
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                  <path
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-              </Button>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                    <path
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Lihat Detail</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           <PermissionWrapper permissions={[PERMISSIONS.TOKO_PETANI_EDIT]}>
-            <Tooltip content="Edit Data">
-              <Button
-                isIconOnly
-                color="warning"
-                size="sm"
-                variant="light"
-                onPress={() => handleEdit(product)}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="warning"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleEdit(product)}
                 >
-                  <path
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-              </Button>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Edit Data</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           <PermissionWrapper permissions={[PERMISSIONS.TOKO_PETANI_DELETE]}>
-            <Tooltip content="Hapus Data">
-              <Button
-                isIconOnly
-                color="danger"
-                size="sm"
-                variant="light"
-                onPress={() => handleDelete(product)}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="danger"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleDelete(product)}
                 >
-                  <path
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-              </Button>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Hapus Data</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
         </div>
@@ -634,7 +638,7 @@ export const TokoPertanian = () => {
           onOpenChange={setIsDetailModalOpen}
         >
           <ModalContent>
-            {(onClose) => (
+            {(onClose: any) => (
               <>
                 <ModalHeader className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -678,7 +682,7 @@ export const TokoPertanian = () => {
                           alt={selectedProduct.namaProducts}
                           className="w-full h-full object-cover"
                           src={selectedProduct.fotoTanaman}
-                          onError={(e) => {
+                          onError={(e: any) => {
                             e.currentTarget.src =
                               "/images/placeholder-product.jpg";
                           }}

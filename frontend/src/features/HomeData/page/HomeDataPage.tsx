@@ -1,6 +1,8 @@
+import { Chip } from "../../../components/Form/HeroChip";
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+
 import { useState, useEffect } from "react";
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
-import { Chip } from "@heroui/chip";
+
 import { FaUser, FaUserGroup } from "react-icons/fa6";
 
 import { Footer } from "@/features/Home/components/Footer";
@@ -137,7 +139,7 @@ export const HomeDataPage = () => {
             </div>
             <div className="mt-4 sm:mt-6">
               <Breadcrumbs className="sm:text-base" size="sm">
-                <BreadcrumbItem
+                <BreadcrumbsItem
                   classNames={{
                     base: "hover:cursor-pointer text-[#003F75] font-semibold text-xs sm:text-sm",
                     item: "hover:cursor-pointer text-[#003F75]",
@@ -146,8 +148,8 @@ export const HomeDataPage = () => {
                   href="/"
                 >
                   Home
-                </BreadcrumbItem>
-                <BreadcrumbItem
+                </BreadcrumbsItem>
+                <BreadcrumbsItem
                   classNames={{
                     base: "text-[#003F75] font-semibold text-xs sm:text-sm",
                     item: "text-[#003F75]",
@@ -155,7 +157,7 @@ export const HomeDataPage = () => {
                   }}
                 >
                   Data
-                </BreadcrumbItem>
+                </BreadcrumbsItem>
               </Breadcrumbs>
             </div>
           </div>

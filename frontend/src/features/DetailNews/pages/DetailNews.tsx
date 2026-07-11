@@ -1,8 +1,10 @@
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+import { Button } from "../../../components/Form/HeroButton";
+
 // ===== FIXED IMAGE URL HANDLING =====
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
-import { Button } from "@heroui/button";
+
 import {
   FaRegCalendarAlt,
   FaWhatsapp,
@@ -378,7 +380,7 @@ export const DetailNews = () => {
         {/* Responsive Breadcrumbs */}
         <div className="hidden sm:block">
           <Breadcrumbs>
-            <BreadcrumbItem
+            <BreadcrumbsItem
               classNames={{
                 base: "hover:cursor-pointer text-[#003F75] font-semibold",
                 item: "hover:cursor-pointer text-[#003F75]",
@@ -387,8 +389,8 @@ export const DetailNews = () => {
               href="/"
             >
               Home
-            </BreadcrumbItem>
-            <BreadcrumbItem
+            </BreadcrumbsItem>
+            <BreadcrumbsItem
               classNames={{
                 base: "hover:cursor-pointer text-[#003F75] font-semibold",
                 item: "hover:cursor-pointer text-[#003F75]",
@@ -397,15 +399,15 @@ export const DetailNews = () => {
               href="/home/information"
             >
               Informasi Pertanian
-            </BreadcrumbItem>
-            <BreadcrumbItem
+            </BreadcrumbsItem>
+            <BreadcrumbsItem
               classNames={{
                 base: "text-[#003F75] font-semibold",
                 item: "text-[#003F75]",
               }}
             >
               {title.length > 40 ? title.substring(0, 40) + "..." : title}
-            </BreadcrumbItem>
+            </BreadcrumbsItem>
           </Breadcrumbs>
         </div>
 

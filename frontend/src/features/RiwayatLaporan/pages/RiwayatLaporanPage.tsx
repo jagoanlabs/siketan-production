@@ -1,4 +1,5 @@
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+
 import { useContext } from "react";
 
 import { NavbarStaticItem } from "@/components/NavBarStaticItem";
@@ -89,7 +90,7 @@ export const RiwayatLaporanPage = () => {
             {/* Breadcrumbs - Responsive */}
             <div className="mt-4 sm:mt-6">
               <Breadcrumbs className="sm:text-base" size="sm">
-                <BreadcrumbItem
+                <BreadcrumbsItem
                   classNames={{
                     base: "hover:cursor-pointer text-[#003F75] font-semibold text-xs sm:text-sm",
                     item: "hover:cursor-pointer text-[#003F75]",
@@ -98,8 +99,8 @@ export const RiwayatLaporanPage = () => {
                   href="/"
                 >
                   Home
-                </BreadcrumbItem>
-                <BreadcrumbItem
+                </BreadcrumbsItem>
+                <BreadcrumbsItem
                   classNames={{
                     base: "text-[#003F75] font-semibold text-xs sm:text-sm",
                     item: "text-[#003F75]",
@@ -107,7 +108,7 @@ export const RiwayatLaporanPage = () => {
                   }}
                 >
                   Informasi Pertanian
-                </BreadcrumbItem>
+                </BreadcrumbsItem>
               </Breadcrumbs>
             </div>
           </div>

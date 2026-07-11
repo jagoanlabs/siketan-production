@@ -17,7 +17,7 @@ dotenv.config();
 
 const getAllDataTanaman = async (req, res) => {
   const { peran } = req.user || {};
-  const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas, tahun } =
+  const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas, tahun, prakiraanMin, prakiraanMax } =
     req.query;
 
   try {
@@ -44,19 +44,90 @@ const getAllDataTanaman = async (req, res) => {
 
     // filter komoditas
     if (komoditas && komoditas !== 'undefined') {
-      whereClause.komoditas = { [Op.like]: `%${komoditas}%` };
+      whereClause.komoditas = { [Op.eq]: komoditas };
     }
 
     // filter tahun (created at)
     if (tahun && tahun !== 'undefined') {
       const yearNum = Number(tahun);
       if (!isNaN(yearNum)) {
-        whereClause.createdAt = {
+        whereClause['$dataTanaman.createdAt$'] = {
           [Op.and]: [
             { [Op.gte]: `${yearNum}-01-01 00:00:00` },
             { [Op.lte]: `${yearNum}-12-31 23:59:59` }
           ]
         };
+      }
+    }
+
+    // filter prakiraan panen range
+    if ((prakiraanMin && prakiraanMin !== 'undefined') || (prakiraanMax && prakiraanMax !== 'undefined')) {
+      const plantingMonthSql = `CASE periodeTanam
+        WHEN 'Januari' THEN 1
+        WHEN 'Februari' THEN 2
+        WHEN 'Maret' THEN 3
+        WHEN 'April' THEN 4
+        WHEN 'Mei' THEN 5
+        WHEN 'Juni' THEN 6
+        WHEN 'Juli' THEN 7
+        WHEN 'Agustus' THEN 8
+        WHEN 'September' THEN 9
+        WHEN 'Oktober' THEN 10
+        WHEN 'November' THEN 11
+        WHEN 'Desember' THEN 12
+        ELSE 1
+      END`;
+
+      const harvestMonthSql = `CASE prakiraanBulanPanen
+        WHEN 'Januari' THEN 1
+        WHEN 'Februari' THEN 2
+        WHEN 'Maret' THEN 3
+        WHEN 'April' THEN 4
+        WHEN 'Mei' THEN 5
+        WHEN 'Juni' THEN 6
+        WHEN 'Juli' THEN 7
+        WHEN 'Agustus' THEN 8
+        WHEN 'September' THEN 9
+        WHEN 'Oktober' THEN 10
+        WHEN 'November' THEN 11
+        WHEN 'Desember' THEN 12
+        ELSE 1
+      END`;
+
+      const harvestYearSql = `CASE
+        WHEN (${harvestMonthSql}) < (${plantingMonthSql}) THEN YEAR(\`dataTanaman\`.\`createdAt\`) + 1
+        ELSE YEAR(\`dataTanaman\`.\`createdAt\`)
+      END`;
+
+      const harvestValueSql = `((${harvestYearSql}) * 100 + (${harvestMonthSql}))`;
+
+      const conditions = [];
+
+      if (prakiraanMin && prakiraanMin !== 'undefined') {
+        const [minYear, minMonth] = prakiraanMin.split('-').map(Number);
+        if (!isNaN(minYear) && !isNaN(minMonth)) {
+          const minVal = minYear * 100 + minMonth;
+          conditions.push(
+            Sequelize.where(Sequelize.literal(harvestValueSql), { [Op.gte]: minVal })
+          );
+        }
+      }
+
+      if (prakiraanMax && prakiraanMax !== 'undefined') {
+        const [maxYear, maxMonth] = prakiraanMax.split('-').map(Number);
+        if (!isNaN(maxYear) && !isNaN(maxMonth)) {
+          const maxVal = maxYear * 100 + maxMonth;
+          conditions.push(
+            Sequelize.where(Sequelize.literal(harvestValueSql), { [Op.lte]: maxVal })
+          );
+        }
+      }
+
+      if (conditions.length > 0) {
+        if (!whereClause[Op.and]) {
+          whereClause[Op.and] = [];
+        }
+        whereClause[Op.and].push(...conditions);
       }
     }
 

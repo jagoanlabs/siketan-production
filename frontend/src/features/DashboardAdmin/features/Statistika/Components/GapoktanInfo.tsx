@@ -1,6 +1,7 @@
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+
 // components/GapoktanInfo.tsx
 import React from "react";
-import { Card, CardBody } from "@heroui/card";
 
 import { Kelompok } from "@/types/Statistika/statistika.d";
 

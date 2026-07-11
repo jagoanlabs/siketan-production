@@ -1,12 +1,15 @@
+import { Image } from "../../../../../../components/Form/HeroImage";
+import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { DatePicker } from "../../../../../../components/Form/HeroDatePicker";
+import { Input, Textarea } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { I18nProvider } from "@react-aria/i18n";
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input, Textarea } from "@heroui/input";
-import { Image } from "@heroui/image";
+
 import { MdEvent } from "react-icons/md";
-import { DatePicker } from "@heroui/date-picker";
+
 import { CalendarDate } from "@internationalized/date";
 
 import PageBreadcrumb from "@/components/Breadcrumb";
@@ -167,7 +170,7 @@ export const CreateAcaraPertanian = () => {
       // Create preview
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: any) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -271,7 +274,7 @@ export const CreateAcaraPertanian = () => {
                     label="Nama Kegiatan"
                     placeholder="Masukkan nama kegiatan"
                     value={formData.namaKegiatan}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("namaKegiatan", value)
                     }
                   />
@@ -302,7 +305,7 @@ export const CreateAcaraPertanian = () => {
                       label="Tempat"
                       placeholder="Masukkan lokasi acara"
                       value={formData.tempat}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("tempat", value)
                       }
                     />
@@ -316,7 +319,7 @@ export const CreateAcaraPertanian = () => {
                       label="Waktu Mulai"
                       type="time"
                       value={formData.waktuMulai}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("waktuMulai", value)
                       }
                     />
@@ -328,7 +331,7 @@ export const CreateAcaraPertanian = () => {
                       label="Waktu Selesai"
                       type="time"
                       value={formData.waktuSelesai}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("waktuSelesai", value)
                       }
                     />
@@ -341,7 +344,7 @@ export const CreateAcaraPertanian = () => {
                     label="Peserta"
                     placeholder="Target peserta acara"
                     value={formData.peserta}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("peserta", value)
                     }
                   />
@@ -364,7 +367,7 @@ export const CreateAcaraPertanian = () => {
                     minRows={6}
                     placeholder="Masukkan deskripsi lengkap acara..."
                     value={formData.isi}
-                    onValueChange={(value) => handleInputChange("isi", value)}
+                    onValueChange={(value: any) => handleInputChange("isi", value)}
                   />
                 </CardBody>
               </Card>
@@ -483,7 +486,7 @@ export const CreateAcaraPertanian = () => {
                 <CardBody className="space-y-3">
                   <Button
                     className="w-full"
-                    color="primary"
+                    variant="primary"
                     isLoading={createAcaraMutation.isPending}
                     startContent={
                       !createAcaraMutation.isPending && (

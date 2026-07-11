@@ -1,17 +1,20 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Input } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../components/Form/HeroModal";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
 // pages/DashboardStatistika.tsx - Enhanced dengan bulk actions
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AsyncSelect from "react-select/async";
-import { Tooltip } from "@heroui/tooltip";
-import { Button } from "@heroui/button";
-import { Chip } from "@heroui/chip";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@heroui/modal";
-import { Select, SelectItem } from "@heroui/select";
+
+
+
+
+
+
+
+import { Popover, PopoverContent, PopoverTrigger, RangeCalendar, Tooltip } from "@heroui/react";
+import { CalendarDate } from "@internationalized/date";
 import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { TbTableExport } from "react-icons/tb";
 import { BsFiletypeXlsx } from "react-icons/bs";
@@ -22,6 +25,10 @@ import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "primereact/confirmdialog";
 import { toast } from "sonner";
 
+import {
+  KOMODITAS_OPTIONS,
+  BULAN_OPTIONS,
+} from "@/types/Statistika/statistika.d";
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
 import { useDashboardDataPotkan } from "@/hook/dashboard/useDashboardDataPotkan";
@@ -75,6 +82,64 @@ export const DashboardStatistika = () => {
   const [selectedExportYear, setSelectedExportYear] = useState<string>("");
   const { data: availableYears = [] } = useStatistikaYears();
 
+  // New Filter States
+  const [selectedCommodity, setSelectedCommodity] = useState<string>("");
+  const [prakiraanMin, setPrakiraanMin] = useState<string>("");
+  const [prakiraanMax, setPrakiraanMax] = useState<string>("");
+  const [calendarRange, setCalendarRange] = useState<any>({
+    start: null,
+    end: null,
+  });
+  const [calendarFocusedValue, setCalendarFocusedValue] = useState<any>(
+    new CalendarDate(new Date().getFullYear(), 1, 1)
+  );
+
+  // Options for Commodity Dropdown
+  const allCommodityOptions = useMemo(() => {
+    const options = new Set<string>();
+    Object.values(KOMODITAS_OPTIONS).forEach((categoryObj) => {
+      categoryObj.semusim.forEach((item) => options.add(item));
+      categoryObj.tahunan.forEach((item) => options.add(item));
+    });
+    options.add("Perkebunan Tebu");
+    options.add("Perkebunan Tembakau");
+    return Array.from(options).sort().map((item) => ({
+      value: item,
+      label: item,
+    }));
+  }, []);
+
+  const handleCalendarRangeChange = (value: any) => {
+    setCalendarRange(value);
+    if (value?.start) {
+      setPrakiraanMin(`${value.start.year}-${String(value.start.month).padStart(2, "0")}`);
+    } else {
+      setPrakiraanMin("");
+    }
+    if (value?.end) {
+      setPrakiraanMax(`${value.end.year}-${String(value.end.month).padStart(2, "0")}`);
+    } else {
+      setPrakiraanMax("");
+    }
+    setCurrentPage(1);
+  };
+
+  const formatCalendarDate = (date: any) => {
+    if (!date) return "";
+    const months = BULAN_OPTIONS;
+    return `${months[date.month - 1]} ${date.year}`;
+  };
+
+  const handleClearAllFilters = () => {
+    setSelectedCommodity("");
+    setPrakiraanMin("");
+    setPrakiraanMax("");
+    setCalendarRange({ start: null, end: null });
+    setCalendarFocusedValue(new CalendarDate(new Date().getFullYear(), 1, 1));
+    setCurrentPage(1);
+    setSelectedItems([]);
+  };
+
   useEffect(() => {
     if (availableYears.length > 0 && !selectedExportYear) {
       setSelectedExportYear(availableYears[0]);
@@ -112,6 +177,9 @@ export const DashboardStatistika = () => {
       sortType: sortConfig.direction,
       poktan_id: selectedOption?.value || undefined,
       search: debouncedTableSearch || "",
+      komoditas: selectedCommodity || undefined,
+      prakiraanMin: prakiraanMin || undefined,
+      prakiraanMax: prakiraanMax || undefined,
     }),
     [
       itemsPerPage,
@@ -119,6 +187,9 @@ export const DashboardStatistika = () => {
       sortConfig,
       selectedOption,
       debouncedTableSearch,
+      selectedCommodity,
+      prakiraanMin,
+      prakiraanMax,
     ],
   );
 
@@ -438,6 +509,9 @@ export const DashboardStatistika = () => {
       await exportMutation.mutateAsync({
         poktanId: selectedOption?.value || null,
         tahun: exportType === "year" ? selectedExportYear : null,
+        komoditas: selectedCommodity || null,
+        prakiraanMin: prakiraanMin || null,
+        prakiraanMax: prakiraanMax || null,
       });
     } finally {
       setShowLoadingModal(false);
@@ -449,7 +523,7 @@ export const DashboardStatistika = () => {
 
     input.type = "file";
     input.accept = ".xlsx, .xls";
-    input.onchange = async (e) => {
+    input.onchange = async (e: any) => {
       const file = (e.target as HTMLInputElement).files?.[0];
 
       if (file) {
@@ -640,59 +714,71 @@ export const DashboardStatistika = () => {
               PERMISSIONS.STATISTIC_INDEX,
             ]}
           >
-            <Tooltip content="Lihat Detail">
-              <Button
-                isIconOnly
-                color="primary"
-                size="sm"
-                variant="light"
-                onPress={() => handleDetail(item)}
-              >
-                <FiEye className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="primary"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleDetail(item)}
+                >
+                  <FiEye className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Lihat Detail</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           <PermissionWrapper permission={PERMISSIONS.STATISTIC_EDIT}>
-            <Tooltip content="Edit Data">
-              <Button
-                isIconOnly
-                color="warning"
-                size="sm"
-                variant="light"
-                onPress={() => handleEdit(item)}
-              >
-                <BiPencil className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="warning"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleEdit(item)}
+                >
+                  <BiPencil className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Edit Data</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           <PermissionWrapper permission={PERMISSIONS.STATISTIC_DELETE}>
-            <Tooltip content="Hapus Data">
-              <Button
-                isIconOnly
-                color="danger"
-                isLoading={deleteMutation.isPending}
-                size="sm"
-                variant="light"
-                onPress={() => handleDelete(item)}
-              >
-                <FaRegTrashAlt className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="danger"
+                  isLoading={deleteMutation.isPending}
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleDelete(item)}
+                >
+                  <FaRegTrashAlt className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Hapus Data</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
 
           <PermissionWrapper permission={PERMISSIONS.STATISTIC_REALISASI}>
-            <Tooltip content="Realisasi">
-              <Button
-                isIconOnly
-                color="secondary"
-                size="sm"
-                variant="light"
-                onPress={() => handleRealisasi(item)}
-              >
-                <IoIosCheckmarkCircleOutline className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="secondary"
+                  size="sm"
+                  variant="light"
+                  onPress={() => handleRealisasi(item)}
+                >
+                  <IoIosCheckmarkCircleOutline className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Realisasi</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
         </div>
@@ -728,40 +814,49 @@ export const DashboardStatistika = () => {
         </div>
       )}
       <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_CREATE]}>
-        <Tooltip content="Tambah Data Baru">
-          <Button
-            color="primary"
-            startContent={<FaPlus className="w-4 h-4" />}
-            onPress={handleCreate}
-          >
-            <span className="hidden sm:inline">Tambah</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              color="primary"
+              startContent={<FaPlus className="w-4 h-4" />}
+              onPress={handleCreate}
+            >
+              <span className="hidden sm:inline">Tambah</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Tambah Data Baru</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
 
       <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_EXPORT]}>
-        <Tooltip content="Export Data ke XLSX">
-          <Button
-            color="success"
-            startContent={<TbTableExport className="w-4 h-4" />}
-            variant="flat"
-            onPress={handleExport}
-          >
-            <span className="hidden sm:inline">Export</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              color="success"
+              startContent={<TbTableExport className="w-4 h-4" />}
+              variant="flat"
+              onPress={handleExport}
+            >
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Export Data ke XLSX</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
 
       <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_IMPORT]}>
-        <Tooltip content="Upload Data dari XLSX">
-          <Button
-            color="warning"
-            startContent={<BsFiletypeXlsx className="w-4 h-4" />}
-            variant="flat"
-            onPress={handleUploadXLSX}
-          >
-            <span className="hidden sm:inline">Upload</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              color="warning"
+              startContent={<BsFiletypeXlsx className="w-4 h-4" />}
+              variant="flat"
+              onPress={handleUploadXLSX}
+            >
+              <span className="hidden sm:inline">Upload</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Upload Data dari XLSX</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
     </div>
@@ -830,6 +925,107 @@ export const DashboardStatistika = () => {
         )}
       </div>
 
+      {/* Search and Filters Flex Container */}
+      <div className="flex flex-col md:flex-row gap-4 items-end mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        {/* Search */}
+        <div className="flex-1 w-full">
+          <Input
+            isClearable
+            className="w-full"
+            label="Pencarian"
+            placeholder="Cari kategori, komoditas, dll..."
+            value={tableSearchTerm}
+            onClear={handleClearSearch}
+            onValueChange={handleTableSearchChange}
+          />
+        </div>
+
+        {/* Commodity Select */}
+        <div className="w-full md:w-60">
+          <Select
+            label="Komoditas"
+            placeholder="Semua Komoditas"
+            selectedKeys={selectedCommodity ? [selectedCommodity] : []}
+                  onSelectionChange={(keys: any) => {
+              const selected = Array.from(keys)[0] as string;
+              setSelectedCommodity(selected || "");
+              setCurrentPage(1);
+            }}
+          >
+            {allCommodityOptions.map((item) => (
+              <SelectItem key={item.value} textValue={item.label}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </Select>
+        </div>
+
+        {/* Harvest Range Calendar Popover */}
+        <div className="w-full md:w-72 flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 pl-1">Prakiraan Panen</span>
+          <Popover>
+            <PopoverTrigger>
+              <Button
+                className="w-full justify-between bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 py-6 border border-gray-300 dark:border-gray-600 rounded"
+                variant="flat"
+                endContent={<span className="text-gray-400">📅</span>}
+              >
+                {calendarRange.start && calendarRange.end
+                  ? `${formatCalendarDate(calendarRange.start)} - ${formatCalendarDate(calendarRange.end)}`
+                  : "Pilih Rentang Waktu"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg flex flex-col gap-3">
+              <div className="w-full flex justify-between items-center border-b pb-2 mb-2 dark:border-gray-700">
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                  Lompat ke Tahun
+                </span>
+                <Select
+                  aria-label="Pilih Tahun"
+                  size="sm"
+                  className="w-28"
+                  selectedKeys={[calendarFocusedValue.year.toString()]}
+            onSelectionChange={(keys: any) => {
+                    const selectedYear = Array.from(keys)[0] as string;
+                    if (selectedYear) {
+                      setCalendarFocusedValue(
+                        new CalendarDate(parseInt(selectedYear), calendarFocusedValue.month, 1)
+                      );
+                    }
+                  }}
+                >
+                  {["2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030"].map((y) => (
+                    <SelectItem key={y} textValue={y}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </div>
+              <RangeCalendar
+                aria-label="Rentang Prakiraan Panen"
+                visibleDuration={{ months: 2 }}
+                value={calendarRange.start && calendarRange.end ? calendarRange : null}
+                focusedValue={calendarFocusedValue}
+                onFocusChange={(value) => setCalendarFocusedValue(value)}
+                onChange={handleCalendarRangeChange}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Reset Filters */}
+        {(selectedCommodity || prakiraanMin || prakiraanMax) && (
+          <Button
+            className="w-full md:w-auto"
+            color="danger"
+            variant="flat"
+            onPress={handleClearAllFilters}
+          >
+            Reset
+          </Button>
+        )}
+      </div>
+
       {/* Enhanced ReusableTable with Bulk Actions */}
       <ReusableTable
         className=""
@@ -837,6 +1033,7 @@ export const DashboardStatistika = () => {
         currentPage={currentPage}
         data={tableData}
         error={tanamanError}
+        showSearch={false}
 
         // Search props
         debouncedSearchTerm={debouncedTableSearch}
@@ -876,8 +1073,7 @@ export const DashboardStatistika = () => {
       {/* Export Options Modal */}
       <Modal isOpen={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
         <ModalContent>
-          {(onClose) => (
-            <>
+          {(onClose: any) => (            <>
               <ModalHeader className="flex flex-col gap-1">Export Data Statistika</ModalHeader>
               <ModalBody className="space-y-4">
                 <div className="flex flex-col gap-2">
@@ -917,7 +1113,7 @@ export const DashboardStatistika = () => {
                       placeholder="Pilih tahun..."
                       selectedKeys={[selectedExportYear]}
                       variant="bordered"
-                      onChange={(e) => setSelectedExportYear(e.target.value)}
+                      onChange={(e: any) => setSelectedExportYear(e.target.value)}
                     >
                       {availableYears.map((year) => (
                         <SelectItem key={year}>

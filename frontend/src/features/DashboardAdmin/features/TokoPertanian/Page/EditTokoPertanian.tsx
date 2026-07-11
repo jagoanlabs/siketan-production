@@ -1,17 +1,17 @@
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Image } from "../../../../../components/Form/HeroImage";
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Input, Textarea } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+import { Spinner } from "@heroui/react";
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 // HeroUI Components
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input, Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Image } from "@heroui/image";
-import { Avatar } from "@heroui/avatar";
-import { Chip } from "@heroui/chip";
-import { Divider } from "@heroui/divider";
-import { Spinner } from "@heroui/spinner";
 
 import {
   EditProductFormData,
@@ -197,7 +197,7 @@ export const EditTokoPertanian = () => {
       // Create preview
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: any) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -376,7 +376,7 @@ export const EditTokoPertanian = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
-              <Spinner color="primary" size="lg" />
+              <Spinner color="accent" size="lg" />
               <p className="text-gray-600 mt-4">Memuat detail produk...</p>
             </div>
           </div>
@@ -494,7 +494,7 @@ export const EditTokoPertanian = () => {
                     selectedKeys={
                       formData.profesiPenjual ? [formData.profesiPenjual] : []
                     }
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const value = Array.from(keys)[0] as string;
 
                       handleInputChange("profesiPenjual", value);
@@ -524,7 +524,7 @@ export const EditTokoPertanian = () => {
                           : "Masukkan NIP"
                       }
                       value={formData.nik}
-                      onValueChange={(value) => {
+                      onValueChange={(value: any) => {
                         handleInputChange("nik", value);
                         // Reset user data when NIK changes
                         if (value !== (userData as any)?.nik) {
@@ -635,7 +635,7 @@ export const EditTokoPertanian = () => {
                     label="Nama Produk"
                     placeholder="Masukkan nama produk"
                     value={formData.namaProducts}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("namaProducts", value)
                     }
                   />
@@ -650,7 +650,7 @@ export const EditTokoPertanian = () => {
                       placeholder="0"
                       type="number"
                       value={formData.stok.toString()}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("stok", parseInt(value) || 0)
                       }
                     />
@@ -662,7 +662,7 @@ export const EditTokoPertanian = () => {
                       label="Satuan"
                       placeholder="Pilih satuan"
                       selectedKeys={formData.satuan ? [formData.satuan] : []}
-                      onSelectionChange={(keys) => {
+                      onSelectionChange={(keys: any) => {
                         const value = Array.from(keys)[0] as string;
 
                         handleInputChange("satuan", value);
@@ -690,7 +690,7 @@ export const EditTokoPertanian = () => {
                       }
                       type="number"
                       value={formData.harga}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("harga", value)
                       }
                     />
@@ -703,7 +703,7 @@ export const EditTokoPertanian = () => {
                     label="Status Produk"
                     placeholder="Pilih status produk"
                     selectedKeys={formData.status ? [formData.status] : []}
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const value = Array.from(keys)[0] as string;
 
                       handleInputChange("status", value);
@@ -724,7 +724,7 @@ export const EditTokoPertanian = () => {
                     minRows={4}
                     placeholder="Masukkan deskripsi lengkap produk..."
                     value={formData.deskripsi}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("deskripsi", value)
                     }
                   />
@@ -843,12 +843,12 @@ export const EditTokoPertanian = () => {
               {/* Action Buttons */}
               <Card shadow="sm">
                 <CardBody className="space-y-3">
-                  <Button
-                    className="w-full"
-                    color="primary"
-                    isLoading={updateProductMutation.isPending}
-                    size="lg"
-                    startContent={
+                <Button
+                  className="w-full"
+                  variant="primary"
+                  isLoading={updateProductMutation.isPending}
+                  size="lg"
+                  startContent={
                       !updateProductMutation.isPending && (
                         <svg
                           className="w-5 h-5"

@@ -1,20 +1,15 @@
+import { Chip } from "../../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../../components/Form/HeroAvatar";
+import { Card, CardBody } from "../../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../../components/Form/HeroModal";
+import { ButtonGroup, Spinner } from "@heroui/react";
 // pages/JurnalKegiatan.tsx
-import { Avatar } from "@heroui/avatar";
-import { Button, ButtonGroup } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Input } from "@heroui/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/modal";
+
 import { confirmDialog } from "primereact/confirmdialog";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Spinner } from "@heroui/spinner";
 
 import { JurnalCard } from "../../Components/JurnalCard";
 
@@ -215,7 +210,7 @@ export default function JurnalKegiatan() {
                 permissions={[PERMISSIONS.JURNAL_PENYULUH_CREATE]}
               >
                 <Button
-                  color="primary"
+                  variant="primary"
                   startContent={
                     <svg
                       className="w-4 h-4"
@@ -231,7 +226,6 @@ export default function JurnalKegiatan() {
                       />
                     </svg>
                   }
-                  variant="solid"
                   onPress={handleCreateNew}
                 >
                   Buat Jurnal Baru
@@ -458,7 +452,7 @@ export default function JurnalKegiatan() {
           {isLoading && (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
-                <Spinner color="primary" size="lg" />
+                <Spinner color="accent" size="lg" />
                 <p className="text-gray-600 mt-4">Memuat jurnal kegiatan...</p>
               </div>
             </div>
@@ -523,7 +517,7 @@ export default function JurnalKegiatan() {
                 </p>
                 {!searchTerm && selectedStatus === "all" && (
                   <Button
-                    color="primary"
+                    variant="primary"
                     startContent={
                       <svg
                         className="w-4 h-4"
@@ -581,7 +575,7 @@ export default function JurnalKegiatan() {
           onOpenChange={setIsDetailModalOpen}
         >
           <ModalContent>
-            {(onClose) => (
+            {(onClose: any) => (
               <>
                 <ModalHeader className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -663,7 +657,7 @@ export default function JurnalKegiatan() {
                         permissions={[PERMISSIONS.JURNAL_PENYULUH_EDIT]}
                       >
                         <Button
-                          color="primary"
+                          variant="primary"
                           startContent={
                             <svg
                               className="w-4 h-4"
@@ -679,7 +673,6 @@ export default function JurnalKegiatan() {
                               />
                             </svg>
                           }
-                          variant="flat"
                           onPress={() => {
                             onClose();
                             handleEdit(selectedJurnal);

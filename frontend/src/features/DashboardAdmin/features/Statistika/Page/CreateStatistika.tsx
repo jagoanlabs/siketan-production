@@ -1,7 +1,10 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+
 // pages/CreateStatistika.tsx
 import { useCallback, useMemo, useState } from "react";
-import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
+
+
 import AsyncSelect from "react-select/async";
 import { useNavigate } from "react-router-dom";
 

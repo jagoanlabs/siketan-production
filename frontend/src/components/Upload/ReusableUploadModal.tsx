@@ -1,16 +1,12 @@
+import { Card, CardBody } from "../Form/HeroCard";
+import { Button } from "../Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../Form/HeroModal";
+
 // components/ReusableUploadModal.tsx
 import React, { useState, useRef } from "react";
 import { RiUploadLine, RiFileExcelLine, RiDownloadLine } from "react-icons/ri";
 import { toast } from "sonner";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/modal";
-import { Card, CardBody } from "@heroui/card";
-import { Button } from "@heroui/button";
+
 import * as XLSX from "xlsx";
 
 interface UploadFileConfig {

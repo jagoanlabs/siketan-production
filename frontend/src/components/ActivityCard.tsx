@@ -1,4 +1,5 @@
-import { Chip } from "@heroui/chip";
+import { Chip } from "./Form/HeroChip";
+
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { FaRegClock } from "react-icons/fa6";
 import { HiOutlineLocationMarker } from "react-icons/hi";

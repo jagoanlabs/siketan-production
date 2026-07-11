@@ -1,15 +1,15 @@
+import { Chip } from "../../../../../../components/Form/HeroChip";
+import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../../components/Form/HeroSelect";
+import { Spinner } from "@heroui/react";
 // pages/EditBeritaPertanian.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Spinner } from "@heroui/spinner";
 
 // Import hooks and types
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Chip } from "@heroui/chip";
 
 import { RichTextEditor } from "@/components/RichText/RichTextComponents";
 import {
@@ -123,7 +123,7 @@ export const EditBeritaPertanian = () => {
     // Create preview for new file
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = (e: any) => {
       setImagePreview(e.target?.result as string);
     };
     reader.readAsDataURL(file);
@@ -222,7 +222,7 @@ export const EditBeritaPertanian = () => {
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <Spinner color="primary" size="lg" />
+              <Spinner color="accent" size="lg" />
               <p className="text-gray-600 mt-4">Memuat data berita...</p>
             </div>
           </div>
@@ -363,7 +363,7 @@ export const EditBeritaPertanian = () => {
                       placeholder="Masukkan judul berita yang menarik..."
                       value={formData.judul ?? "kosong"}
                       variant="bordered"
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("judul", value)
                       }
                     />
@@ -383,7 +383,7 @@ export const EditBeritaPertanian = () => {
                       type="date"
                       value={formData.tanggal}
                       variant="bordered"
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("tanggal", value)
                       }
                     />
@@ -397,7 +397,7 @@ export const EditBeritaPertanian = () => {
                       placeholder="Pilih kategori"
                       selectedKeys={[formData.kategori]}
                       variant="bordered"
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         handleInputChange("kategori", e.target.value as any)
                       }
                     >
@@ -460,7 +460,7 @@ export const EditBeritaPertanian = () => {
                       // eslint-disable-next-line jsx-a11y/no-static-element-interactions
                       <div
                         className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer"
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                           e.preventDefault();
                           e.stopPropagation();
                           fileInputRef.current?.click();
@@ -498,7 +498,7 @@ export const EditBeritaPertanian = () => {
                         <button
                           className="absolute bottom-2 right-2 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
                           type="button"
-                          onClick={(e) => {
+                          onClick={(e: any) => {
                             e.preventDefault();
                             e.stopPropagation();
                             fileInputRef.current?.click();
@@ -538,7 +538,7 @@ export const EditBeritaPertanian = () => {
                         }
                         type="button"
                         variant="bordered"
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                           e?.preventDefault();
                           fileInputRef.current?.click();
                         }}
@@ -567,7 +567,7 @@ export const EditBeritaPertanian = () => {
                           }
                           type="button"
                           variant="light"
-                          onClick={(e) => {
+                          onClick={(e: any) => {
                             e?.preventDefault();
                             removeFile();
                           }}
@@ -722,7 +722,7 @@ export const EditBeritaPertanian = () => {
               <div className="space-y-3">
                 <Button
                   className="w-full"
-                  color="primary"
+                  variant="primary"
                   disabled={isLoading}
                   isLoading={isLoading}
                   size="lg"
@@ -737,7 +737,7 @@ export const EditBeritaPertanian = () => {
                   size="lg"
                   type="button"
                   variant="bordered"
-                  onClick={(e) => {
+                  onClick={(e: any) => {
                     e?.preventDefault();
                     handleCancel();
                   }}

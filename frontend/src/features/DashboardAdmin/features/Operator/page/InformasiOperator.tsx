@@ -1,5 +1,8 @@
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
+import { Button } from "../../../../../components/Form/HeroButton";
+
 import React, { useState, useCallback, useEffect } from "react";
-import { Button } from "@heroui/button";
+
 import {
   RiEyeLine,
   RiEditLine,
@@ -7,7 +10,7 @@ import {
   RiUploadLine,
   RiAddLine,
 } from "react-icons/ri";
-import { Avatar } from "@heroui/avatar";
+
 import { toast } from "sonner";
 import { confirmDialog } from "primereact/confirmdialog";
 import { Link } from "react-router-dom";

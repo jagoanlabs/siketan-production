@@ -187,9 +187,15 @@ export const useExportStatistika = () => {
     mutationFn: async ({
       poktanId,
       tahun,
+      komoditas,
+      prakiraanMin,
+      prakiraanMax,
     }: {
       poktanId?: number | null;
       tahun?: string | null;
+      komoditas?: string | null;
+      prakiraanMin?: string | null;
+      prakiraanMax?: string | null;
     } = {}) => {
       const params = new URLSearchParams({
         isExport: "true",
@@ -203,6 +209,19 @@ export const useExportStatistika = () => {
       // Tambahkan tahun jika ada filter tahun
       if (tahun) {
         params.append("tahun", tahun);
+      }
+
+      // Tambahkan komoditas jika ada filter
+      if (komoditas) {
+        params.append("komoditas", komoditas);
+      }
+
+      // Tambahkan prakiraan min/max jika ada filter
+      if (prakiraanMin) {
+        params.append("prakiraanMin", prakiraanMin);
+      }
+      if (prakiraanMax) {
+        params.append("prakiraanMax", prakiraanMax);
       }
 
       const response = await axiosClient.get(

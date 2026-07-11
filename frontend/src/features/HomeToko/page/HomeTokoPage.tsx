@@ -1,6 +1,7 @@
+import { Pagination } from "../../../components/Form/HeroPagination";
+import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
+
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
-import { Pagination } from "@heroui/pagination";
 
 import { cn } from "@/lib/utils";
 import { axiosClient } from "@/service/app-service";
@@ -133,7 +134,7 @@ export const HomeTokoPage: React.FC = () => {
               <NavbarStaticItem index={3} />
             </div>
             <Breadcrumbs>
-              <BreadcrumbItem
+              <BreadcrumbsItem
                 classNames={{
                   base: "hover:cursor-pointer text-[#003F75] font-semibold",
                   item: "hover:cursor-pointer text-[#003F75] ",
@@ -142,8 +143,8 @@ export const HomeTokoPage: React.FC = () => {
                 href="/"
               >
                 Home
-              </BreadcrumbItem>
-              <BreadcrumbItem
+              </BreadcrumbsItem>
+              <BreadcrumbsItem
                 classNames={{
                   base: " text-[#003F75] font-semibold",
                   item: " text-[#003F75]",
@@ -151,7 +152,7 @@ export const HomeTokoPage: React.FC = () => {
                 }}
               >
                 Toko
-              </BreadcrumbItem>
+              </BreadcrumbsItem>
             </Breadcrumbs>
           </div>
         </div>

@@ -1,8 +1,10 @@
+import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../../components/Form/HeroSelect";
+
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
+
 import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -122,7 +124,7 @@ export const CreateJurnalPenyuluh = () => {
       // Create preview
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: any) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -259,7 +261,7 @@ export const CreateJurnalPenyuluh = () => {
                     </svg>
                   }
                   value={formData.NIK}
-                  onValueChange={(value) => handleInputChange("NIK", value)}
+                  onValueChange={(value: any) => handleInputChange("NIK", value)}
                 />
 
                 {/* Judul Input */}
@@ -286,7 +288,7 @@ export const CreateJurnalPenyuluh = () => {
                     </svg>
                   }
                   value={formData.judul}
-                  onValueChange={(value) => handleInputChange("judul", value)}
+                  onValueChange={(value: any) => handleInputChange("judul", value)}
                 />
               </div>
 
@@ -300,22 +302,7 @@ export const CreateJurnalPenyuluh = () => {
                 selectedKeys={
                   formData.statusJurnal ? [formData.statusJurnal] : []
                 }
-                startContent={
-                  <svg
-                    className="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  </svg>
-                }
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selectedKey = Array.from(keys)[0] as string;
 
                   if (selectedKey) {
@@ -480,7 +467,7 @@ export const CreateJurnalPenyuluh = () => {
                     Batal
                   </Button>
                   <Button
-                    color="primary"
+                    variant="primary"
                     isLoading={createJurnalMutation.isPending}
                     startContent={
                       !createJurnalMutation.isPending && (

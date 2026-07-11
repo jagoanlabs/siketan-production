@@ -1,20 +1,15 @@
+import { Chip } from "../../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../../components/Form/HeroAvatar";
+import { Card, CardBody } from "../../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../../components/Form/HeroModal";
+import { ButtonGroup, Spinner } from "@heroui/react";
 // pages/BeritaPertanian.tsx
 import { useState } from "react";
 
 // Import hooks and types
-import { Spinner } from "@heroui/spinner";
-import { Button, ButtonGroup } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
-import { Input } from "@heroui/input";
-import { Chip } from "@heroui/chip";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/modal";
-import { Avatar } from "@heroui/avatar";
+
 import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "primereact/confirmdialog";
 
@@ -412,7 +407,7 @@ export const BeritaPertanian = () => {
           {isLoading && (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
-                <Spinner color="primary" size="lg" />
+                <Spinner color="accent" size="lg" />
                 <p className="text-gray-600 mt-4">Memuat berita...</p>
               </div>
             </div>
@@ -477,7 +472,7 @@ export const BeritaPertanian = () => {
                 </p>
                 {!searchTerm && selectedKategori === "all" && (
                   <Button
-                    color="primary"
+                    variant="primary"
                     startContent={
                       <svg
                         className="w-4 h-4"
@@ -535,7 +530,7 @@ export const BeritaPertanian = () => {
           onOpenChange={setIsDetailModalOpen}
         >
           <ModalContent>
-            {(onClose) => (
+            {(onClose: any) => (
               <>
                 <ModalHeader className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -568,7 +563,7 @@ export const BeritaPertanian = () => {
                           src={
                             selectedBerita.fotoBerita || assets.imagePlaceholder
                           }
-                          onError={(e) => {
+                          onError={(e: any) => {
                             e.currentTarget.src = assets.imagePlaceholder;
                           }}
                         />

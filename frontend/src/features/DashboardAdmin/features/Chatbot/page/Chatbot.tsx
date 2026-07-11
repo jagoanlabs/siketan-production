@@ -1,5 +1,5 @@
-import { Card, CardBody } from "@heroui/card";
-import { Button } from "@heroui/button";
+import { Card, CardBody } from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
 
 import PageMeta from "@/layouts/PageMeta";
 import PageBreadcrumb from "@/components/Breadcrumb";

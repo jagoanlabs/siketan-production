@@ -1,10 +1,11 @@
+import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { DatePicker } from "../../../../../../components/Form/HeroDatePicker";
+import { Input, Textarea } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Spinner } from "@heroui/react";
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input, Textarea } from "@heroui/input";
-import { DatePicker } from "@heroui/date-picker";
-import { Spinner } from "@heroui/spinner";
+
 import { CalendarDate } from "@internationalized/date";
 
 import PageBreadcrumb from "@/components/Breadcrumb";
@@ -230,7 +231,7 @@ export const EditAcaraPertanian = () => {
 
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: any) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -292,7 +293,7 @@ export const EditAcaraPertanian = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <Spinner color="primary" size="lg" />
+              <Spinner color="accent" size="lg" />
               <p className="text-gray-600 mt-4">Memuat data acara...</p>
             </div>
           </div>
@@ -333,8 +334,7 @@ export const EditAcaraPertanian = () => {
                 data.
               </p>
               <Button
-                color="primary"
-                variant="flat"
+                variant="primary"
                 onPress={() => navigate("/dashboard-admin/acara-pertanian")}
               >
                 Kembali ke Daftar Acara
@@ -409,7 +409,7 @@ export const EditAcaraPertanian = () => {
                     label="Nama Kegiatan"
                     placeholder="Masukkan nama kegiatan"
                     value={formData.namaKegiatan}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("namaKegiatan", value)
                     }
                   />
@@ -433,7 +433,7 @@ export const EditAcaraPertanian = () => {
                       label="Tempat"
                       placeholder="Masukkan lokasi acara"
                       value={formData.tempat}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("tempat", value)
                       }
                     />
@@ -447,7 +447,7 @@ export const EditAcaraPertanian = () => {
                       label="Waktu Mulai"
                       type="time"
                       value={formData.waktuMulai}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("waktuMulai", value)
                       }
                     />
@@ -459,7 +459,7 @@ export const EditAcaraPertanian = () => {
                       label="Waktu Selesai"
                       type="time"
                       value={formData.waktuSelesai}
-                      onValueChange={(value) =>
+                      onValueChange={(value: any) =>
                         handleInputChange("waktuSelesai", value)
                       }
                     />
@@ -472,7 +472,7 @@ export const EditAcaraPertanian = () => {
                     label="Peserta"
                     placeholder="Target peserta acara"
                     value={formData.peserta}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("peserta", value)
                     }
                   />
@@ -495,7 +495,7 @@ export const EditAcaraPertanian = () => {
                     minRows={6}
                     placeholder="Masukkan deskripsi lengkap acara..."
                     value={formData.isi}
-                    onValueChange={(value) => handleInputChange("isi", value)}
+                    onValueChange={(value: any) => handleInputChange("isi", value)}
                   />
                 </CardBody>
               </Card>
@@ -519,7 +519,7 @@ export const EditAcaraPertanian = () => {
                           alt="Preview"
                           className="w-full h-full object-cover"
                           src={imagePreview}
-                          onError={(e) => {
+                          onError={(e: any) => {
                             e.currentTarget.src = assets.imagePlaceholder;
                           }}
                         />
@@ -626,7 +626,7 @@ export const EditAcaraPertanian = () => {
                 <CardBody className="space-y-3">
                   <Button
                     className="w-full"
-                    color="primary"
+                    variant="primary"
                     isLoading={updateAcaraMutation.isPending}
                     startContent={
                       !updateAcaraMutation.isPending && (

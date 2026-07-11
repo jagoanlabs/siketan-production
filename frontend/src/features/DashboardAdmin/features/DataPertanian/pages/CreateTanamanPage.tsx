@@ -1,11 +1,16 @@
+import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+
 import type { PetaniOption } from "@/types/DataPertanian/createDataTanaman.d";
 
 import { useNavigate } from "react-router-dom";
 import AsyncSelect from "react-select/async";
-import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
+
+
+
+
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
@@ -194,9 +199,9 @@ export const CreateTanamanPage = () => {
                       min={1}
                       placeholder="Masukkan luas lahan"
                       type="number"
-                      value={formData.luasLahan}
-                      onValueChange={(value) =>
-                        handleInputChange("luasLahan", value)
+                       value={formData.luasLahan}
+                       onValueChange={(value: any) =>
+                         handleInputChange("luasLahan", value)
                       }
                     />
                   </div>
@@ -263,7 +268,7 @@ export const CreateTanamanPage = () => {
                     label="Komoditas"
                     placeholder="Masukkan nama komoditas (contoh: Padi Organik)"
                     value={formData.komoditas}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       handleInputChange("komoditas", value)
                     }
                   />
@@ -347,12 +352,12 @@ export const CreateTanamanPage = () => {
                       min={1}
                       placeholder="0"
                       type="number"
-                      value={formData.prakiraanLuasPanen.toString()}
-                      onValueChange={(value) =>
-                        handleInputChange(
-                          "prakiraanLuasPanen",
-                          parseInt(value) || 0,
-                        )
+                       value={formData.prakiraanLuasPanen.toString()}
+                       onValueChange={(value: any) =>
+                         handleInputChange(
+                           "prakiraanLuasPanen",
+                           parseInt(value) || 0,
+                         )
                       }
                     />
 
@@ -364,12 +369,12 @@ export const CreateTanamanPage = () => {
                       min={1}
                       placeholder="0"
                       type="number"
-                      value={formData.prakiraanProduksiPanen.toString()}
-                      onValueChange={(value) =>
-                        handleInputChange(
-                          "prakiraanProduksiPanen",
-                          parseInt(value) || 0,
-                        )
+                       value={formData.prakiraanProduksiPanen.toString()}
+                       onValueChange={(value: any) =>
+                         handleInputChange(
+                           "prakiraanProduksiPanen",
+                           parseInt(value) || 0,
+                         )
                       }
                     />
 

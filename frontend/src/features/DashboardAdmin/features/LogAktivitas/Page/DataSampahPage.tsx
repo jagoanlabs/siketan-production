@@ -1,9 +1,10 @@
+import { Chip } from "../../../../../components/Form/HeroChip";
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Spinner, Tooltip } from "@heroui/react";
 import { useState, useMemo, useEffect } from "react";
-import { Chip } from "@heroui/chip";
-import { Tooltip } from "@heroui/tooltip";
-import { Button } from "@heroui/button";
+
 import { toast } from "sonner";
-import { Spinner } from "@heroui/spinner";
+
 import { FaRegTrashAlt, FaUndo } from "react-icons/fa";
 import { MdRestore, MdDeleteForever } from "react-icons/md";
 import { ConfirmDialog } from "primereact/confirmdialog";
@@ -402,30 +403,36 @@ export const DataSampahPage = () => {
         title: "Aksi",
         render: (item) => (
           <div className="flex space-x-1">
-            <Tooltip content="Restore data ini">
-              <Button
-                isIconOnly
-                color="success"
-                isLoading={restoreMutation.isPending}
-                size="sm"
-                variant="light"
-                onPress={() => setRestoreDialog({ isOpen: true, item })}
-              >
-                <FaUndo className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="success"
+                  isLoading={restoreMutation.isPending}
+                  size="sm"
+                  variant="light"
+                  onPress={() => setRestoreDialog({ isOpen: true, item })}
+                >
+                  <FaUndo className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Restore data ini</Tooltip.Content>
             </Tooltip>
 
-            <Tooltip content="Hapus permanen">
-              <Button
-                isIconOnly
-                color="danger"
-                isLoading={deleteMutation.isPending}
-                size="sm"
-                variant="light"
-                onPress={() => setDeleteDialog({ isOpen: true, item })}
-              >
-                <FaRegTrashAlt className="w-4 h-4" />
-              </Button>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  color="danger"
+                  isLoading={deleteMutation.isPending}
+                  size="sm"
+                  variant="light"
+                  onPress={() => setDeleteDialog({ isOpen: true, item })}
+                >
+                  <FaRegTrashAlt className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Hapus permanen</Tooltip.Content>
             </Tooltip>
           </div>
         ),

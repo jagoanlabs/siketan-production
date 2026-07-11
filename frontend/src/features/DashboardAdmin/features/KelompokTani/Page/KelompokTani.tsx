@@ -1,9 +1,11 @@
+import { Button } from "../../../../../components/Form/HeroButton";
+import { Spinner, Tooltip } from "@heroui/react";
 import { useState, useMemo, useEffect } from "react";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { toast } from "sonner";
-import { Tooltip } from "@heroui/tooltip";
-import { Button } from "@heroui/button";
-import { Spinner } from "@heroui/spinner";
+
+
+
 import { Link } from "react-router-dom";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { BsFiletypeXlsx } from "react-icons/bs";
@@ -354,40 +356,46 @@ export const KelompokTani = () => {
         render: (item) => (
           <div className="flex space-x-1">
             <PermissionWrapper permissions={[PERMISSIONS.DATA_KELOMPOK_EDIT]}>
-              <Tooltip content="Edit kelompok">
-                <Button as={Link} to={`/dashboard-admin/data-kelompok/edit/${item.id}`} isIconOnly color="warning" size="sm" variant="light">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  </svg>
-                </Button>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <Button as={Link} to={`/dashboard-admin/data-kelompok/edit/${item.id}`} isIconOnly color="warning" size="sm" variant="light">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                  </Button>
+                </Tooltip.Trigger>
+                <Tooltip.Content>Edit kelompok</Tooltip.Content>
               </Tooltip>
             </PermissionWrapper>
 
             <PermissionWrapper permissions={[PERMISSIONS.DATA_KELOMPOK_DELETE]}>
-              <Tooltip content="Hapus kelompok">
-                <Button
-                  isIconOnly
-                  color="danger"
-                  isLoading={
-                    deleteMutation.isPending &&
-                    deleteDialog.item?.id === item.id
-                  }
-                  size="sm"
-                  variant="light"
-                  onPress={() => confirmDelete(item)}
-                >
-                  <FaRegTrashAlt className="w-4 h-4" />
-                </Button>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <Button
+                    isIconOnly
+                    color="danger"
+                    isLoading={
+                      deleteMutation.isPending &&
+                      deleteDialog.item?.id === item.id
+                    }
+                    size="sm"
+                    variant="light"
+                    onPress={() => confirmDelete(item)}
+                  >
+                    <FaRegTrashAlt className="w-4 h-4" />
+                  </Button>
+                </Tooltip.Trigger>
+                <Tooltip.Content>Hapus kelompok</Tooltip.Content>
               </Tooltip>
             </PermissionWrapper>
           </div>
@@ -428,15 +436,18 @@ export const KelompokTani = () => {
       )}
 
       <PermissionWrapper permissions={[PERMISSIONS.DATA_KELOMPOK_IMPORT]}>
-        <Tooltip content="Upload Data dari XLSX">
-          <Button
-            color="warning"
-            startContent={<BsFiletypeXlsx className="w-4 h-4" />}
-            variant="flat"
-            onPress={handleUploadXLSX}
-          >
-            <span className="hidden sm:inline">Upload</span>
-          </Button>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              color="warning"
+              startContent={<BsFiletypeXlsx className="w-4 h-4" />}
+              variant="flat"
+              onPress={handleUploadXLSX}
+            >
+              <span className="hidden sm:inline">Upload</span>
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Upload Data dari XLSX</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
 

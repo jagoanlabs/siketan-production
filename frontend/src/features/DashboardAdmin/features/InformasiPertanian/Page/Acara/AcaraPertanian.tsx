@@ -1,21 +1,16 @@
+import { Chip } from "../../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../../components/Form/HeroAvatar";
+import { Card, CardBody } from "../../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../../components/Form/HeroInput";
+import { Button } from "../../../../../../components/Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../../../../../../components/Form/HeroModal";
+import { ButtonGroup, Spinner } from "@heroui/react";
 // pages/AcaraPertanian.tsx
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 // Import hooks and types
-import { Button, ButtonGroup } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
-import { Input } from "@heroui/input";
-import { Spinner } from "@heroui/spinner";
-import { Chip } from "@heroui/chip";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/modal";
-import { Avatar } from "@heroui/avatar";
+
 import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "primereact/confirmdialog";
 
@@ -238,7 +233,7 @@ export const AcaraPertanian = () => {
                 permissions={[PERMISSIONS.ACARA_PETANI_CREATE]}
               >
                 <Button
-                  color="primary"
+                  variant="primary"
                   startContent={
                     <svg
                       className="w-4 h-4"
@@ -254,7 +249,6 @@ export const AcaraPertanian = () => {
                       />
                     </svg>
                   }
-                  variant="solid"
                   onPress={handleCreateNew}
                 >
                   Buat Acara Baru
@@ -520,7 +514,7 @@ export const AcaraPertanian = () => {
                 </p>
                 {!searchTerm && selectedStatus === "all" && (
                   <Button
-                    color="primary"
+                    variant="primary"
                     startContent={
                       <svg
                         className="w-4 h-4"
@@ -578,7 +572,7 @@ export const AcaraPertanian = () => {
           onOpenChange={setIsDetailModalOpen}
         >
           <ModalContent>
-            {(onClose) => (
+            {(onClose: any) => (
               <>
                 <ModalHeader className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -614,7 +608,7 @@ export const AcaraPertanian = () => {
                           selectedEvent.fotoKegiatan ||
                           "/images/placeholder-event.jpg"
                         }
-                        onError={(e) => {
+                        onError={(e: any) => {
                           e.currentTarget.src = "/images/placeholder-event.jpg";
                         }}
                       />

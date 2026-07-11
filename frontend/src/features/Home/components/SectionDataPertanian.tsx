@@ -1,6 +1,7 @@
+import { Chip } from "../../../components/Form/HeroChip";
+
 import { useState, useEffect } from "react";
 import { FaUser, FaUserGroup } from "react-icons/fa6";
-import { Chip } from "@heroui/chip";
 
 import { CommodityLineChart } from "./CommodityLineChart";
 import { KomoditasTertinggi } from "./KomoditasTertinggi";

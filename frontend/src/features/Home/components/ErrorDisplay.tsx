@@ -1,4 +1,5 @@
-import { Button } from "@heroui/button";
+import { Button } from "../../../components/Form/HeroButton";
+
 import { FiRefreshCw, FiAlertCircle } from "react-icons/fi";
 
 interface ErrorDisplayProps {
