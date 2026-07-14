@@ -75,8 +75,10 @@ export const DashboardStatistika = () => {
 
   // Export Modal states
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [exportType, setExportType] = useState<"all" | "year">("all");
+  const [exportType, setExportType] = useState<"all" | "year" | "month_year">("all");
   const [selectedExportYear, setSelectedExportYear] = useState<string>("");
+  const [exportPickerYear, setExportPickerYear] = useState<number>(new Date().getFullYear());
+  const [selectedExportMonth, setSelectedExportMonth] = useState<string>("");
   const { data: availableYears = [] } = useStatistikaYears();
 
   // New Filter States
@@ -174,6 +176,18 @@ export const DashboardStatistika = () => {
       setSelectedExportYear(availableYears[0]);
     }
   }, [availableYears, selectedExportYear]);
+
+  // Reset export fields when modal is opened
+  useEffect(() => {
+    if (isExportModalOpen) {
+      setExportType("all");
+      setSelectedExportMonth("");
+      setExportPickerYear(new Date().getFullYear());
+      if (availableYears.length > 0) {
+        setSelectedExportYear(availableYears[0]);
+      }
+    }
+  }, [isExportModalOpen, availableYears]);
 
   // Mutations
   const deleteMutation = useDeleteStatistika();
@@ -532,21 +546,33 @@ export const DashboardStatistika = () => {
   };
 
   const executeExport = async () => {
-    setIsExportModalOpen(false);
-    setShowLoadingModal(true);
-    setLoadingMessage("Memproses export data...");
-
     try {
-      await exportMutation.mutateAsync({
+      let targetYear = null;
+      let targetPrakiraanMin = null;
+      let targetPrakiraanMax = null;
+
+      if (exportType === "year") {
+        targetYear = selectedExportYear;
+      } else if (exportType === "month_year") {
+        targetPrakiraanMin = `${exportPickerYear}-${selectedExportMonth}`;
+        targetPrakiraanMax = `${exportPickerYear}-${selectedExportMonth}`;
+      }
+
+      const response = await exportMutation.mutateAsync({
         poktanId: selectedOption?.value || null,
-        tahun: exportType === "year" ? selectedExportYear : null,
+        tahun: targetYear,
         kategori: selectedCategory || null,
         komoditas: selectedCommodity || null,
-        prakiraanMin: prakiraanMin || null,
-        prakiraanMax: prakiraanMax || null,
+        prakiraanMin: targetPrakiraanMin,
+        prakiraanMax: targetPrakiraanMax,
       });
-    } finally {
-      setShowLoadingModal(false);
+
+      const rawData = response?.data?.data || [];
+      if (rawData.length > 0) {
+        setIsExportModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Export execution failed:", error);
     }
   };
 
@@ -1059,7 +1085,7 @@ export const DashboardStatistika = () => {
         {/* Harvest Range Month-Year Popover */}
         <div className="w-full md:w-72 flex flex-col gap-1.5">
           <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">Prakiraan Panen</span>
-          <Popover placement="bottom-end" isOpen={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+          <Popover isOpen={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger>
               <Button
                 className={`w-full justify-center md:justify-between px-3.5 py-3 rounded-xl min-h-[46px] text-sm hover:border-gray-400 dark:hover:border-gray-500 border border-gray-300 dark:border-gray-600 transition-colors !font-normal text-center md:text-left focus:border-green-500 focus:ring-1 focus:ring-green-500 ${prakiraanMin
@@ -1073,7 +1099,7 @@ export const DashboardStatistika = () => {
                 {getFilterLabel()}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg w-72">
+            <PopoverContent placement="bottom end" className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg w-72">
               <div className="space-y-4 w-full">
                 {/* Year Header Navigator */}
                 <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
@@ -1219,32 +1245,48 @@ export const DashboardStatistika = () => {
               <Modal.Header>
                 <Modal.Heading>Export Data Statistika</Modal.Heading>
               </Modal.Header>
-              <Modal.Body className="space-y-4 p-6">
+              <Modal.Body className="space-y-5 p-6">
                 <div className="flex flex-col gap-2">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Pilih tipe export:
                   </p>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="exportType"
-                        checked={exportType === "all"}
-                        onChange={() => setExportType("all")}
-                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                      />
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Keseluruhan</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="exportType"
-                        checked={exportType === "year"}
-                        onChange={() => setExportType("year")}
-                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                      />
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Export Berdasarkan Tahun</span>
-                    </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setExportType("all")}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${
+                        exportType === "all"
+                          ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
+                          : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+                      }`}
+                    >
+                      <TbTableExport className="w-5 h-5 mb-1.5" />
+                      <span className="text-xs">Semua</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExportType("year")}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${
+                        exportType === "year"
+                          ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
+                          : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+                      }`}
+                    >
+                      <FiCalendar className="w-5 h-5 mb-1.5" />
+                      <span className="text-xs">Per Tahun</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExportType("month_year")}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${
+                        exportType === "month_year"
+                          ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
+                          : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+                      }`}
+                    >
+                      <FiCalendar className="w-5 h-5 mb-1.5" />
+                      <span className="text-xs">Bulan & Tahun</span>
+                    </button>
                   </div>
                 </div>
 
@@ -1267,12 +1309,78 @@ export const DashboardStatistika = () => {
                     </Select>
                   </div>
                 )}
+
+                {exportType === "month_year" && (
+                  <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-200 dark:border-gray-750">
+                    <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        className="text-gray-600 dark:text-gray-400"
+                        onPress={() => setExportPickerYear((prev) => prev - 1)}
+                      >
+                        &larr;
+                      </Button>
+                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                        Tahun {exportPickerYear}
+                      </span>
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        className="text-gray-600 dark:text-gray-400"
+                        onPress={() => setExportPickerYear((prev) => prev + 1)}
+                      >
+                        &rarr;
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"].map((shortMonth, idx) => {
+                        const monthValStr = String(idx + 1).padStart(2, "0");
+                        const isSelected = selectedExportMonth === monthValStr;
+
+                        return (
+                          <Button
+                            key={shortMonth}
+                            size="sm"
+                            className={`py-2 transition-all font-medium rounded-lg text-xs ${
+                              isSelected
+                                ? "bg-green-600 text-white font-semibold hover:bg-green-700"
+                                : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70 border border-gray-250 dark:border-gray-700"
+                            }`}
+                            onPress={() => {
+                              setSelectedExportMonth(monthValStr);
+                            }}
+                          >
+                            {shortMonth}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </Modal.Body>
               <Modal.Footer>
-                <Button color="danger" variant="light" onPress={() => setIsExportModalOpen(false)}>
+                <Button 
+                  color="danger" 
+                  variant="light" 
+                  isDisabled={exportMutation.isPending} 
+                  onPress={() => setIsExportModalOpen(false)}
+                >
                   Batal
                 </Button>
-                <Button className="text-gray-100" color="success" onPress={executeExport}>
+                <Button 
+                  className="text-gray-100" 
+                  color="success" 
+                  isLoading={exportMutation.isPending}
+                  isDisabled={
+                    (exportType === "year" && !selectedExportYear) ||
+                    (exportType === "month_year" && !selectedExportMonth)
+                  }
+                  onPress={executeExport}
+                >
                   Export ke Excel
                 </Button>
               </Modal.Footer>
