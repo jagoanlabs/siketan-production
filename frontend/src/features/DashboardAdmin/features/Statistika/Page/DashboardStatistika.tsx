@@ -11,12 +11,11 @@ import AsyncSelect from "react-select/async";
 
 
 
-import { Modal, Popover, PopoverContent, PopoverTrigger, RangeCalendar, SearchField, Tooltip } from "@heroui/react";
-import { CalendarDate } from "@internationalized/date";
+import { Modal, Popover, PopoverContent, PopoverTrigger, SearchField, Tooltip } from "@heroui/react";
 import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { TbTableExport } from "react-icons/tb";
 import { BsFiletypeXlsx } from "react-icons/bs";
-import { FiEye } from "react-icons/fi";
+import { FiCalendar, FiEye } from "react-icons/fi";
 import { BiPencil } from "react-icons/bi";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
@@ -85,60 +84,90 @@ export const DashboardStatistika = () => {
   const [selectedCommodity, setSelectedCommodity] = useState<string>("");
   const [prakiraanMin, setPrakiraanMin] = useState<string>("");
   const [prakiraanMax, setPrakiraanMax] = useState<string>("");
-  const [calendarRange, setCalendarRange] = useState<any>({
-    start: null,
-    end: null,
-  });
-  const [calendarFocusedValue, setCalendarFocusedValue] = useState<any>(
-    new CalendarDate(new Date().getFullYear(), 1, 1)
-  );
+  // Month Grid Picker States
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState<number>(new Date().getFullYear());
 
   // Options for Commodity Dropdown
   const allCommodityOptions = useMemo(() => {
     const options = new Set<string>();
-    Object.values(KOMODITAS_OPTIONS).forEach((categoryObj) => {
-      categoryObj.semusim.forEach((item) => options.add(item));
-      categoryObj.tahunan.forEach((item) => options.add(item));
-    });
-    options.add("Perkebunan Tebu");
-    options.add("Perkebunan Tembakau");
+
+    if (selectedCategory) {
+      const mappedCategory = selectedCategory === "sayur" ? "jenis_sayur" : selectedCategory;
+      const categoryObj = (KOMODITAS_OPTIONS as any)[mappedCategory];
+      if (categoryObj) {
+        if (Array.isArray(categoryObj.semusim)) {
+          categoryObj.semusim.forEach((item: string) => options.add(item));
+        }
+        if (Array.isArray(categoryObj.tahunan)) {
+          categoryObj.tahunan.forEach((item: string) => options.add(item));
+        }
+      }
+    } else {
+      Object.values(KOMODITAS_OPTIONS).forEach((categoryObj) => {
+        categoryObj.semusim.forEach((item) => options.add(item));
+        categoryObj.tahunan.forEach((item) => options.add(item));
+      });
+      options.add("Perkebunan Tebu");
+      options.add("Perkebunan Tembakau");
+    }
+
     return Array.from(options).sort().map((item) => ({
       value: item,
       label: item,
     }));
-  }, []);
+  }, [selectedCategory]);
 
-  const handleCalendarRangeChange = (value: any) => {
-    setCalendarRange(value);
-    if (value?.start) {
-      setPrakiraanMin(`${value.start.year}-${String(value.start.month).padStart(2, "0")}`);
-    } else {
-      setPrakiraanMin("");
+  // Validation: Reset selectedCommodity if it's not valid for the new category
+  useEffect(() => {
+    if (selectedCategory && selectedCommodity) {
+      const mappedCategory = selectedCategory === "sayur" ? "jenis_sayur" : selectedCategory;
+      const categoryObj = (KOMODITAS_OPTIONS as any)[mappedCategory];
+      if (categoryObj) {
+        const allowed = new Set<string>([
+          ...(categoryObj.semusim || []),
+          ...(categoryObj.tahunan || [])
+        ]);
+        if (!allowed.has(selectedCommodity)) {
+          setSelectedCommodity("");
+        }
+      }
     }
-    if (value?.end) {
-      setPrakiraanMax(`${value.end.year}-${String(value.end.month).padStart(2, "0")}`);
-    } else {
-      setPrakiraanMax("");
-    }
-    setCurrentPage(1);
-  };
+  }, [selectedCategory, selectedCommodity]);
 
-  const formatCalendarDate = (date: any) => {
-    if (!date) return "";
-    const months = BULAN_OPTIONS;
-    return `${months[date.month - 1]} ${date.year}`;
+  const getFilterLabel = () => {
+    if (prakiraanMin) {
+      const [year, month] = prakiraanMin.split("-");
+      const months = BULAN_OPTIONS;
+      const monthIndex = parseInt(month, 10) - 1;
+      if (monthIndex >= 0 && monthIndex < months.length) {
+        return `${months[monthIndex]} ${year}`;
+      }
+    }
+    return "Pilih Bulan & Tahun";
   };
 
   const handleClearAllFilters = () => {
+    setTableSearchTerm("");
+    setDebouncedTableSearch("");
     setSelectedCategory("");
     setSelectedCommodity("");
     setPrakiraanMin("");
     setPrakiraanMax("");
-    setCalendarRange({ start: null, end: null });
-    setCalendarFocusedValue(new CalendarDate(new Date().getFullYear(), 1, 1));
+    setPickerYear(new Date().getFullYear());
     setCurrentPage(1);
     setSelectedItems([]);
   };
+
+  // Sync pickerYear when prakiraanMin is set
+  useEffect(() => {
+    if (prakiraanMin) {
+      const y = parseInt(prakiraanMin.split("-")[0], 10);
+      if (!isNaN(y)) {
+        setPickerYear(y);
+      }
+    }
+  }, [prakiraanMin]);
 
   useEffect(() => {
     if (availableYears.length > 0 && !selectedExportYear) {
@@ -953,9 +982,9 @@ export const DashboardStatistika = () => {
             value={tableSearchTerm}
             onChange={handleTableSearchChange}
           >
-            <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 pl-1">Pencarian</span>
-            <SearchField.Group className="w-full  bg-transparent border border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 transition-colors flex items-center gap-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 min-h-[46px]">
-              <SearchField.SearchIcon className="text-gray-400" />
+            <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">Pencarian</span>
+            <SearchField.Group className="w-full bg-transparent border border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 dark:hover:border-gray-500 transition-colors flex items-center gap-1 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 min-h-[46px] pl-1 !pr-1">
+              <SearchField.SearchIcon className="text-gray-400 !ml-3" />
               <SearchField.Input
                 placeholder="Cari kategori, poktan/kelompok, kecamatan, desa..."
                 className="bg-transparent outline-none border-none ring-0 focus:ring-0 focus:outline-none w-full text-sm text-gray-700 dark:text-gray-200"
@@ -981,6 +1010,10 @@ export const DashboardStatistika = () => {
               const selected = Array.from(keys)[0] as string;
               setSelectedCategory(selected || "");
               setCurrentPage(1);
+            }}
+            classNames={{
+              trigger: "border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 min-h-[46px] px-3.5 py-3 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 text-sm font-normal text-gray-700 dark:text-gray-200",
+              label: "font-normal"
             }}
           >
             <SelectItem key="pangan" textValue="Tanaman Pangan">
@@ -1010,6 +1043,10 @@ export const DashboardStatistika = () => {
               setSelectedCommodity(selected || "");
               setCurrentPage(1);
             }}
+            classNames={{
+              trigger: "border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 min-h-[46px] px-3.5 py-3 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 text-sm font-normal text-gray-700 dark:text-gray-200",
+              label: "font-normal"
+            }}
           >
             {allCommodityOptions.map((item) => (
               <SelectItem key={item.value} textValue={item.label}>
@@ -1019,58 +1056,105 @@ export const DashboardStatistika = () => {
           </Select>
         </div>
 
-        {/* Harvest Range Calendar Popover */}
+        {/* Harvest Range Month-Year Popover */}
         <div className="w-full md:w-72 flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 pl-1">Prakiraan Panen</span>
-          <Popover>
+          <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">Prakiraan Panen</span>
+          <Popover placement="bottom-end" isOpen={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger>
               <Button
-                className="w-full justify-center md:justify-between px-3.5 py-3 rounded-xl min-h-[46px] text-sm hover:border-gray-400 transition-colors font-normal text-center md:text-left"
+                className={`w-full justify-center md:justify-between px-3.5 py-3 rounded-xl min-h-[46px] text-sm hover:border-gray-400 dark:hover:border-gray-500 border border-gray-300 dark:border-gray-600 transition-colors !font-normal text-center md:text-left focus:border-green-500 focus:ring-1 focus:ring-green-500 ${prakiraanMin
+                  ? "!text-gray-700 dark:!text-gray-200"
+                  : "!text-gray-400 dark:!text-gray-500"
+                  }`}
                 color="default"
                 variant="bordered"
-                endContent={<span className="text-gray-400 text-sm">📅</span>}
+                endContent={<FiCalendar className="text-gray-400 dark:text-gray-500 text-sm" />}
               >
-                {calendarRange.start && calendarRange.end
-                  ? `${formatCalendarDate(calendarRange.start)} - ${formatCalendarDate(calendarRange.end)}`
-                  : "Pilih Rentang Waktu"}
+                {getFilterLabel()}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg">
-              <RangeCalendar
-                aria-label="Rentang Prakiraan Panen"
-                value={calendarRange.start && calendarRange.end ? calendarRange : null}
-                focusedValue={calendarFocusedValue}
-                onFocusChange={(value) => setCalendarFocusedValue(value)}
-                onChange={handleCalendarRangeChange}
-              >
-                <RangeCalendar.Header>
-                  <RangeCalendar.YearPickerTrigger>
-                    <RangeCalendar.YearPickerTriggerHeading />
-                    <RangeCalendar.YearPickerTriggerIndicator />
-                  </RangeCalendar.YearPickerTrigger>
-                  <RangeCalendar.NavButton slot="previous" />
-                  <RangeCalendar.NavButton slot="next" />
-                </RangeCalendar.Header>
-                <RangeCalendar.Grid>
-                  <RangeCalendar.GridHeader>
-                    {(day) => <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>}
-                  </RangeCalendar.GridHeader>
-                  <RangeCalendar.GridBody>
-                    {(date) => <RangeCalendar.Cell date={date} />}
-                  </RangeCalendar.GridBody>
-                </RangeCalendar.Grid>
-                <RangeCalendar.YearPickerGrid>
-                  <RangeCalendar.YearPickerGridBody>
-                    {({ year }) => <RangeCalendar.YearPickerCell year={year} />}
-                  </RangeCalendar.YearPickerGridBody>
-                </RangeCalendar.YearPickerGrid>
-              </RangeCalendar>
+            <PopoverContent className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg w-72">
+              <div className="space-y-4 w-full">
+                {/* Year Header Navigator */}
+                <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="light"
+                    className="text-gray-600 dark:text-gray-400"
+                    onPress={() => setPickerYear((prev) => prev - 1)}
+                  >
+                    &larr;
+                  </Button>
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                    Tahun {pickerYear}
+                  </span>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="light"
+                    className="text-gray-600 dark:text-gray-400"
+                    onPress={() => setPickerYear((prev) => prev + 1)}
+                  >
+                    &rarr;
+                  </Button>
+                </div>
+
+                {/* 3x4 Month Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  {["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"].map((shortMonth, idx) => {
+                    const monthValStr = String(idx + 1).padStart(2, "0");
+                    const targetVal = `${pickerYear}-${monthValStr}`;
+                    const isSelected = prakiraanMin === targetVal;
+
+                    return (
+                      <Button
+                        key={shortMonth}
+                        size="sm"
+                        className={`py-2 transition-all font-medium rounded-lg text-xs ${
+                          isSelected
+                            ? "bg-green-600 text-white font-semibold hover:bg-green-700"
+                            : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }`}
+                        onPress={() => {
+                          setPrakiraanMin(targetVal);
+                          setPrakiraanMax(targetVal);
+                          setCurrentPage(1);
+                          setIsPopoverOpen(false);
+                        }}
+                      >
+                        {shortMonth}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                {/* Footer Link to Reset Filter */}
+                {prakiraanMin && (
+                  <div className="flex justify-center border-t border-gray-100 dark:border-gray-700 pt-2">
+                    <Button
+                      size="sm"
+                      variant="light"
+                      color="danger"
+                      className="text-xs h-7 font-normal"
+                      onPress={() => {
+                        setPrakiraanMin("");
+                        setPrakiraanMax("");
+                        setCurrentPage(1);
+                        setIsPopoverOpen(false);
+                      }}
+                    >
+                      Hapus Pilihan
+                    </Button>
+                  </div>
+                )}
+              </div>
             </PopoverContent>
           </Popover>
         </div>
 
         {/* Reset Filters */}
-        {(selectedCategory || selectedCommodity || prakiraanMin || prakiraanMax) && (
+        {(tableSearchTerm || selectedCategory || selectedCommodity || prakiraanMin || prakiraanMax) && (
           <Button
             className="w-full min-h-[46px] md:w-auto"
             color="danger"

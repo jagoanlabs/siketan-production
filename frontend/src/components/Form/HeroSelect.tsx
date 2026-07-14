@@ -30,12 +30,16 @@ const getSelectTriggerClasses = (variant: string, classNames: any, isDisabled?: 
   const hasBorder = /\bborder-|\bborder\b/.test(customTrigger);
   const hasPadding = /\bp[xy]?-\d+/.test(customTrigger);
   const hasRounded = /\brounded-/.test(customTrigger);
+  const hasMinHeight = /\bmin-h-/.test(customTrigger);
+  const hasText = /\btext-/.test(customTrigger);
 
   // Default values based on variant
   let bgClass = hasBg ? "" : "bg-gray-100 hover:bg-gray-200";
   let borderClass = hasBorder ? "" : "border border-gray-300 focus:border-green-500";
   let paddingClass = hasPadding ? "" : "px-3.5 py-3";
   let roundedClass = hasRounded ? "" : "rounded-xl";
+  let minHeightClass = hasMinHeight ? "" : "min-h-[40px]";
+  let textClass = hasText ? "" : "text-gray-700 dark:text-gray-200 text-sm";
 
   if (isInvalid) {
     borderClass = "border-red-500 focus:border-red-500";
@@ -52,7 +56,7 @@ const getSelectTriggerClasses = (variant: string, classNames: any, isDisabled?: 
     paddingClass = "";
   }
 
-  return `w-full flex justify-between items-center text-gray-700 text-sm min-h-[40px] transition-colors outline-none focus:outline-none ${bgClass} ${borderClass} ${paddingClass} ${roundedClass} ${customTrigger} ${isDisabled ? "opacity-60 cursor-not-allowed" : ""}`;
+  return `w-full flex justify-between items-center ${textClass} ${minHeightClass} transition-colors outline-none focus:outline-none ${bgClass} ${borderClass} ${paddingClass} ${roundedClass} ${customTrigger} ${isDisabled ? "opacity-60 cursor-not-allowed" : ""}`;
 };
 
 export const Select = React.forwardRef<HTMLDivElement, SelectProps>((props, ref) => {
@@ -87,27 +91,37 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>((props, ref)
   });
 
   // Extract selected key
-  let selectedKey: any = undefined;
+  let selectedKey: any = null;
   if (selectedKeys) {
     if (selectedKeys instanceof Set || typeof selectedKeys.has === "function") {
       selectedKey = Array.from(selectedKeys)[0];
     } else if (Array.isArray(selectedKeys)) {
-      selectedKey = selectedKeys[0];
+      selectedKey = selectedKeys.length > 0 ? selectedKeys[0] : null;
     } else {
       selectedKey = selectedKeys;
     }
   }
 
   // Handle single select key string/number conversion
-  if (selectedKey !== undefined) {
+  if (selectedKey !== undefined && selectedKey !== null) {
     selectedKey = String(selectedKey);
+  } else {
+    selectedKey = null;
   }
 
   const triggerClasses = getSelectTriggerClasses(variant, classNames, isDisabled, isInvalid);
 
+  const labelCustom = classNames?.label || "";
+  const hasFontWeight = /\bfont-/.test(labelCustom);
+  const labelWeightClass = hasFontWeight ? "" : "font-semibold";
+
   return (
-    <div className={`flex flex-col gap-1 w-full ${className || ""}`} ref={ref}>
-      {label && <span className="text-xs font-semibold text-gray-600 pl-1">{label}</span>}
+    <div className={`flex flex-col gap-1.5 w-full ${className || ""}`} ref={ref}>
+      {label && (
+        <span className={`text-xs ${labelWeightClass} text-gray-600 dark:text-gray-400 pl-1 ${labelCustom}`}>
+          {label}
+        </span>
+      )}
       <RACSelect
         selectedKey={selectedKey}
         placeholder={placeholder}
