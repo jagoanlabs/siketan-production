@@ -726,6 +726,18 @@ export const DashboardStatistika = () => {
       ),
     },
     {
+      key: "realisasiHasilPanen",
+      title: "Realisasi Hasil Panen",
+      sortable: true,
+      render: (item) => (
+        <span className="text-blue-600 dark:text-blue-400 font-medium">
+          {item.realisasiHasilPanen !== null && item.realisasiHasilPanen !== undefined && item.realisasiHasilPanen !== 0
+            ? `${item.realisasiHasilPanen.toLocaleString('id-ID')} Ton`
+            : "-"}
+        </span>
+      ),
+    },
+    {
       key: "createdAt",
       title: "Waktu Pembuatan Data",
       sortable: true,

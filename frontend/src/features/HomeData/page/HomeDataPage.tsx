@@ -1,4 +1,4 @@
-import { Chip } from "../../../components/Form/HeroChip";
+import { Chip as HeroChip } from "../../../components/Form/HeroChip";
 import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
 
 import { useState, useEffect } from "react";
@@ -262,14 +262,13 @@ export const HomeDataPage = () => {
                     const chipColor = commodityColorMap[commodity];
 
                     return (
-                      <Chip
+                      <HeroChip
                         key={commodity}
-                        className={`border-1 text-xs sm:text-sm lg:text-lg cursor-pointer px-2 sm:px-3 py-2 sm:py-3 lg:py-4 transition-colors duration-200
-                        ${
-                          selectedKomoditas.includes(commodity)
-                            ? "text-white border-0"
-                            : "border-gray-400 hover:bg-gray-200"
-                        }
+                        className={`text-xs sm:text-sm lg:text-lg cursor-pointer px-4 py-2 transition-colors duration-200 rounded-full
+                        ${selectedKomoditas.includes(commodity)
+                            ? "text-white border-transparent"
+                            : "text-gray-800 border-gray-500 hover:bg-gray-100"
+                          }
                         `}
                         style={
                           selectedKomoditas.includes(commodity)
@@ -279,10 +278,15 @@ export const HomeDataPage = () => {
                         variant="bordered"
                         onClick={() => handleChipClick(commodity)}
                       >
-                        {commodity
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (c) => c.toUpperCase())}
-                      </Chip>
+                        <span className="flex items-center gap-1.5">
+                          {selectedKomoditas.includes(commodity) && (
+                            <span className="font-semibold">✓</span>
+                          )}
+                          {commodity
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </span>
+                      </HeroChip>
                     );
                   })}
                 </div>

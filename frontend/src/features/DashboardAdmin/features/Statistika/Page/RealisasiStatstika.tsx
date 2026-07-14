@@ -4,17 +4,12 @@ import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroC
 import { Input } from "../../../../../components/Form/HeroInput";
 import { Button } from "../../../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
+import { Modal, ModalBody, ModalContent, ModalFooter } from "../../../../../components/Form/HeroModal";
 import { Spinner } from "@heroui/react";
+import { FaCheck } from "react-icons/fa6";
 // pages/RealisasiStatistika.tsx
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-
-
-
-
-
-
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
@@ -36,6 +31,7 @@ export const RealisasiStatistika = () => {
     realisasiHasilPanen: null,
     realisasiBulanPanen: "",
   });
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const [errors, setErrors] = useState<RealisasiValidationErrors>({});
 
@@ -107,18 +103,14 @@ export const RealisasiStatistika = () => {
         kelompokData: detailData.kelompokTani,
       });
 
-      // Refresh data and show success
+      // Refresh data
       await refetch();
 
-      toast.success("Data realisasi panen berhasil disimpan", {
-        id: "save-realisasi",
-        description: `${formData.realisasiLuasPanen?.toLocaleString()} HA • ${formData.realisasiHasilPanen?.toLocaleString()} TON • ${formData.realisasiBulanPanen}`,
-        duration: 3000,
-      });
+      // Dismiss loading toast
+      toast.dismiss("save-realisasi");
 
-      setTimeout(() => {
-        navigate("/dashboard-admin/statistik-pertanian");
-      }, 0);
+      // Open Success Modal
+      setIsSuccessModalOpen(true);
     } catch (error) {
       console.error("Error updating realisasi:", error);
 
@@ -127,6 +119,17 @@ export const RealisasiStatistika = () => {
         description: "Terjadi kesalahan. Silakan coba lagi.",
       });
     }
+  };
+
+  const handleDone = () => {
+    setIsSuccessModalOpen(false);
+    navigate("/dashboard-admin/statistik-pertanian");
+
+    // Display the success toast on the index page
+    toast.success("Data realisasi panen berhasil disimpan", {
+      description: `${formData.realisasiLuasPanen?.toLocaleString()} HA • ${formData.realisasiHasilPanen?.toLocaleString()} TON • ${formData.realisasiBulanPanen}`,
+      duration: 3000,
+    });
   };
 
   // Loading state
@@ -544,10 +547,10 @@ export const RealisasiStatistika = () => {
                         </span>
                         <span
                           className={`font-medium ${metrics.persentaseRealisasiLuas >= 100
-                              ? "text-green-600"
-                              : metrics.persentaseRealisasiLuas >= 80
-                                ? "text-yellow-600"
-                                : "text-red-600"
+                            ? "text-green-600"
+                            : metrics.persentaseRealisasiLuas >= 80
+                              ? "text-yellow-600"
+                              : "text-red-600"
                             }`}
                         >
                           {metrics.persentaseRealisasiLuas.toFixed(1)}%
@@ -559,10 +562,10 @@ export const RealisasiStatistika = () => {
                         </span>
                         <span
                           className={`font-medium ${metrics.persentaseRealisasiHasil >= 100
-                              ? "text-green-600"
-                              : metrics.persentaseRealisasiHasil >= 80
-                                ? "text-yellow-600"
-                                : "text-red-600"
+                            ? "text-green-600"
+                            : metrics.persentaseRealisasiHasil >= 80
+                              ? "text-yellow-600"
+                              : "text-red-600"
                             }`}
                         >
                           {metrics.persentaseRealisasiHasil.toFixed(1)}%
@@ -575,6 +578,34 @@ export const RealisasiStatistika = () => {
             )}
         </div>
       </div>
+
+      <Modal isOpen={isSuccessModalOpen} size="sm" onClose={handleDone}>
+        <ModalContent>
+          <ModalBody className="flex flex-col items-center justify-center text-center pt-8 pb-4">
+            {/* Circular green background icon */}
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-950/40 rounded-full flex items-center justify-center mb-4">
+              <FaCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-green-600 dark:text-green-500 mb-2">
+              Berhasil!
+            </h2>
+            {/* Subtitle */}
+            <p className="text-gray-600 dark:text-gray-400 text-sm max-w-[280px]">
+              Terima kasih. Data Anda sudah berhasil terupdate!
+            </p>
+          </ModalBody>
+          <ModalFooter className="flex justify-center pb-8 border-none pt-0">
+            <Button
+              color="primary"
+              className="w-full max-w-[200px] text-white font-semibold rounded-xl py-2.5 h-auto"
+              onPress={handleDone}
+            >
+              Done
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };
