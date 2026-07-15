@@ -1,9 +1,16 @@
-const { dataTanaman, kelompok } = require('../models');
+const {
+  dataTanaman,
+  kelompok,
+  dataPenyuluh,
+  kecamatan,
+  desa
+} = require('../models');
 
 const ApiError = require('../../utils/ApiError');
 const dotenv = require('dotenv');
 const { Op, Sequelize } = require('sequelize');
 const ExcelJS = require('exceljs');
+const moment = require('moment');
 const { postActivity } = require('./logActivity');
 const {
   tanamanPangan,
@@ -555,6 +562,75 @@ const getStatistikYears = async (req, res) => {
   }
 };
 
+const getTopKomoditasTanaman = async (req, res) => {
+  const { type = 'prakiraan', page = 1, limit = 5, sortBy, sortOrder } = req.query;
+
+  try {
+    const pageFilter = Number(page) || 1;
+    const limitFilter = Number(limit) || 5;
+
+    const whereQuery = { createdAt: { [Op.gte]: moment().subtract(90, 'days').toDate() } };
+
+    const fieldMap = {
+      prakiraan: { hasil: 'prakiraanHasilPanen', luas: 'prakiraanLuasPanen', bulan: 'prakiraanBulanPanen' },
+      realisasi: { hasil: 'realisasiHasilPanen', luas: 'realisasiLuasPanen', bulan: 'realisasiBulanPanen' }
+    };
+
+    const selected = fieldMap[type] || fieldMap.prakiraan;
+
+    const sortFieldMap = {
+      kategori: 'kategori',
+      komoditas: 'komoditas',
+      periodeTanam: 'periodeTanam',
+      prakiraanLuasPanen: selected.luas,
+      prakiraanHasilPanen: selected.hasil,
+      realisasiLuasPanen: selected.luas,
+      realisasiHasilPanen: selected.hasil
+    };
+
+    const orderField = sortFieldMap[sortBy] || selected.hasil;
+    const direction = sortOrder === 'ASC' ? 'ASC' : 'DESC';
+
+    const order = [[orderField, direction]];
+
+    const includeQuery = [
+      {
+        model: kelompok,
+        as: 'kelompok',
+        required: true,
+        include: [
+          { model: dataPenyuluh, as: 'dataPenyuluh' },
+          { model: kecamatan, as: 'kecamatanData' },
+          { model: desa, as: 'desaData' }
+        ]
+      }
+    ];
+
+    const data = await dataTanaman.findAll({
+      where: whereQuery,
+      include: includeQuery,
+      limit: limitFilter,
+      offset: (pageFilter - 1) * limitFilter,
+      order
+    });
+
+    const total = await dataTanaman.count({ where: whereQuery, include: includeQuery, distinct: true });
+
+    res.status(200).json({
+      message: 'Data berhasil didapatkan.',
+      data,
+      total,
+      currentPages: pageFilter,
+      limit: limitFilter,
+      maxPages: Math.ceil(total / limitFilter),
+      from: pageFilter ? (pageFilter - 1) * limitFilter + 1 : 1,
+      to: pageFilter ? (pageFilter - 1) * limitFilter + data.length : data.length
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   tambahDataTanaman,
   getAllDataTanaman,
@@ -564,5 +640,6 @@ module.exports = {
   uploadDataTanaman,
   fixKategori,
   fixKomoditas,
-  getStatistikYears
+  getStatistikYears,
+  getTopKomoditasTanaman
 };

@@ -16,6 +16,26 @@ export interface DesaData {
   updatedAt: string;
 }
 
+export interface DataPenyuluh {
+  id: number;
+  nik: string;
+  nama: string;
+  foto: string;
+  alamat: string;
+  email: string;
+  noTelp: string;
+  kecamatan: string;
+  desa: string;
+  accountID: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  kecamatanId: number | null;
+  desaId: number | null;
+  kecamatanData: KecamatanData;
+  desaData: DesaData;
+}
+
 export interface Kelompok {
   id: number;
   gapoktan: string;
@@ -29,55 +49,30 @@ export interface Kelompok {
   desaId: number;
   kecamatanData: KecamatanData;
   desaData: DesaData;
+  dataPenyuluh: DataPenyuluh;
 }
 
-export interface DataPetani {
+export interface DataTanamanTop {
   id: number;
-  nik: string;
-  nkk: string | null;
-  foto: string;
-  nama: string;
-  alamat: string;
-  desa: string;
-  kecamatan: string;
-  password: string | null;
-  email: string | null;
-  noTelp: string;
-  accountID: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  fk_penyuluhId: number | null;
-  fk_kelompokId: number | null;
-  kecamatanId: number;
-  desaId: number;
-  kelompok: Kelompok | null;
-  kecamatanData: KecamatanData;
-  desaData: DesaData;
-}
-
-export interface TanamanPetani {
-  id: number;
-  statusKepemilikanLahan: string;
-  luasLahan: string;
   kategori: string;
-  jenis: string;
   komoditas: string;
-  periodeMusimTanam: string;
-  periodeBulanTanam: string;
+  periodeTanam: string;
+  luasLahan: number;
   prakiraanLuasPanen: number;
-  prakiraanProduksiPanen: number;
+  prakiraanHasilPanen: number;
   prakiraanBulanPanen: string;
+  realisasiLuasPanen: number | null;
+  realisasiHasilPanen: number | null;
+  realisasiBulanPanen: string | null;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string | null;
-  fk_petaniId: number;
-  dataPetani: DataPetani;
+  fk_kelompokId: number;
+  kelompok: Kelompok;
 }
 
-export interface TanamanPetaniResponse {
+export interface DataTanamanTopResponse {
   message: string;
-  data: TanamanPetani[];
+  data: DataTanamanTop[];
   total: number;
   currentPages: number;
   limit: number;
@@ -92,4 +87,5 @@ export interface TanamanPetaniParams {
   search?: string;
   sortBy?: string;
   sortOrder?: "ASC" | "DESC";
+  type?: "prakiraan" | "realisasi";
 }

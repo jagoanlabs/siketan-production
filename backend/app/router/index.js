@@ -26,6 +26,7 @@ const dashboard = require('./dashboard');
 const wilayah = require('./wilayah');
 const landingStatistik = require('./landingStatistik');
 const { searchGlobal } = require('../controllers/search');
+const { getTopKomoditasTanaman } = require('../controllers/dataTanaman');
 
 // const swaggerDocument = require('../../docs/swagger-output.json');
 const swaggerDocument = require('../../docs/Siketan.swagger.json');
@@ -62,6 +63,7 @@ router.get('/search', searchGlobal); // -> search global
 router.use('/auth', akun);
 router.use('/statistik', statistik);
 router.use('/landing-statistik', landingStatistik); // Endpoint publik untuk landing page
+router.get('/top-komoditas', getTopKomoditasTanaman); // Endpoint publik untuk tabel Komoditas Tertinggi
 router.use('/kelompok', kelompok);
 router.use('/tanaman-petani', tanamanPetani);
 router.use('/footer', footer);
