@@ -23,7 +23,7 @@ const monthOrder = require('../../utils/constants/months');
 dotenv.config();
 
 const getAllDataTanaman = async (req, res) => {
-  const { peran } = req.user || {};
+  const { peran, id: userId, role } = req.user || {};
   const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas, tahun, prakiraanMin, prakiraanMax } =
     req.query;
 
@@ -38,6 +38,13 @@ const getAllDataTanaman = async (req, res) => {
 
     // base filter
     const whereClause = {};
+
+    // role-based filter: operator bisa lihat semua data, selain itu hanya data yang dia buat
+    const operatorRoles = ['operator_super_admin', 'operator_admin', 'operator_poktan'];
+    const isOperator = role && operatorRoles.includes(role.name);
+    if (!isOperator) {
+      whereClause.created_by = userId;
+    }
 
     // filter poktan
     if (poktan_id && poktan_id !== 'undefined') {
@@ -321,7 +328,8 @@ const tambahDataTanaman = async (req, res) => {
       prakiraanLuasPanen,
       prakiraanHasilPanen,
       prakiraanBulanPanen,
-      fk_kelompokId
+      fk_kelompokId,
+      created_by: id
     });
 
     postActivity({ user_id: id, activity: 'CREATE', type: 'DATA TANAMAN', detail_id: data.id });
@@ -411,7 +419,7 @@ const hapusDataTanaman = async (req, res) => {
 };
 
 const uploadDataTanaman = async (req, res) => {
-  const { peran } = req.user || {};
+  const { peran, id: userId } = req.user || {};
 
   try {
     if (peran === 'petani') {
@@ -526,7 +534,8 @@ const uploadDataTanaman = async (req, res) => {
         prakiraanBulanPanen,
         realisasiLuasPanen,
         realisasiHasilPanen,
-        realisasiBulanPanen
+        realisasiBulanPanen,
+        created_by: userId
       });
     }
 

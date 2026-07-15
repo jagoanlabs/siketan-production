@@ -1,10 +1,11 @@
+import { Spinner } from "@heroui/react";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
 import { Chip } from "../../../../../components/Form/HeroChip";
 import { Card, CardBody } from "../../../../../components/Form/HeroCard";
 import { Button } from "../../../../../components/Form/HeroButton";
-import { Spinner } from "@heroui/react";
 // pages/EditStatistika.tsx (Updated Final)
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 
 import { StatistikaForm } from "../Components/StatsitikaForm";
 import { GapoktanInfo } from "../Components/GapoktanInfo";
@@ -100,14 +101,16 @@ export const EditStatistika = () => {
       sortable: true,
       render: (item) => (
         <Chip
-          color={
-            item.kategori === "pangan"
-              ? "success"
-              : item.kategori === "perkebunan"
-                ? "warning"
-                : item.kategori === "jenis_sayur" || item.kategori === "sayur"
-                  ? "secondary"
-                  : "primary"
+          className={
+            item.kategori === "buah"
+              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+              : item.kategori === "pangan"
+                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                : item.kategori === "perkebunan"
+                  ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                  : item.kategori === "jenis_sayur" || item.kategori === "sayur"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
           }
           size="sm"
           variant="flat"

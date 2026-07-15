@@ -7,10 +7,14 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
-      // define association here
-      this.belongsTo(models.kelompok, { foreignKey: 'fk_kelompokId' });
-    }
+  static associate(models) {
+    // define association here
+    this.belongsTo(models.kelompok, { foreignKey: 'fk_kelompokId' });
+    this.belongsTo(models.tbl_akun, {
+      foreignKey: 'created_by',
+      as: 'creator'
+    });
+  }
   }
   DataTanaman.init(
     // data tanaman petani, data laporan tanaman by kelompok id
@@ -24,7 +28,11 @@ module.exports = (sequelize, DataTypes) => {
       prakiraanBulanPanen: DataTypes.STRING,
       realisasiLuasPanen: DataTypes.INTEGER,
       realisasiHasilPanen: DataTypes.INTEGER,
-      realisasiBulanPanen: DataTypes.STRING
+      realisasiBulanPanen: DataTypes.STRING,
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      }
     },
     {
       sequelize,

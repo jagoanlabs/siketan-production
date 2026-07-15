@@ -1,19 +1,29 @@
+import { Spinner } from "@heroui/react";
+import { FaCheck } from "react-icons/fa6";
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
 import { Divider } from "../../../../../components/Form/HeroDivider";
 import { Chip } from "../../../../../components/Form/HeroChip";
-import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+} from "../../../../../components/Form/HeroCard";
 import { Input } from "../../../../../components/Form/HeroInput";
 import { Button } from "../../../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
-import { Modal, ModalBody, ModalContent, ModalFooter } from "../../../../../components/Form/HeroModal";
-import { Spinner } from "@heroui/react";
-import { FaCheck } from "react-icons/fa6";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+} from "../../../../../components/Form/HeroModal";
 // pages/RealisasiStatistika.tsx
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
-import { toast } from "sonner";
 import { useStatistikaDetailComplete } from "@/hook/dashboard/Statistika/useDetailStatistika";
 import { useUpdateRealisasiStatistika } from "@/hook/dashboard/Statistika/useRealisasiStatistika";
 import { BULAN_OPTIONS } from "@/types/Statistika/statistika.d";
@@ -318,22 +328,26 @@ export const RealisasiStatistika = () => {
                       Kategori Tanaman
                     </p>
                     <Chip
-                      color={
-                        statistika.kategori === "pangan"
-                          ? "success"
-                          : statistika.kategori === "perkebunan"
-                            ? "warning"
-                            : statistika.kategori === "jenis_sayur" || statistika.kategori === "sayur"
-                              ? "secondary"
-                              : "primary"
+                      className={
+                        statistika.kategori === "buah"
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                          : statistika.kategori === "pangan"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                            : statistika.kategori === "perkebunan"
+                              ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                              : statistika.kategori === "jenis_sayur" ||
+                                  statistika.kategori === "sayur"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
                       }
                       size="lg"
                       variant="flat"
                     >
-                      {statistika.kategori === "jenis_sayur" || statistika.kategori === "sayur"
+                      {statistika.kategori === "jenis_sayur" ||
+                      statistika.kategori === "sayur"
                         ? "Sayur"
                         : statistika.kategori.charAt(0).toUpperCase() +
-                        statistika.kategori.slice(1)}
+                          statistika.kategori.slice(1)}
                     </Chip>
                   </div>
                   <div>
@@ -506,76 +520,78 @@ export const RealisasiStatistika = () => {
           {/* Current Realisasi Status */}
           {(statistika.realisasiLuasPanen ||
             statistika.realisasiHasilPanen) && (
-              <Card className="p-5">
-                <CardHeader>
-                  <h3 className="text-lg font-semibold">Realisasi Saat Ini</h3>
-                </CardHeader>
-                <CardBody>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Luas Panen
-                      </span>
-                      <span className="font-medium">
-                        {statistika.realisasiLuasPanen?.toLocaleString() || 0} HA
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Hasil Panen
-                      </span>
-                      <span className="font-medium">
-                        {statistika.realisasiHasilPanen?.toLocaleString() || 0}{" "}
-                        TON
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Bulan Panen
-                      </span>
-                      <span className="font-medium">
-                        {statistika.realisasiBulanPanen || "-"}
-                      </span>
-                    </div>
+            <Card className="p-5">
+              <CardHeader>
+                <h3 className="text-lg font-semibold">Realisasi Saat Ini</h3>
+              </CardHeader>
+              <CardBody>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Luas Panen
+                    </span>
+                    <span className="font-medium">
+                      {statistika.realisasiLuasPanen?.toLocaleString() || 0} HA
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Hasil Panen
+                    </span>
+                    <span className="font-medium">
+                      {statistika.realisasiHasilPanen?.toLocaleString() || 0}{" "}
+                      TON
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Bulan Panen
+                    </span>
+                    <span className="font-medium">
+                      {statistika.realisasiBulanPanen || "-"}
+                    </span>
+                  </div>
 
-                    <Divider className="my-3" />
+                  <Divider className="my-3" />
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Pencapaian Luas
-                        </span>
-                        <span
-                          className={`font-medium ${metrics.persentaseRealisasiLuas >= 100
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Pencapaian Luas
+                      </span>
+                      <span
+                        className={`font-medium ${
+                          metrics.persentaseRealisasiLuas >= 100
                             ? "text-green-600"
                             : metrics.persentaseRealisasiLuas >= 80
                               ? "text-yellow-600"
                               : "text-red-600"
-                            }`}
-                        >
-                          {metrics.persentaseRealisasiLuas.toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Pencapaian Hasil
-                        </span>
-                        <span
-                          className={`font-medium ${metrics.persentaseRealisasiHasil >= 100
+                        }`}
+                      >
+                        {metrics.persentaseRealisasiLuas.toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Pencapaian Hasil
+                      </span>
+                      <span
+                        className={`font-medium ${
+                          metrics.persentaseRealisasiHasil >= 100
                             ? "text-green-600"
                             : metrics.persentaseRealisasiHasil >= 80
                               ? "text-yellow-600"
                               : "text-red-600"
-                            }`}
-                        >
-                          {metrics.persentaseRealisasiHasil.toFixed(1)}%
-                        </span>
-                      </div>
+                        }`}
+                      >
+                        {metrics.persentaseRealisasiHasil.toFixed(1)}%
+                      </span>
                     </div>
                   </div>
-                </CardBody>
-              </Card>
-            )}
+                </div>
+              </CardBody>
+            </Card>
+          )}
         </div>
       </div>
 
@@ -597,8 +613,8 @@ export const RealisasiStatistika = () => {
           </ModalBody>
           <ModalFooter className="flex justify-center pb-8 border-none pt-0">
             <Button
-              color="primary"
               className="w-full max-w-[200px] text-white font-semibold rounded-xl py-2.5 h-auto"
+              color="primary"
               onPress={handleDone}
             >
               Done

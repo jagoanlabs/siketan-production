@@ -1,15 +1,15 @@
-import { Divider } from "../../../../../components/Form/HeroDivider";
-import { Chip } from "../../../../../components/Form/HeroChip";
-import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
-import { Button } from "../../../../../components/Form/HeroButton";
 import { Spinner } from "@heroui/react";
-// pages/DetailStatistika.tsx
 import { useParams, useNavigate, Link } from "react-router-dom";
 
-
-
-
-
+import { Divider } from "../../../../../components/Form/HeroDivider";
+import { Chip } from "../../../../../components/Form/HeroChip";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+} from "../../../../../components/Form/HeroCard";
+import { Button } from "../../../../../components/Form/HeroButton";
+// pages/DetailStatistika.tsx
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
@@ -231,18 +231,22 @@ export const DetailStatistika = () => {
                     </p>
                     <div className="mt-1">
                       <Chip
-                        color={
-                          statistika.kategori === "pangan"
-                            ? "success"
-                            : statistika.kategori === "perkebunan"
-                              ? "warning"
-                              : statistika.kategori === "jenis_sayur" || statistika.kategori === "sayur"
-                                ? "secondary"
-                                : "primary"
+                        className={
+                          statistika.kategori === "buah"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                            : statistika.kategori === "pangan"
+                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                              : statistika.kategori === "perkebunan"
+                                ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                                : statistika.kategori === "jenis_sayur" ||
+                                    statistika.kategori === "sayur"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
                         }
                         variant="flat"
                       >
-                        {statistika.kategori === "jenis_sayur" || statistika.kategori === "sayur"
+                        {statistika.kategori === "jenis_sayur" ||
+                        statistika.kategori === "sayur"
                           ? "Sayur"
                           : statistika.kategori.charAt(0).toUpperCase() +
                             statistika.kategori.slice(1)}
