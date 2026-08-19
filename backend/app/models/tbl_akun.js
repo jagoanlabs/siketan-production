@@ -35,6 +35,11 @@ module.exports = (sequelize, DataTypes) => {
         sourceKey: 'accountID',
         as: 'penjual'
       });
+
+      tbl_akun.hasMany(models.notification, {
+        foreignKey: 'user_id',
+        as: 'notifications'
+      });
     }
 
     // ========== SIMPLE RBAC METHODS ==========
