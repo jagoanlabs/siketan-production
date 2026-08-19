@@ -64,7 +64,7 @@ export const EditOperator = () => {
         notelp: operator.noTelp || "",
         alamat: operator.alamat || "",
         password: "", // Password field will be empty for security
-        peran: operator.akun.peran || "", // Will need to fetch this from account data or set default
+        peran: operator.akun?.peran || "", // Will need to fetch this from account data or set default
         foto: null,
         currentFoto: operator.foto || "",
       });

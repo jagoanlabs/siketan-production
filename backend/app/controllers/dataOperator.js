@@ -244,10 +244,10 @@ const getOperatorDetail = async (req, res) => {
 
 const updateOperatorDetail = async (req, res) => {
   const { id } = req.params;
-  const { peran } = req.user || {};
+  const { peran: userPeran, id: userId } = req.user || {};
 
   try {
-    if (peran !== 'operator super admin' && peran !== 'operator admin') {
+    if (userPeran !== 'operator super admin' && userPeran !== 'operator admin') {
       throw new ApiError(403, 'Anda tidak memiliki akses.');
     } else {
       const { nik, nkk, nama, peran, email, notelp, alamat, password } = req.body;
@@ -263,7 +263,7 @@ const updateOperatorDetail = async (req, res) => {
         /**
          * @description saving image
          */
-        let urlImg;
+        let urlImg = data.foto;
         if (file) {
           const validFormat =
             file.mimetype === 'image/png' ||
@@ -284,16 +284,28 @@ const updateOperatorDetail = async (req, res) => {
             file: file.buffer,
             fileName: `IMG-${Date.now()}.${ext}`
           });
-          img.url;
           urlImg = img.url;
         }
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        const peranWithUnderline = peran.toLowerCase().replace(/\s+/g, '_');
-        const role = await RoleModel.findOne({
-          where: {
-            name: peranWithUnderline
+
+        // Only hash password if provided and not empty
+        let hashedPassword = data.password;
+        if (password && password.trim() !== '') {
+          hashedPassword = bcrypt.hashSync(password, 10);
+        }
+
+        let roleId = null;
+        if (peran) {
+          const peranWithUnderline = peran.toLowerCase().replace(/\s+/g, '_');
+          const role = await RoleModel.findOne({
+            where: {
+              name: peranWithUnderline
+            }
+          });
+          if (role) {
+            roleId = role.id;
           }
-        });
+        }
+
         const updateData = await dataOperator.update(
           {
             nik,
@@ -311,21 +323,35 @@ const updateOperatorDetail = async (req, res) => {
             }
           }
         );
+
+        const accountUpdatePayload = {
+          email,
+          password: hashedPassword,
+          no_wa: notelp,
+          nama,
+          pekerjaan: '',
+          peran: peran || data.peran,
+          foto: urlImg
+        };
+
+        if (roleId) {
+          accountUpdatePayload.role_id = roleId;
+        }
+
         const accountUpdate = await tbl_akun.update(
-          {
-            email,
-            password: hashedPassword,
-            no_wa: notelp,
-            nama,
-            pekerjaan: '',
-            peran: peran,
-            foto: urlImg,
-            role_id: role.id
-          },
+          accountUpdatePayload,
           {
             where: { accountID: data.accountID }
           }
         );
+
+        postActivity({
+          user_id: userId,
+          activity: 'UPDATE',
+          type: 'DATA OPERATOR',
+          detail_id: data.id
+        });
+
         res.status(200).json({
           message: 'Data operator berhasil diupdate',
           data: updateData,

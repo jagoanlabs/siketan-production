@@ -13,7 +13,7 @@ import {
 
 import { toast } from "sonner";
 import { confirmDialog } from "primereact/confirmdialog";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { OperatorDetailModal } from "../components/DetailInformasiOperatorModal";
 import { UploadOperatorModal } from "../components/UploadOperatorModal";
@@ -32,6 +32,8 @@ import PermissionWrapper from "@/components/PermissionWrapper";
 import { PERMISSIONS } from "@/helpers/RoleHelper/roleHelpers";
 
 export const InformasiOperator = () => {
+  const navigate = useNavigate();
+
   // State management
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -232,12 +234,11 @@ export const InformasiOperator = () => {
           <PermissionWrapper permissions={[PERMISSIONS.DATA_OPERATOR_EDIT]}>
             <Button
               isIconOnly
-              as={Link}
               color="warning"
               size="sm"
               title="Edit Operator"
-              to={`/dashboard-admin/operator/${item.id}/edit`}
               variant="light"
+              onPress={() => navigate(`/dashboard-admin/operator/${item.id}/edit`)}
             >
               <RiEditLine size={16} />
             </Button>
@@ -410,10 +411,9 @@ export const InformasiOperator = () => {
         </Button>
 
         <Button
-          as={Link}
           color="primary"
           startContent={<RiAddLine size={18} />}
-          to="/dashboard-admin/operator/create"
+          onPress={() => navigate("/dashboard-admin/operator/create")}
         >
           Tambah Operator
         </Button>
