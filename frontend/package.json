@@ -12,6 +12,8 @@
   "dependencies": {
     "@heroui/react": "^3.2.2",
     "@heroui/styles": "^3.2.2",
+    "@react-aria/i18n": "^3.12.9",
+    "@react-aria/ssr": "^3.9.7",
     "@react-aria/visually-hidden": "3.8.26",
     "@react-types/shared": "3.31.0",
     "@tailwindcss/postcss": "4.1.11",
