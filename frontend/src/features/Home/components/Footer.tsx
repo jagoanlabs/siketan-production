@@ -31,6 +31,7 @@ export const Footer = () => {
   const navigationLinks = [
     { label: "Beranda", to: "/" },
     { label: "Data Pertanian", to: "/home/data" },
+    { label: "Kelompok Tani", to: "/home/kelompok" },
     { label: "Info Pertanian", to: "/home/information" },
     { label: "Toko Pertanian", to: "/home/toko" },
   ];

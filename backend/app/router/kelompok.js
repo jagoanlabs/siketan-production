@@ -11,10 +11,14 @@ const {
   editKelompokById,
   changeKecamatanToId,
   changeDesaToId,
-  getMetaKelompok
+  getMetaKelompok,
+  getPublicKelompok,
+  getPublicStatistikKelompok
 } = require('../controllers/kelompok');
 const { PERMISSIONS } = require('../../helpers/roleHelpers');
 // router.get();
+router.get('/public-statistik', getPublicStatistikKelompok);
+router.get('/public', getPublicKelompok);
 router.get('/', auth, hasPermission(PERMISSIONS.DATA_KELOMPOK_INDEX), getAllKelompok);
 router.get('/meta', auth, getMetaKelompok);
 router.get('/kecamatan', auth, getAllKecamatan);

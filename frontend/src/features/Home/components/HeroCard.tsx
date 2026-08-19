@@ -11,6 +11,7 @@ import { ItemCard } from "./ItemCard";
 
 const itemNav = [
   { image: assets.imageGraphPlant, id: "Data Pertanian", link: "/home/data" },
+  { image: assets.imageDataPlant, id: "Kelompok Tani", link: "/home/kelompok" },
   {
     image: assets.imageCalenderClock,
     id: "Kegiatan",
@@ -219,7 +220,7 @@ export const HeroCard = () => {
         </form>
         <div className="w-full h-[1px] mt-6 bg-gray-200" />
         {/* Item cards */}
-        <div className="grid grid-cols-6 gap-4 py-6">
+        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-7 gap-3 xl:gap-4 py-6">
           {itemNav.map((item, index) => (
             <ItemCard
               key={index}
@@ -293,7 +294,7 @@ export const HeroCard = () => {
           <div className="w-full h-[1px] bg-gray-200 mb-6" />
 
           {/* Item cards - Responsive Grid */}
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 md:grid-cols-6 sm:gap-4 jutify-center items-start">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3 sm:gap-4 justify-center items-start">
             {itemNav.map((item, index) => (
               <ItemCard
                 key={index}

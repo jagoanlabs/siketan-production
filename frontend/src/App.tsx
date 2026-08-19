@@ -5,6 +5,7 @@ import LoginPage from "./features/Login/page/LoginPage";
 import { HomeInformasiPage } from "./features/HomeInformasi/page/HomeInformasiPage";
 import { DetailNews } from "./features/DetailNews/pages/DetailNews";
 import { HomeDataPage } from "./features/HomeData/page/HomeDataPage";
+import { HomeKelompokPage } from "./features/HomeKelompok/page/HomeKelompokPage";
 import { HomeTokoPage } from "./features/HomeToko/page/HomeTokoPage";
 import { DetailProductPage } from "./features/DetailProduct/pages/DetailProductPage";
 import { DetailTokoPage } from "./features/DetailToko/pages/DetailTokoPage";
@@ -81,6 +82,7 @@ function App() {
         <Route element={<DetailNews />} path="/home/information/:id" />
 
         <Route element={<HomeDataPage />} path="/home/data" />
+        <Route element={<HomeKelompokPage />} path="/home/kelompok" />
 
         <Route element={<HomeTokoPage />} path="/home/toko" />
         <Route element={<DetailProductPage />} path="/home/toko/product/:id" />

@@ -549,6 +549,112 @@ const changeDesaToId = async (req, res) => {
   }
 };
 
+const getPublicKelompok = async (req, res) => {
+  const { page, limit, search } = req.query;
+
+  try {
+    const limitFilter = Number(limit) || 10;
+    const pageFilter = Number(page) || 1;
+
+    // Search condition
+    const searchCondition = search
+      ? {
+          [Op.or]: [
+            { gapoktan: { [Op.like]: `%${search}%` } },
+            { namaKelompok: { [Op.like]: `%${search}%` } },
+            { '$desaData.nama$': { [Op.like]: `%${search}%` } },
+            { '$kecamatanData.nama$': { [Op.like]: `%${search}%` } },
+            { desa: { [Op.like]: `%${search}%` } },
+            { kecamatan: { [Op.like]: `%${search}%` } }
+          ]
+        }
+      : {};
+
+    const query = {
+      attributes: ['id', 'gapoktan', 'namaKelompok', 'desa', 'kecamatan'],
+      where: searchCondition,
+      limit: limitFilter,
+      offset: (pageFilter - 1) * limitFilter,
+      include: [
+        {
+          model: kecamatan,
+          as: 'kecamatanData',
+          attributes: ['id', 'nama']
+        },
+        {
+          model: desa,
+          as: 'desaData',
+          attributes: ['id', 'nama']
+        }
+      ],
+      distinct: true
+    };
+
+    const data = await kelompok.findAll(query);
+    const total = await kelompok.count(query);
+
+    const mappedData = data.map((item) => ({
+      id: item.id,
+      gapoktan: item.gapoktan || '-',
+      namaKelompok: item.namaKelompok || '-',
+      desa: item.desaData?.nama || item.desa || '-',
+      kecamatan: item.kecamatanData?.nama || item.kecamatan || '-'
+    }));
+
+    res.status(200).json({
+      message: 'Data Kelompok Berhasil Diperoleh',
+      data: mappedData,
+      total,
+      currentPages: pageFilter,
+      limit: limitFilter,
+      maxPages: Math.ceil(total / (limitFilter || 10)),
+      from: total === 0 ? 0 : (pageFilter - 1) * limitFilter + 1,
+      to: total === 0 ? 0 : (pageFilter - 1) * limitFilter + data.length
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      message: error.message
+    });
+  }
+};
+
+const getPublicStatistikKelompok = async (req, res) => {
+  try {
+    const totalKelompok = await kelompok.count();
+
+    let totalKecamatan = await kecamatan.count();
+    if (!totalKecamatan) {
+      totalKecamatan = await kelompok.count({
+        distinct: true,
+        col: 'kecamatanId'
+      });
+    }
+
+    let totalDesa = await desa.count();
+    if (!totalDesa) {
+      totalDesa = await kelompok.count({
+        distinct: true,
+        col: 'desaId'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Data statistik kelompok berhasil diperoleh',
+      data: {
+        totalKelompok: totalKelompok || 0,
+        totalDesa: totalDesa || 0,
+        totalKecamatan: totalKecamatan || 0
+      }
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   uploadDataKelompoks,
   editKelompokById,
@@ -559,5 +665,7 @@ module.exports = {
   getAllDesaInKecamatan,
   changeKecamatanToId,
   changeDesaToId,
-  getMetaKelompok
+  getMetaKelompok,
+  getPublicKelompok,
+  getPublicStatistikKelompok
 };

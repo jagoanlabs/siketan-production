@@ -53,3 +53,34 @@ export interface UploadResponse {
   success: boolean;
   data?: any;
 }
+
+export interface PublicKelompokItem {
+  id: number;
+  gapoktan: string;
+  namaKelompok: string;
+  desa: string;
+  kecamatan: string;
+}
+
+export interface PublicKelompokResponse {
+  message: string;
+  data: PublicKelompokItem[];
+  total: number;
+  currentPages: number;
+  limit: number;
+  maxPages: number;
+  from: number;
+  to: number;
+}
+
+export interface PublicStatistikKelompokData {
+  totalKelompok: number;
+  totalDesa: number;
+  totalKecamatan: number;
+}
+
+export interface PublicStatistikKelompokResponse {
+  success: boolean;
+  message: string;
+  data: PublicStatistikKelompokData;
+}

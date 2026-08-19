@@ -2,8 +2,8 @@ import { Chip as HeroChip } from "../../../components/Form/HeroChip";
 import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
 
 import { useState, useEffect } from "react";
-
-import { FaUser, FaUserGroup } from "react-icons/fa6";
+import { Link } from "react-router-dom";
+import { FaUser, FaUserGroup, FaArrowRight } from "react-icons/fa6";
 
 import { Footer } from "@/features/Home/components/Footer";
 import HomeLayout from "@/layouts/HomeLayout";
@@ -185,15 +185,21 @@ export const HomeDataPage = () => {
                       title="Jumlah Petani"
                       value={ringkasan?.jumlahPetani}
                     />
-                    <StatCard
-                      bgColor="bg-blue-50"
-                      highlightColor="bg-blue-600"
-                      icon={<FaUserGroup />}
-                      loading={loading}
-                      textColor="text-blue-600"
-                      title="Kelompok Petani"
-                      value={ringkasan?.jumlahGapoktan}
-                    />
+                    <Link
+                      className="block transition-transform hover:scale-[1.03] active:scale-[0.98] duration-200 group"
+                      title="Klik untuk melihat daftar lengkap Kelompok Tani"
+                      to="/home/kelompok"
+                    >
+                      <StatCard
+                        bgColor="bg-blue-50 group-hover:bg-blue-100/80 transition-colors cursor-pointer"
+                        highlightColor="bg-blue-600"
+                        icon={<FaUserGroup className="group-hover:scale-110 transition-transform" />}
+                        loading={loading}
+                        textColor="text-blue-600"
+                        title="Kelompok Petani"
+                        value={ringkasan?.jumlahGapoktan}
+                      />
+                    </Link>
                     <StatCard
                       bgColor="bg-red-50"
                       highlightColor="bg-red-600"
@@ -228,6 +234,20 @@ export const HomeDataPage = () => {
                       />
                     </div>
                   </>
+                </div>
+
+                {/* Quick link button to Poktan list */}
+                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between flex-wrap gap-2 text-xs sm:text-sm">
+                  <span className="text-gray-500">
+                    Ingin melihat daftar seluruh kelompok tani (poktan) terdaftar?
+                  </span>
+                  <Link
+                    className="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                    to="/home/kelompok"
+                  >
+                    <span>Lihat Data Kelompok Tani</span>
+                    <FaArrowRight className="w-3 h-3" />
+                  </Link>
                 </div>
               </div>
             </div>
