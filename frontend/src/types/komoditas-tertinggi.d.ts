@@ -52,6 +52,20 @@ export interface Kelompok {
   dataPenyuluh: DataPenyuluh;
 }
 
+export interface CreatorAccount {
+  id?: number;
+  accountID?: string;
+  nama?: string;
+  email?: string;
+  noWa?: string;
+  penyuluh?: DataPenyuluh;
+  operator?: {
+    id?: number;
+    nama?: string;
+    noHp?: string;
+  };
+}
+
 export interface DataTanamanTop {
   id: number;
   kategori: string;
@@ -68,6 +82,7 @@ export interface DataTanamanTop {
   updatedAt: string;
   fk_kelompokId: number;
   kelompok: Kelompok;
+  creator?: CreatorAccount;
 }
 
 export interface DataTanamanTopResponse {

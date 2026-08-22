@@ -2,6 +2,7 @@ const {
   dataTanaman,
   kelompok,
   dataPenyuluh,
+  dataOperator,
   kecamatan,
   desa,
   tbl_akun
@@ -662,18 +663,43 @@ const getTopKomoditasTanaman = async (req, res) => {
           { model: kecamatan, as: 'kecamatanData' },
           { model: desa, as: 'desaData' }
         ]
+      },
+      {
+        model: tbl_akun,
+        as: 'creator',
+        required: false,
+        include: [
+          { model: dataPenyuluh, as: 'penyuluh' },
+          { model: dataOperator, as: 'operator' }
+        ]
       }
     ];
 
-    const data = await dataTanaman.findAll({
-      where: whereQuery,
-      include: includeQuery,
-      limit: limitFilter,
-      offset: (pageFilter - 1) * limitFilter,
-      order
-    });
+    const countAll = await dataTanaman.count({ where: whereQuery, include: includeQuery, distinct: true });
+    // Khusus untuk tabel prakiraan, batasi total ke 10 produk tertinggi
+    const total = type === 'prakiraan' ? Math.min(countAll, 10) : countAll;
 
-    const total = await dataTanaman.count({ where: whereQuery, include: includeQuery, distinct: true });
+    const offset = (pageFilter - 1) * limitFilter;
+    let effectiveLimit = limitFilter;
+
+    if (type === 'prakiraan') {
+      if (offset >= 10) {
+        effectiveLimit = 0;
+      } else if (offset + limitFilter > 10) {
+        effectiveLimit = 10 - offset;
+      }
+    }
+
+    const data =
+      effectiveLimit > 0
+        ? await dataTanaman.findAll({
+          where: whereQuery,
+          include: includeQuery,
+          limit: effectiveLimit,
+          offset,
+          order
+        })
+        : [];
 
     res.status(200).json({
       message: 'Data berhasil didapatkan.',
@@ -681,9 +707,9 @@ const getTopKomoditasTanaman = async (req, res) => {
       total,
       currentPages: pageFilter,
       limit: limitFilter,
-      maxPages: Math.ceil(total / limitFilter),
-      from: pageFilter ? (pageFilter - 1) * limitFilter + 1 : 1,
-      to: pageFilter ? (pageFilter - 1) * limitFilter + data.length : data.length
+      maxPages: Math.max(1, Math.ceil(total / limitFilter)),
+      from: data.length > 0 ? offset + 1 : 0,
+      to: data.length > 0 ? offset + data.length : 0
     });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });

@@ -1,10 +1,12 @@
 // components/ProdukKomoditasTable.tsx
 import React, { useState, useMemo } from "react";
+import { FaWhatsapp } from "react-icons/fa6";
 
 import { ColumnConfig, SortConfig, PaginationInfo } from "@/types/table";
 import { useTopKomoditas } from "@/hook/useKomoditasTertinggi";
 import { DataTanamanTop } from "@/types/komoditas-tertinggi";
 import { ReusableTable } from "@/components/Table/ReusableTable";
+import { resolvePenyuluhWhatsApp } from "@/utils/phoneSanitizer";
 
 const TopKomoditasTable: React.FC<{
   type: "prakiraan" | "realisasi";
@@ -52,7 +54,7 @@ const TopKomoditasTable: React.FC<{
       {
         key: "no",
         title: "No",
-        width: "60px",
+        width: "50px",
         render: (_, index) => {
           const offset = (currentPage - 1) * 5;
 
@@ -63,8 +65,10 @@ const TopKomoditasTable: React.FC<{
         key: "kategori",
         title: "Kategori Tanaman",
         render: (item) => (
-          <span className="font-medium text-gray-900 dark:text-white">
-            {item.kategori}
+          <span className="font-semibold text-gray-900 dark:text-white uppercase text-xs">
+            {item.kategori?.toLowerCase().includes("tanaman")
+              ? item.kategori
+              : `Tanaman ${item.kategori || ""}`}
           </span>
         ),
       },
@@ -81,7 +85,7 @@ const TopKomoditasTable: React.FC<{
         key: "periodeTanam",
         title: "Bulan Tanam",
         render: (item) => (
-          <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full dark:bg-green-900 dark:text-green-200">
+          <span className="px-2.5 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full dark:bg-green-900 dark:text-green-200">
             {item.periodeTanam}
           </span>
         ),
@@ -92,7 +96,7 @@ const TopKomoditasTable: React.FC<{
               key: "prakiraanBulanPanen" as const,
               title: "Prakiraan Bulan Panen",
               render: (item: DataTanamanTop) => (
-                <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full dark:bg-blue-900 dark:text-blue-200">
+                <span className="px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full dark:bg-blue-900 dark:text-blue-200">
                   {item.prakiraanBulanPanen || "-"}
                 </span>
               ),
@@ -105,7 +109,7 @@ const TopKomoditasTable: React.FC<{
               key: "realisasiBulanPanen" as const,
               title: "Realisasi Bulan Panen",
               render: (item: DataTanamanTop) => (
-                <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full dark:bg-orange-900 dark:text-orange-200">
+                <span className="px-2.5 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full dark:bg-orange-900 dark:text-orange-200">
                   {item.realisasiBulanPanen || "-"}
                 </span>
               ),
@@ -119,7 +123,6 @@ const TopKomoditasTable: React.FC<{
             ? "Realisasi Luas Panen"
             : "Prakiraan Luas Panen",
         sortable: true,
-        align: "right",
         render: (item) => {
           const val =
             type === "realisasi"
@@ -127,11 +130,9 @@ const TopKomoditasTable: React.FC<{
               : item.prakiraanLuasPanen;
 
           return (
-            <div className="text-right">
-              <span className="font-medium text-gray-900 dark:text-white">
-                {val != null ? val.toLocaleString("id-ID") : "-"}
-              </span>
-            </div>
+            <span className="font-semibold text-gray-900 dark:text-white">
+              {val != null ? `${val.toLocaleString("id-ID")} Ha` : "-"}
+            </span>
           );
         },
       },
@@ -143,7 +144,6 @@ const TopKomoditasTable: React.FC<{
             ? "Realisasi Hasil Panen"
             : "Prakiraan Hasil Panen",
         sortable: true,
-        align: "right",
         render: (item) => {
           const val =
             type === "realisasi"
@@ -151,11 +151,9 @@ const TopKomoditasTable: React.FC<{
               : item.prakiraanHasilPanen;
 
           return (
-            <div className="text-right">
-              <span className="font-medium text-gray-900 dark:text-white">
-                {val != null ? val.toLocaleString("id-ID") : "-"}
-              </span>
-            </div>
+            <span className="font-semibold text-gray-900 dark:text-white">
+              {val != null ? `${val.toLocaleString("id-ID")} Ton` : "-"}
+            </span>
           );
         },
       },
@@ -164,9 +162,11 @@ const TopKomoditasTable: React.FC<{
         title: "Kelompok Tani",
         render: (item) => (
           <div className="flex flex-col">
-            <span className="font-medium">{item.kelompok.namaKelompok}</span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Gapoktan: {item.kelompok.gapoktan}
+            <span className="font-semibold text-gray-900 dark:text-white">
+              {item.kelompok?.namaKelompok || "-"}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {item.kelompok?.gapoktan || "-"}
             </span>
           </div>
         ),
@@ -176,7 +176,7 @@ const TopKomoditasTable: React.FC<{
         title: "Kecamatan",
         render: (item) => (
           <span className="font-medium text-gray-900 dark:text-white">
-            {item.kelompok.kecamatanData?.nama || item.kelompok.kecamatan}
+            {item.kelompok?.kecamatanData?.nama || item.kelompok?.kecamatan || "-"}
           </span>
         ),
       },
@@ -185,10 +185,38 @@ const TopKomoditasTable: React.FC<{
         title: "Desa",
         render: (item) => (
           <span className="font-medium text-gray-900 dark:text-white">
-            {item.kelompok.desaData?.nama || item.kelompok.desa}
+            {item.kelompok?.desaData?.nama || item.kelompok?.desa || "-"}
           </span>
         ),
       },
+      ...(type === "prakiraan"
+        ? [
+            {
+              key: "noWaPenyuluh" as const,
+              title: "No. WhatsApp Penyuluh",
+              render: (item: DataTanamanTop) => {
+                const waContact = resolvePenyuluhWhatsApp(item);
+
+                if (!waContact) {
+                  return <span className="text-gray-400 font-medium">-</span>;
+                }
+
+                return (
+                  <a
+                    href={waContact.waLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-green-600 hover:text-green-800 font-medium hover:underline transition-colors whitespace-nowrap"
+                    title={`Hubungi Penyuluh via WhatsApp (${waContact.display})`}
+                  >
+                    <FaWhatsapp className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>{waContact.display}</span>
+                  </a>
+                );
+              },
+            },
+          ]
+        : []),
     ],
     [type, currentPage],
   );
@@ -209,18 +237,29 @@ const TopKomoditasTable: React.FC<{
   };
 
   return (
-    <ReusableTable<DataTanamanTop>
-      className="mt-4"
-      columns={columns}
-      currentPage={currentPage}
-      data={tableData}
-      error={error}
-      paginationInfo={paginationInfo}
-      sortConfig={sortConfig}
-      title={title}
-      onPageChange={handlePageChange}
-      onSort={handleSort}
-    />
+    <div className="overflow-x-auto w-full">
+      <div className="min-w-[1100px]">
+        <ReusableTable<DataTanamanTop>
+          className="mt-4 shadow-sm border border-gray-100 rounded-xl"
+          columns={columns}
+          currentPage={currentPage}
+          data={tableData}
+          error={error}
+          headerActions={
+            type === "prakiraan" ? (
+              <div className="inline-flex items-center px-3.5 py-1.5 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-300 rounded-lg shadow-2xs">
+                Data diambil dari 90 hari terakhir
+              </div>
+            ) : undefined
+          }
+          paginationInfo={paginationInfo}
+          sortConfig={sortConfig}
+          title={title}
+          onPageChange={handlePageChange}
+          onSort={handleSort}
+        />
+      </div>
+    </div>
   );
 };
 
