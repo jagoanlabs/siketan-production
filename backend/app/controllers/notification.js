@@ -52,15 +52,12 @@ const autoCheckDeadlineNotificationForUser = async (user) => {
         });
 
         if (!existingNotif) {
-          const daysLeft = 7 - currentDay;
-          const deadlineText = daysLeft === 0 
-            ? 'HARI INI pukul 23:59' 
-            : `${daysLeft} hari lagi (7 ${currentMonthName} 23:59)`;
+          const deadlineDateStr = `7 ${currentMonthName} pukul 23:59 WIB`;
 
           await notification.create({
             user_id: user.id,
             title: `Peringatan Batas Waktu Input Data (${targetMonthName})`,
-            message: `Anda belum menginput data tanaman untuk periode ${targetMonthName}. Batas waktu penginputan adalah ${deadlineText}. Segera lengkapi data Anda sebelum sistem mengunci input.`,
+            message: `Anda belum menginput data tanaman untuk periode ${targetMonthName}. Batas waktu penginputan adalah ${deadlineDateStr}. Segera lengkapi data Anda sebelum sistem mengunci input.`,
             type: 'DEADLINE_WARNING',
             category: 'data_tanaman',
             is_read: false,
@@ -69,7 +66,7 @@ const autoCheckDeadlineNotificationForUser = async (user) => {
               targetMonth: targetMonthName,
               targetYear: targetMonthYear,
               deadline: `${targetMonthYear}-${String(currentMonthIdx + 1).padStart(2, '0')}-07T23:59:59`,
-              daysRemaining: daysLeft
+              deadlineDateStr
             }
           });
         }

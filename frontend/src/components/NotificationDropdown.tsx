@@ -194,6 +194,19 @@ export const NotificationDropdown: React.FC = () => {
             ))
           )}
         </div>
+
+        {/* Footer */}
+        <div className="p-2.5 text-center border-t border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50">
+          <button
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline transition-colors w-full py-1"
+            onClick={() => {
+              closeDropdown();
+              navigate("/dashboard-admin/notifikasi");
+            }}
+          >
+            Lihat Semua Notifikasi &rarr;
+          </button>
+        </div>
       </Dropdown>
     </div>
   );
