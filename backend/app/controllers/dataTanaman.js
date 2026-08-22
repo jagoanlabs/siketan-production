@@ -3,7 +3,8 @@ const {
   kelompok,
   dataPenyuluh,
   kecamatan,
-  desa
+  desa,
+  tbl_akun
 } = require('../models');
 
 const ApiError = require('../../utils/ApiError');
@@ -281,7 +282,14 @@ const getDetailedDataTanaman = async (req, res) => {
 
     const data = await dataTanaman.findOne({
       where: { id },
-      include: [{ model: kelompok, as: 'kelompok' }]
+      include: [
+        { model: kelompok, as: 'kelompok' },
+        {
+          model: tbl_akun,
+          as: 'creator',
+          attributes: ['id', 'nama', 'email', 'peran', 'foto']
+        }
+      ]
     });
 
     res.status(200).json({ message: 'Data berhasil didapatkan.', data });

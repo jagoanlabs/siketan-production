@@ -1,4 +1,11 @@
-// types/Statistika/detailStatistika.d.ts
+export interface CreatorData {
+  id: number;
+  nama: string;
+  email: string;
+  peran?: string;
+  foto?: string | null;
+}
+
 export interface StatistikaDetailData {
   id: number;
   kategori: string;
@@ -13,6 +20,8 @@ export interface StatistikaDetailData {
   realisasiBulanPanen: string | null;
   createdAt: string;
   updatedAt: string;
+  created_by?: number | null;
+  creator?: CreatorData | null;
   fk_kelompokId: number;
   kelompok: {
     id: number;
