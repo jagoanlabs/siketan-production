@@ -3,7 +3,8 @@ const {
   kelompok,
   dataPenyuluh,
   kecamatan,
-  desa
+  desa,
+  tbl_akun
 } = require('../models');
 
 const ApiError = require('../../utils/ApiError');
@@ -281,7 +282,14 @@ const getDetailedDataTanaman = async (req, res) => {
 
     const data = await dataTanaman.findOne({
       where: { id },
-      include: [{ model: kelompok, as: 'kelompok' }]
+      include: [
+        { model: kelompok, as: 'kelompok' },
+        {
+          model: tbl_akun,
+          as: 'creator',
+          attributes: ['id', 'nama', 'email', 'peran', 'foto']
+        }
+      ]
     });
 
     res.status(200).json({ message: 'Data berhasil didapatkan.', data });
@@ -319,6 +327,48 @@ const tambahDataTanaman = async (req, res) => {
 
     const kelompokTani = await kelompok.findOne({ where: { id: fk_kelompokId } });
     if (!kelompokTani) throw new ApiError(400, 'Kelompok tidak ditemukan.');
+
+    // Role-based validation khusus role Penyuluh
+    const isPenyuluh = peran === 'penyuluh' || (req.user?.role?.name && req.user.role.name.includes('penyuluh'));
+    if (isPenyuluh) {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const inputYear = req.body.tahun ? Number(req.body.tahun) : currentYear;
+
+      const monthIdx = monthOrder.indexOf(periodeTanam);
+      if (monthIdx !== -1) {
+        // Batas waktu: tanggal 7 bulan berikutnya pukul 23:59:59
+        const deadlineDate = new Date(inputYear, monthIdx + 1, 7, 23, 59, 59, 999);
+        if (now > deadlineDate) {
+          const nextMonthName = monthOrder[(monthIdx + 1) % 12];
+          throw new ApiError(
+            400,
+            `Batas waktu penginputan data tanaman periode ${periodeTanam} ${inputYear} telah berakhir pada tanggal 7 ${nextMonthName} pukul 23:59.`
+          );
+        }
+      }
+
+      // Validasi 1 data per kelompok tani per periode tanam per tahun
+      const existingData = await dataTanaman.findOne({
+        where: {
+          fk_kelompokId,
+          periodeTanam,
+          createdAt: {
+            [Op.between]: [
+              new Date(`${inputYear}-01-01 00:00:00`),
+              new Date(`${inputYear}-12-31 23:59:59`)
+            ]
+          }
+        }
+      });
+
+      if (existingData) {
+        throw new ApiError(
+          400,
+          `Data tanaman untuk kelompok tani ini pada periode ${periodeTanam} sudah diinput. Penyuluh hanya dapat menginput 1 data per kelompok tani per bulan.`
+        );
+      }
+    }
 
     const data = await dataTanaman.create({
       kategori,

@@ -188,28 +188,14 @@ const registerPenyuluh = async (data: CreatePenyuluhData): Promise<any> => {
     formData.append("foto", data.foto); // Backend expects 'file', not 'foto'
   }
 
-  try {
-    const response = await axiosClient.post(
-      `/auth/register-penyuluh`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
-    );
+  const response = await axiosClient.post(`/auth/register-penyuluh`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    skipToast: true,
+  } as any);
 
-    return response.data;
-  } catch (error: any) {
-    // Log the full error for debugging
-    console.error(
-      "Create penyuluh error:",
-      error.response?.data || error.message,
-    );
-    throw new Error(
-      error.response?.data?.message || "Failed to create penyuluh",
-    );
-  }
+  return response.data;
 };
 
 export const useRegisterPenyuluh = () => {

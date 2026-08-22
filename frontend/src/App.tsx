@@ -54,6 +54,7 @@ import { PERMISSIONS, ROLES } from "./helpers/RoleHelper/roleHelpers";
 import { InformasiOperator } from "./features/DashboardAdmin/features/Operator/page/InformasiOperator";
 import { CreateOperator } from "./features/DashboardAdmin/features/Operator/page/CreateOperator";
 import { EditOperator } from "./features/DashboardAdmin/features/Operator/page/EditOperator";
+import { NotificationPage } from "./features/DashboardAdmin/features/Notification/Page/NotificationPage";
 
 import HomePage from "@/features/Home/page/HomePage";
 import SearchPage from "@/features/Search/page/SearchPage";
@@ -232,6 +233,11 @@ function App() {
             <Route
               element={<ProfileDashboard />}
               path="/dashboard-admin/profile"
+            />
+
+            <Route
+              element={<NotificationPage />}
+              path="/dashboard-admin/notifikasi"
             />
 
             <Route

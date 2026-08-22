@@ -115,7 +115,8 @@ const registerPetani = async (
     headers: {
       "Content-Type": "multipart/form-data",
     },
-  });
+    skipToast: true,
+  } as any);
 
   return data;
 };
@@ -172,14 +173,6 @@ export const usePetaniRegister = () => {
 
       // Redirect ke dashboard petani
       navigate("/dashboard");
-    },
-    onError: (error: any) => {
-      const errorMessage =
-        error?.response?.data?.message || "Terjadi kesalahan saat mendaftar";
-
-      toast.error("Pendaftaran gagal!", {
-        description: errorMessage,
-      });
     },
   });
 };

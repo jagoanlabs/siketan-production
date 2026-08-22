@@ -25,6 +25,7 @@ const dataOperator = require('./dataOperator');
 const dashboard = require('./dashboard');
 const wilayah = require('./wilayah');
 const landingStatistik = require('./landingStatistik');
+const notification = require('./notification');
 const { searchGlobal } = require('../controllers/search');
 const { getTopKomoditasTanaman } = require('../controllers/dataTanaman');
 
@@ -82,6 +83,7 @@ router.use('/', laporanTanam);
 router.use('/', logActivity);
 router.use('/', dataOperator);
 router.use('/wilayah', wilayah);
+router.use('/notification', notification);
 router.use('/rbac', rbac);
 
 module.exports = router;

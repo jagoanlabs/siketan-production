@@ -22,7 +22,9 @@ app.use(
       'If-Modified-Since',
       'X-Requested-With',
       'Accept',
-      'Origin'
+      'Origin',
+      'X-Skip-Toast',
+      'x-skip-toast'
     ],
     exposedHeaders: ['Cache-Control', 'Content-Length', 'ETag', 'Expires', 'Last-Modified'],
     credentials: true, // if needed for cookies/auth

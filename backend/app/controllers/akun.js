@@ -91,18 +91,30 @@ const register = async (req, res) => {
       peran = ''
       // tipe_penyuluh = 'reguler'
     } = req.body;
-    const { file } = req;
-    const User = await tblAkun.findOne({ where: { email } });
     // validasi
-    const validateEmail = isEmailValid(email);
     if (!email) throw new ApiError(400, 'Email tidak boleh kosong.');
-    if (!validateEmail) throw new ApiError(400, 'Email tidak valid.');
+    const cleanEmail = email.trim();
+    const isGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(cleanEmail);
+    if (!isGmail) {
+      throw new ApiError(400, 'Hanya email Gmail yang diterima. Contoh: nama@gmail.com');
+    }
+    const User = await tblAkun.findOne({ where: { email: cleanEmail } });
+    if (User) {
+      throw new ApiError(400, 'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.');
+    }
+
+    if (!nama) throw new ApiError(400, 'Nama lengkap tidak boleh kosong.');
+
+    if (!no_wa) throw new ApiError(400, 'No. HP/WhatsApp tidak boleh kosong.');
+    const cleanNoWa = no_wa.toString().replace(/\D/g, '');
+    if (!cleanNoWa.startsWith('08')) {
+      throw new ApiError(400, 'No. HP/WhatsApp harus diawali dengan 08.');
+    }
+    if (cleanNoWa.length < 10 || cleanNoWa.length > 13) {
+      throw new ApiError(400, 'No. HP/WhatsApp harus 10-13 digit angka.');
+    }
+
     if (!password) throw new ApiError(400, 'Password tidak boleh kosong.');
-    if (!nama) throw new ApiError(400, 'Nama tidak boleh kosong.');
-    if (!no_wa) throw new ApiError(400, 'no wa tidak boleh kosong.');
-    if (!nama) throw new ApiError(400, 'Nama tidak boleh kosong.');
-    if (User) throw new ApiError(400, 'Email telah terdaftar.');
-    // if (!tipe_penyuluh) throw new ApiError(400, 'Tipe penyuluh tidak boleh kosong.');
     if (password.length < 8) {
       throw new ApiError(400, 'Masukkan password minimal 8 karakter');
     }
@@ -193,23 +205,74 @@ const registerPenyuluh = async (req, res) => {
       tipe
     } = req.body;
     console.log(req.body);
-    // const kelompokArray = selectedKelompokIds.split(',');
+
+    // 1. Validasi NIP/NIK
+    const rawIdentity = (NIP || req.body.nik || req.body.NIK || '').toString().trim();
+    if (!rawIdentity) {
+      throw new ApiError(400, 'Nomor identitas (NIK/NIP) tidak boleh kosong.');
+    }
+    if (!/^\d+$/.test(rawIdentity)) {
+      throw new ApiError(400, 'Nomor identitas hanya boleh berisi angka.');
+    }
+    if (rawIdentity.length !== 18 && rawIdentity.length !== 16) {
+      throw new ApiError(
+        400,
+        'Nomor identitas tidak valid. NIK harus 16 digit angka, NIP harus 18 digit angka.'
+      );
+    }
+    const penyuluh = await dataPenyuluh.findOne({
+      where: { nik: rawIdentity }
+    });
+    if (penyuluh) {
+      const typeLabel = rawIdentity.length === 18 ? 'NIP' : 'NIK';
+      throw new ApiError(400, `${typeLabel} sudah digunakan.`);
+    }
+
+    if (!nama) {
+      throw new ApiError(400, 'Nama lengkap tidak boleh kosong.');
+    }
+
+    // 2. Validasi Format Email
+    if (!email) {
+      throw new ApiError(400, 'Email tidak boleh kosong.');
+    }
+    const cleanEmail = email.trim();
+    const isGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(cleanEmail);
+    if (!isGmail) {
+      throw new ApiError(400, 'Hanya email Gmail yang diterima. Contoh: nama@gmail.com');
+    }
+
+    // 3. Validasi Email Duplikat
+    const existingAccount = await tblAkun.findOne({
+      where: { email: cleanEmail }
+    });
+    if (existingAccount) {
+      throw new ApiError(400, 'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.');
+    }
+
+    // 4. Validasi No. HP/WhatsApp
+    if (!NoWa) {
+      throw new ApiError(400, 'No. HP/WhatsApp tidak boleh kosong.');
+    }
+    const cleanNoWa = NoWa.toString().replace(/\D/g, '');
+    if (!cleanNoWa.startsWith('08')) {
+      throw new ApiError(400, 'No. HP/WhatsApp harus diawali dengan 08.');
+    }
+    if (cleanNoWa.length < 10 || cleanNoWa.length > 13) {
+      throw new ApiError(400, 'No. HP/WhatsApp harus 10-13 digit angka.');
+    }
+
+    if (!password) {
+      throw new ApiError(400, 'Password tidak boleh kosong.');
+    }
+    if (password.length < 8) {
+      throw new ApiError(400, 'Password minimal 8 karakter.');
+    }
+
     const hashedPassword = bcrypt.hashSync(password, 10);
     const accountID = crypto.randomUUID();
     const { file } = req;
-    const penyuluh = await dataPenyuluh.findOne({
-      where: { nik: NIP }
-    });
     let urlImg;
-    if (!NIP) {
-      throw new ApiError(400, 'NIP tidak boleh kosong');
-    }
-    if (!nama) {
-      throw new ApiError(400, 'nama tidak boleh kosong');
-    }
-    if (penyuluh) {
-      throw new ApiError(400, 'NIP sudah digunakan');
-    }
     if (file) {
       const validFormat =
         file.mimetype === 'image/png' ||
@@ -316,7 +379,7 @@ const registerPenyuluh = async (req, res) => {
       }
     }
     const newPenyuluh = await dataPenyuluh.create({
-      nik: NIP,
+      nik: rawIdentity,
       nama: nama,
       foto: urlImg,
       alamat,
@@ -586,21 +649,63 @@ const registerPetani = async (req, res) => {
       namaKelompok // mandatory
     } = req.body;
     const { file } = req;
-    // validasi
-    if (!NIK) throw new ApiError(400, 'NIK tidak boleh kosong');
-    if (!NKK) NKK = NIK;
-    if (!nama) throw new ApiError(400, 'nama tidak boleh kosong');
-    if (!email) email = nama.split(' ')[0] + '@gmail.com';
+    // 1. Validasi NIK
+    if (!NIK) throw new ApiError(400, 'NIK tidak boleh kosong.');
+    const cleanNIK = NIK.toString().trim();
+    if (!/^\d+$/.test(cleanNIK)) {
+      throw new ApiError(400, 'NIK hanya boleh berisi angka.');
+    }
+    if (cleanNIK.length !== 16) {
+      throw new ApiError(400, 'NIK harus terdiri dari 16 digit angka.');
+    }
+    const tani = await dataPetani.findOne({ where: { NIK: cleanNIK } });
+    if (tani) throw new ApiError(400, 'NIK sudah digunakan.');
+
+    if (!NKK) NKK = cleanNIK;
+    if (!nama) throw new ApiError(400, 'Nama lengkap tidak boleh kosong.');
+
+    // 2. Validasi Format Email
+    if (!email) {
+      email =
+        nama
+          .split(' ')[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '') + '@gmail.com';
+    }
+    const cleanEmail = email.trim();
+    const isGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(cleanEmail);
+    if (!isGmail) {
+      throw new ApiError(400, 'Hanya email Gmail yang diterima. Contoh: nama@gmail.com');
+    }
+
+    // 3. Validasi Email Duplikat
+    const existingAccount = await tblAkun.findOne({
+      where: { email: cleanEmail }
+    });
+    if (existingAccount) {
+      throw new ApiError(400, 'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.');
+    }
+
+    // 4. Validasi No. HP/WhatsApp
+    if (!NoWa) throw new ApiError(400, 'No. HP/WhatsApp tidak boleh kosong.');
+    const cleanNoWa = NoWa.toString().replace(/\D/g, '');
+    if (!cleanNoWa.startsWith('08')) {
+      throw new ApiError(400, 'No. HP/WhatsApp harus diawali dengan 08.');
+    }
+    if (cleanNoWa.length < 10 || cleanNoWa.length > 13) {
+      throw new ApiError(400, 'No. HP/WhatsApp harus 10-13 digit angka.');
+    }
+
     if (!alamat) throw new ApiError(400, 'Alamat tidak boleh kosong.');
     if (!inputDesa && !desaId) throw new ApiError(400, 'Desa tidak boleh kosong.');
     if (!inputKecamatan && !kecamatanId) throw new ApiError(400, 'Kecamatan tidak boleh kosong.');
     if (!password) throw new ApiError(400, 'Password tidak boleh kosong.');
-    if (!NoWa) throw new ApiError(400, 'no wa tidak boleh kosong.');
+    if (password.length < 8) {
+      throw new ApiError(400, 'Password minimal 8 karakter.');
+    }
     if (!gapoktan) throw new ApiError(400, 'Gapoktan tidak boleh kosong.');
     if (!penyuluh) throw new ApiError(400, 'Penyuluh tidak boleh kosong.');
-    if (!namaKelompok) throw new ApiError(400, 'nama kelompok tidak boleh kosong.');
-    const tani = await dataPetani.findOne({ where: { NIK } });
-    if (tani) throw new ApiError(400, 'NIK sudah digunakan');
+    if (!namaKelompok) throw new ApiError(400, 'Nama kelompok tidak boleh kosong.');
 
     const hashedPassword = bcrypt.hashSync(password, 10);
     const accountID = crypto.randomUUID();

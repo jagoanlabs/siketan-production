@@ -4,20 +4,23 @@ import { Button } from "../../../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
 
 import type { PetaniOption } from "@/types/DataPertanian/createDataTanaman.d";
-
 import { useNavigate } from "react-router-dom";
 import AsyncSelect from "react-select/async";
-
-
-
-
+import { FaCircleInfo } from "react-icons/fa6";
 
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
 import { useCreateDataTanaman } from "@/hook/dashboard/dataPertanian/UseCreateDataTanaman";
+import { useAuth } from "@/hook/UseAuth";
 
 export const CreateTanamanPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isPenyuluh =
+    user?.peran === "penyuluh" ||
+    (typeof (user as any)?.role === "string"
+      ? ((user as any).role as string).includes("penyuluh")
+      : Boolean((user as any)?.role?.name?.includes("penyuluh")));
 
   const {
     // Form state
@@ -62,7 +65,7 @@ export const CreateTanamanPage = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-lg">
               <svg
                 className="w-6 h-6 text-white"
@@ -87,6 +90,26 @@ export const CreateTanamanPage = () => {
               </p>
             </div>
           </div>
+
+          {/* Info Banner Khusus Penyuluh */}
+          {isPenyuluh && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-amber-900 shadow-sm">
+              <FaCircleInfo className="text-amber-600 text-lg flex-shrink-0 mt-0.5" />
+              <div className="text-xs sm:text-sm">
+                <p className="font-semibold text-amber-800">
+                  Ketentuan Penginputan Data Tanaman (Penyuluh):
+                </p>
+                <ul className="list-disc list-inside mt-1 space-y-0.5 text-amber-700">
+                  <li>
+                    Batas waktu penginputan data tanaman periode bulan tertentu adalah maksimal <strong>tanggal 7 bulan berikutnya (W1) pukul 23:59</strong>.
+                  </li>
+                  <li>
+                    Setiap kelompok tani hanya dapat diinput <strong>1 data tanaman per bulan</strong> secara satu per satu.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -199,9 +222,9 @@ export const CreateTanamanPage = () => {
                       min={1}
                       placeholder="Masukkan luas lahan"
                       type="number"
-                       value={formData.luasLahan}
-                       onValueChange={(value: any) =>
-                         handleInputChange("luasLahan", value)
+                      value={formData.luasLahan}
+                      onValueChange={(value: any) =>
+                        handleInputChange("luasLahan", value)
                       }
                     />
                   </div>
@@ -352,12 +375,12 @@ export const CreateTanamanPage = () => {
                       min={1}
                       placeholder="0"
                       type="number"
-                       value={formData.prakiraanLuasPanen.toString()}
-                       onValueChange={(value: any) =>
-                         handleInputChange(
-                           "prakiraanLuasPanen",
-                           parseInt(value) || 0,
-                         )
+                      value={formData.prakiraanLuasPanen.toString()}
+                      onValueChange={(value: any) =>
+                        handleInputChange(
+                          "prakiraanLuasPanen",
+                          parseInt(value) || 0,
+                        )
                       }
                     />
 
@@ -369,12 +392,12 @@ export const CreateTanamanPage = () => {
                       min={1}
                       placeholder="0"
                       type="number"
-                       value={formData.prakiraanProduksiPanen.toString()}
-                       onValueChange={(value: any) =>
-                         handleInputChange(
-                           "prakiraanProduksiPanen",
-                           parseInt(value) || 0,
-                         )
+                      value={formData.prakiraanProduksiPanen.toString()}
+                      onValueChange={(value: any) =>
+                        handleInputChange(
+                          "prakiraanProduksiPanen",
+                          parseInt(value) || 0,
+                        )
                       }
                     />
 

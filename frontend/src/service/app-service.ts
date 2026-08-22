@@ -48,6 +48,16 @@ axiosClient.interceptors.response.use(
   (error) => {
     console.error("❌ API Error:", error);
 
+    // Check if caller wants to handle error toast themselves
+    const skipToast =
+      (error.config as any)?.skipToast ||
+      error.config?.headers?.["X-Skip-Toast"] === "true" ||
+      error.config?.headers?.["x-skip-toast"] === "true";
+
+    if (skipToast) {
+      return Promise.reject(error);
+    }
+
     // Handle different error scenarios
     if (error.response) {
       const { status, data } = error.response;

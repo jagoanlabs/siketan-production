@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 
 import { Divider } from "../../../../../components/Form/HeroDivider";
 import { Chip } from "../../../../../components/Form/HeroChip";
+import { Avatar } from "../../../../../components/Form/HeroAvatar";
 import {
   Card,
   CardBody,
@@ -88,6 +89,19 @@ export const DetailStatistika = () => {
   }
 
   const { statistika, kelompokTani, metrics, status } = detailData;
+
+  const formatDateTime = (dateString?: string | null) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <div className="min-h-screen space-y-6 max-w-6xl container mx-auto">
@@ -239,17 +253,17 @@ export const DetailStatistika = () => {
                               : statistika.kategori === "perkebunan"
                                 ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
                                 : statistika.kategori === "jenis_sayur" ||
-                                    statistika.kategori === "sayur"
+                                  statistika.kategori === "sayur"
                                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                                   : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
                         }
                         variant="flat"
                       >
                         {statistika.kategori === "jenis_sayur" ||
-                        statistika.kategori === "sayur"
+                          statistika.kategori === "sayur"
                           ? "Sayur"
                           : statistika.kategori.charAt(0).toUpperCase() +
-                            statistika.kategori.slice(1)}
+                          statistika.kategori.slice(1)}
                       </Chip>
                     </div>
                   </div>
@@ -349,11 +363,10 @@ export const DetailStatistika = () => {
                       </p>
                       {statistika.realisasiLuasPanen && (
                         <p
-                          className={`text-sm mt-1 ${
-                            metrics.selisihLuasPanen >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
+                          className={`text-sm mt-1 ${metrics.selisihLuasPanen >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                            }`}
                         >
                           {metrics.selisihLuasPanen >= 0 ? "+" : ""}
                           {metrics.selisihLuasPanen.toLocaleString()} HA
@@ -371,11 +384,10 @@ export const DetailStatistika = () => {
                       </p>
                       {statistika.realisasiHasilPanen && (
                         <p
-                          className={`text-sm mt-1 ${
-                            metrics.selisihHasilPanen >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
+                          className={`text-sm mt-1 ${metrics.selisihHasilPanen >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                            }`}
                         >
                           {metrics.selisihHasilPanen >= 0 ? "+" : ""}
                           {metrics.selisihHasilPanen.toLocaleString()} TON
@@ -399,6 +411,128 @@ export const DetailStatistika = () => {
 
         {/* Right Column - Statistics & Actions */}
         <div className="space-y-6">
+
+
+          {/* Informasi Riwayat Data */}
+          <Card className="p-5">
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Informasi Data</h3>
+            </CardHeader>
+            <CardBody>
+              <div className="space-y-4">
+                {/* Dibuat Oleh */}
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                    Dibuat Oleh
+                  </p>
+                  {statistika.creator ? (
+                    <div className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50">
+                      <Avatar
+                        className="flex-shrink-0"
+                        name={statistika.creator.nama}
+                        size="sm"
+                        src={statistika.creator.foto ?? ""}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                            {statistika.creator.nama}
+                          </p>
+                        </div>
+                        {statistika.creator.peran && (
+                          <Chip
+                            className="capitalize text-xs"
+                            color="primary"
+                            size="sm"
+                            variant="flat"
+                          >
+                            {statistika.creator.peran}
+                          </Chip>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 flex items-center justify-center flex-shrink-0">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="1.5"
+                          />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            Sistem Siketan
+                          </p>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Data tercatat sebelum pembaruan sistem
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <Divider />
+
+                {/* Waktu Pembuatan */}
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Waktu Pembuatan
+                  </p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-gray-500 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
+                    <span>{formatDateTime(statistika.createdAt)}</span>
+                  </p>
+                </div>
+
+                {/* Waktu Pembaruan */}
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Waktu Pembaruan
+                  </p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-gray-500 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
+                    <span>{formatDateTime(statistika.updatedAt)}</span>
+                  </p>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+
           {/* Status Card */}
           <Card className="p-5">
             <CardHeader>
@@ -438,6 +572,7 @@ export const DetailStatistika = () => {
             </CardBody>
           </Card>
 
+
           {/* Performance Metrics */}
           {status.isRealisasiComplete && (
             <Card>
@@ -457,13 +592,12 @@ export const DetailStatistika = () => {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${
-                          metrics.persentaseRealisasiLuas >= 100
-                            ? "bg-green-500"
-                            : metrics.persentaseRealisasiLuas >= 80
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
-                        }`}
+                        className={`h-2 rounded-full ${metrics.persentaseRealisasiLuas >= 100
+                          ? "bg-green-500"
+                          : metrics.persentaseRealisasiLuas >= 80
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                          }`}
                         style={{
                           width: `${Math.min(metrics.persentaseRealisasiLuas, 100)}%`,
                         }}
@@ -481,13 +615,12 @@ export const DetailStatistika = () => {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${
-                          metrics.persentaseRealisasiHasil >= 100
-                            ? "bg-green-500"
-                            : metrics.persentaseRealisasiHasil >= 80
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
-                        }`}
+                        className={`h-2 rounded-full ${metrics.persentaseRealisasiHasil >= 100
+                          ? "bg-green-500"
+                          : metrics.persentaseRealisasiHasil >= 80
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                          }`}
                         style={{
                           width: `${Math.min(metrics.persentaseRealisasiHasil, 100)}%`,
                         }}

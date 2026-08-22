@@ -74,6 +74,7 @@ export function PenyuluhForm() {
   const [errors, setErrors] = useState<FieldErrors<PenyuluhRegisterFormValues>>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [identityType, setIdentityType] = useState<"NIK" | "NIP">("NIK");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
@@ -319,26 +320,36 @@ export function PenyuluhForm() {
       },
       onError: (err: any) => {
         const message =
-          err?.response?.data?.message || err?.message || "Terjadi kesalahan saat mendaftar";
-        const isEmailUsed =
-          typeof message === "string" &&
-          (message.toLowerCase().includes("email") ||
-            message.toLowerCase().includes("sudah") ||
-            message.toLowerCase().includes("already") ||
-            message.toLowerCase().includes("exist") ||
-            message.toLowerCase().includes("duplicate"));
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Terjadi kesalahan saat mendaftar";
 
-        if (isEmailUsed) {
+        const lowerMessage = typeof message === "string" ? message.toLowerCase() : "";
+
+        if (lowerMessage.includes("email")) {
           setErrors((prev) => ({
             ...prev,
-            email: "Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.",
+            email: message,
+          }));
+        }
+
+        if (lowerMessage.includes("nip") || lowerMessage.includes("nik")) {
+          setErrors((prev) => ({
+            ...prev,
+            NIP: message,
+          }));
+        }
+
+        if (lowerMessage.includes("wa") || lowerMessage.includes("nomor") || lowerMessage.includes("hp")) {
+          setErrors((prev) => ({
+            ...prev,
+            NoWa: message,
           }));
         }
 
         toast.error("Registrasi Gagal", {
-          description: isEmailUsed
-            ? "Email sudah digunakan oleh akun lain. Gunakan email yang berbeda."
-            : message,
+          description: message,
           duration: 4000,
         });
       },
@@ -406,21 +417,85 @@ export function PenyuluhForm() {
               </p>
             </div>
 
+            {/* Pilihan Jenis Identitas (Radio Button) */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Jenis Identitas <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <label
+                  onClick={() => {
+                    setIdentityType("NIK");
+                    if (formData.NIP.length > 16) {
+                      handleInputChange("NIP", formData.NIP.slice(0, 16));
+                    }
+                  }}
+                  className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${identityType === "NIK"
+                    ? "border-green-600 bg-green-50/70 shadow-sm"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                >
+                  <input
+                    type="radio"
+                    name="identityType"
+                    value="NIK"
+                    checked={identityType === "NIK"}
+                    onChange={() => { }}
+                    className="w-4 h-4 text-green-600 focus:ring-green-500 cursor-pointer accent-green-600"
+                  />
+                  <div>
+                    <span className="font-semibold text-sm text-gray-800 block">
+                      NIK (16 Digit)
+                    </span>
+                  </div>
+                </label>
+
+                <label
+                  onClick={() => {
+                    setIdentityType("NIP");
+                  }}
+                  className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${identityType === "NIP"
+                    ? "border-green-600 bg-green-50/70 shadow-sm"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                >
+                  <input
+                    type="radio"
+                    name="identityType"
+                    value="NIP"
+                    checked={identityType === "NIP"}
+                    onChange={() => { }}
+                    className="w-4 h-4 text-green-600 focus:ring-green-500 cursor-pointer accent-green-600"
+                  />
+                  <div>
+                    <span className="font-semibold text-sm text-gray-800 block">
+                      NIP (18 Digit)
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* NIP */}
+              {/* NIP / NIK Input */}
               <Input
                 required
                 errorMessage={errors.NIP}
                 isInvalid={!!errors.NIP}
-                label="NIP/NIK Penyuluh"
+                label={identityType === "NIP" ? "NIP Penyuluh" : "NIK Penyuluh"}
                 labelPlacement="outside"
-                maxLength={18}
-                placeholder="Masukkan NIP/NIK (maks. 18 digit angka)"
+                maxLength={identityType === "NIP" ? 18 : 16}
+                placeholder={
+                  identityType === "NIP"
+                    ? "Masukkan 18 digit NIP"
+                    : "Masukkan 16 digit NIK"
+                }
                 type="text"
                 value={formData.NIP}
                 variant="bordered"
                 onChange={(e: any) => {
-                  const value = e.target.value.replace(/\D/g, "").slice(0, 18);
+                  const maxDigits = identityType === "NIP" ? 18 : 16;
+                  const value = e.target.value.replace(/\D/g, "").slice(0, maxDigits);
 
                   handleInputChange("NIP", value);
                 }}
