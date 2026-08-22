@@ -1,15 +1,15 @@
 import { z } from "zod";
 
 const NIP_OR_NIK_MESSAGE =
-  "NIP/NIK tidak valid. NIP harus 18 digit angka, NIK harus 16 digit angka.";
+  "Nomor identitas tidak valid. Masukkan 16 digit angka untuk NIK atau 18 digit angka untuk NIP.";
 
 const phoneOnlyDigits = (value: string) => value.replace(/\D/g, "");
 
 const nipOrNikSchema = z
   .string()
-  .min(1, "NIP/NIK wajib diisi")
+  .min(1, "Nomor identitas (NIK/NIP) wajib diisi")
   .refine((value) => /^\d+$/.test(value), {
-    message: "NIP/NIK hanya boleh berisi angka",
+    message: "Nomor identitas hanya boleh berisi angka",
   })
   .refine(
     (value) => {

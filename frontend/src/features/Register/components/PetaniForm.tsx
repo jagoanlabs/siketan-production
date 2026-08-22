@@ -3,11 +3,7 @@ import { Button } from "../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../components/Form/HeroSelect";
 
 import { useState, useEffect } from "react";
-
 import { Link } from "react-router-dom";
-
-
-
 import { forwardRef, useImperativeHandle } from "react";
 import { GoHomeFill } from "react-icons/go";
 import {
@@ -36,9 +32,11 @@ import {
   type FieldErrors,
   flattenZodErrors,
 } from "@/lib/validations/auth.schema";
+
 type PetaniFormRef = {
   resetForm?: () => void;
 };
+
 export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
   useImperativeHandle(ref, () => ({
     resetForm: () => {
@@ -66,6 +64,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
       setShowConfirmPassword(false);
     },
   }));
+
   // Petani Form States
   const [petaniForm, setPetaniForm] = useState({
     NIK: "",
@@ -120,7 +119,6 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
       kelompokTaniData?.kelompokTani &&
       kelompokTaniData.kelompokTani.length > 0
     ) {
-      // Ambil gapoktan dari kelompok tani pertama (semua gapoktan sama untuk desa yang sama)
       const gapoktan = kelompokTaniData.kelompokTani[0].gapoktan;
 
       setPetaniForm((prev) => ({
@@ -241,26 +239,36 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
     petaniRegisterMutation.mutate(submitData, {
       onError: (err: any) => {
         const message =
-          err?.response?.data?.message || err?.message || "Terjadi kesalahan saat mendaftar";
-        const isEmailUsed =
-          typeof message === "string" &&
-          (message.toLowerCase().includes("email") ||
-            message.toLowerCase().includes("sudah") ||
-            message.toLowerCase().includes("already") ||
-            message.toLowerCase().includes("exist") ||
-            message.toLowerCase().includes("duplicate"));
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Terjadi kesalahan saat mendaftar";
 
-        if (isEmailUsed) {
+        const lowerMessage = typeof message === "string" ? message.toLowerCase() : "";
+
+        if (lowerMessage.includes("email")) {
           setErrors((prev) => ({
             ...prev,
-            email: "Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.",
+            email: message,
+          }));
+        }
+
+        if (lowerMessage.includes("nik") || lowerMessage.includes("nkk")) {
+          setErrors((prev) => ({
+            ...prev,
+            NIK: message,
+          }));
+        }
+
+        if (lowerMessage.includes("wa") || lowerMessage.includes("nomor") || lowerMessage.includes("hp")) {
+          setErrors((prev) => ({
+            ...prev,
+            NoWa: message,
           }));
         }
 
         toast.error("Pendaftaran Gagal", {
-          description: isEmailUsed
-            ? "Email sudah digunakan oleh akun lain. Gunakan email yang berbeda."
-            : message,
+          description: message,
           duration: 4000,
         });
       },
@@ -268,36 +276,34 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
   };
 
   const handleInputChange = (field: string, value: string | number) => {
-    if (isPetaniSelected) {
-      setPetaniForm((prev) => ({ ...prev, [field]: value }));
+    setPetaniForm((prev) => ({ ...prev, [field]: value }));
 
-      // Special handling for location fields
-      if (field === "kecamatan") {
-        const selectedKecamatan = kecamatanList?.data.find(
-          (k: any) => k.nama === value,
-        );
+    // Special handling for location fields
+    if (field === "kecamatan") {
+      const selectedKecamatan = kecamatanList?.data.find(
+        (k: any) => k.nama === value,
+      );
 
-        if (selectedKecamatan) {
-          setPetaniForm((prev) => ({
-            ...prev,
-            kecamatan: value as string,
-            kecamatanId: selectedKecamatan.id,
-            desa: "", // Reset desa when kecamatan changes
-            desaId: undefined,
-          }));
-        }
+      if (selectedKecamatan) {
+        setPetaniForm((prev) => ({
+          ...prev,
+          kecamatan: value as string,
+          kecamatanId: selectedKecamatan.id,
+          desa: "", // Reset desa when kecamatan changes
+          desaId: undefined,
+        }));
       }
+    }
 
-      if (field === "desa") {
-        const selectedDesa = desaList?.find((d: any) => d.nama === value);
+    if (field === "desa") {
+      const selectedDesa = desaList?.find((d: any) => d.nama === value);
 
-        if (selectedDesa) {
-          setPetaniForm((prev) => ({
-            ...prev,
-            desa: value as string,
-            desaId: selectedDesa.id,
-          }));
-        }
+      if (selectedDesa) {
+        setPetaniForm((prev) => ({
+          ...prev,
+          desa: value as string,
+          desaId: selectedDesa.id,
+        }));
       }
     }
 
@@ -386,7 +392,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               type="text"
               value={petaniForm.nama}
               variant="bordered"
-                onChange={(e: any) => handleInputChange("nama", e.target.value)}
+              onChange={(e: any) => handleInputChange("nama", e.target.value)}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -588,7 +594,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
             rows={3}
             value={petaniForm.alamat}
             variant="bordered"
-              onChange={(e: any) => handleInputChange("alamat", e.target.value)}
+            onChange={(e: any) => handleInputChange("alamat", e.target.value)}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -661,11 +667,11 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
           Kelompok Tani
         </h3>
         <div className="space-y-4">
-            {/* Penyuluh */}
-            <div>
-              <p className="block text-sm font-semibold text-gray-700 mb-2">
-                Penyuluh <span className="text-red-500">*</span>
-              </p>
+          {/* Penyuluh */}
+          <div>
+            <p className="block text-sm font-semibold text-gray-700 mb-2">
+              Penyuluh <span className="text-red-500">*</span>
+            </p>
             <Select isInvalid={!!errors.penyuluh}
               isLoading={loadingPenyuluh}
               placeholder="Pilih penyuluh"
@@ -716,7 +722,7 @@ export const PetaniForm = forwardRef<PetaniFormRef, {}>((_, ref) => {
               variant="bordered"
             />
 
-              {/* Nama Kelompok - Select dropdown */}
+            {/* Nama Kelompok - Select dropdown */}
             <div>
               <p className="block text-sm font-semibold text-gray-700 mb-2">
                 Nama Kelompok Tani <span className="text-red-500">*</span>

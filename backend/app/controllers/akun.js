@@ -96,17 +96,11 @@ const register = async (req, res) => {
     const cleanEmail = email.trim();
     const isGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(cleanEmail);
     if (!isGmail) {
-      throw new ApiError(
-        400,
-        'Hanya email Gmail yang diterima. Contoh: nama@gmail.com'
-      );
+      throw new ApiError(400, 'Hanya email Gmail yang diterima. Contoh: nama@gmail.com');
     }
     const User = await tblAkun.findOne({ where: { email: cleanEmail } });
     if (User) {
-      throw new ApiError(
-        400,
-        'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.'
-      );
+      throw new ApiError(400, 'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.');
     }
 
     if (!nama) throw new ApiError(400, 'Nama lengkap tidak boleh kosong.');
@@ -213,24 +207,25 @@ const registerPenyuluh = async (req, res) => {
     console.log(req.body);
 
     // 1. Validasi NIP/NIK
-    if (!NIP) {
-      throw new ApiError(400, 'NIP/NIK tidak boleh kosong.');
+    const rawIdentity = (NIP || req.body.nik || req.body.NIK || '').toString().trim();
+    if (!rawIdentity) {
+      throw new ApiError(400, 'Nomor identitas (NIK/NIP) tidak boleh kosong.');
     }
-    const cleanNIP = NIP.toString().trim();
-    if (!/^\d+$/.test(cleanNIP)) {
-      throw new ApiError(400, 'NIP/NIK hanya boleh berisi angka.');
+    if (!/^\d+$/.test(rawIdentity)) {
+      throw new ApiError(400, 'Nomor identitas hanya boleh berisi angka.');
     }
-    if (cleanNIP.length !== 18 && cleanNIP.length !== 16) {
+    if (rawIdentity.length !== 18 && rawIdentity.length !== 16) {
       throw new ApiError(
         400,
-        'NIP/NIK tidak valid. NIP harus 18 digit angka, NIK harus 16 digit angka.'
+        'Nomor identitas tidak valid. NIK harus 16 digit angka, NIP harus 18 digit angka.'
       );
     }
     const penyuluh = await dataPenyuluh.findOne({
-      where: { nik: cleanNIP }
+      where: { nik: rawIdentity }
     });
     if (penyuluh) {
-      throw new ApiError(400, 'NIP/NIK sudah digunakan.');
+      const typeLabel = rawIdentity.length === 18 ? 'NIP' : 'NIK';
+      throw new ApiError(400, `${typeLabel} sudah digunakan.`);
     }
 
     if (!nama) {
@@ -244,10 +239,7 @@ const registerPenyuluh = async (req, res) => {
     const cleanEmail = email.trim();
     const isGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(cleanEmail);
     if (!isGmail) {
-      throw new ApiError(
-        400,
-        'Hanya email Gmail yang diterima. Contoh: nama@gmail.com'
-      );
+      throw new ApiError(400, 'Hanya email Gmail yang diterima. Contoh: nama@gmail.com');
     }
 
     // 3. Validasi Email Duplikat
@@ -255,10 +247,7 @@ const registerPenyuluh = async (req, res) => {
       where: { email: cleanEmail }
     });
     if (existingAccount) {
-      throw new ApiError(
-        400,
-        'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.'
-      );
+      throw new ApiError(400, 'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.');
     }
 
     // 4. Validasi No. HP/WhatsApp
@@ -390,7 +379,7 @@ const registerPenyuluh = async (req, res) => {
       }
     }
     const newPenyuluh = await dataPenyuluh.create({
-      nik: NIP,
+      nik: rawIdentity,
       nama: nama,
       foto: urlImg,
       alamat,
@@ -677,15 +666,16 @@ const registerPetani = async (req, res) => {
 
     // 2. Validasi Format Email
     if (!email) {
-      email = nama.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '@gmail.com';
+      email =
+        nama
+          .split(' ')[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '') + '@gmail.com';
     }
     const cleanEmail = email.trim();
     const isGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(cleanEmail);
     if (!isGmail) {
-      throw new ApiError(
-        400,
-        'Hanya email Gmail yang diterima. Contoh: nama@gmail.com'
-      );
+      throw new ApiError(400, 'Hanya email Gmail yang diterima. Contoh: nama@gmail.com');
     }
 
     // 3. Validasi Email Duplikat
@@ -693,10 +683,7 @@ const registerPetani = async (req, res) => {
       where: { email: cleanEmail }
     });
     if (existingAccount) {
-      throw new ApiError(
-        400,
-        'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.'
-      );
+      throw new ApiError(400, 'Email sudah digunakan oleh akun lain. Gunakan email yang berbeda.');
     }
 
     // 4. Validasi No. HP/WhatsApp
