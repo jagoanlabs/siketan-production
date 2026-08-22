@@ -13,6 +13,7 @@ const { Op, Sequelize, literal } = require('sequelize');
 const ExcelJS = require('exceljs');
 const moment = require('moment');
 const monthOrder = require('../../utils/constants/months');
+const { postActivity } = require('./logActivity');
 
 dotenv.config();
 
@@ -140,6 +141,15 @@ const getTopTanamanPetani = async (req, res) => {
     };
 
     const data = await tanamanPetani.findAll(query);
+
+    if (isExportFilter && req.user?.id) {
+      postActivity({
+        user_id: req.user.id,
+        activity: 'EXPORT',
+        type: 'TANAMAN PETANI'
+      });
+    }
+
     const total = await tanamanPetani.count({ where: whereQuery });
     const limitedTotal = total > 30 ? 30 : total;
     const slicedData = data.slice((pageFilter - 1) * limitFilter, pageFilter * limitFilter);
@@ -160,9 +170,6 @@ const getTopTanamanPetani = async (req, res) => {
 };
 
 const tambahDataTanamanPetani = async (req, res) => {
-  // Validate request body
-  // const { peran } = req.user || {};
-
   try {
     const {
       statusKepemilikanLahan,
@@ -206,6 +213,13 @@ const tambahDataTanamanPetani = async (req, res) => {
       fk_petaniId
     });
 
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'CREATE',
+      type: 'TANAMAN PETANI',
+      detail_id: data.id
+    });
+
     res.status(200).json({ message: 'Data berhasil ditambahkan.', data });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
@@ -221,6 +235,13 @@ const deleteDatatanamanPetani = async (req, res) => {
       throw new ApiError(403, 'Anda tidak memiliki akses.');
     }
     const data = await tanamanPetani.destroy({ where: { id } });
+
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'DELETE',
+      type: 'TANAMAN PETANI',
+      detail_id: id
+    });
 
     res.status(200).json({ message: 'Data berhasil dihapus.', data });
   } catch (error) {
@@ -534,6 +555,13 @@ const editDataTanamanPetani = async (req, res) => {
       { where: { id } }
     );
 
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'EDIT',
+      type: 'TANAMAN PETANI',
+      detail_id: id
+    });
+
     res.status(200).json({ message: 'Data berhasil diupdate.', data });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
@@ -594,6 +622,12 @@ const uploadDataTanamanPetani = async (req, res) => {
         throw new ApiError(400, `Petani dengan NIK ${nikPetani} tidak ditemukan.`);
       }
     }
+
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'IMPORT',
+      type: 'TANAMAN PETANI'
+    });
 
     res.status(201).json({ message: 'Data berhasil ditambahkan.' });
   } catch (error) {

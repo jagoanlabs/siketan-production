@@ -354,6 +354,14 @@ const updateInfoTani = async (req, res) => {
       },
       { where: { id: beritaId } }
     );
+
+    postActivity({
+      user_id: id,
+      activity: 'EDIT',
+      type: 'INFO TANI',
+      detail_id: beritaId
+    });
+
     res.status(200).json({
       message: 'Berita Tani Berhasil DI ubah tanpa image'
     });
@@ -364,10 +372,15 @@ const updateInfoTani = async (req, res) => {
   }
 };
 const updateEventTani = async (req, res) => {
+  const { peran, id } = req.user;
   try {
-    const { id } = req.user;
-    let { namaKegiatan, tanggalAcara, waktuAcara, tempat, peserta, createdBy, isi } = req.body;
-    const eventId = req.params.id;
+    if (peran === 'petani') {
+      throw new ApiError(403, 'Anda tidak memiliki akses.');
+    }
+    const { eventId } = req.params;
+    const { namaKegiatan, tanggalAcara, waktuAcara, tempat, peserta, createdBy, isi } = req.body;
+    const { file } = req;
+
     const data = await EventTani.findOne({
       where: {
         id: eventId
@@ -380,7 +393,6 @@ const updateEventTani = async (req, res) => {
       tanggalAcara = `${year}-${month}-${day}`;
     }
 
-    const { file } = req;
     if (file) {
       const validFormat =
         file.mimetype === 'image/png' ||
@@ -438,6 +450,14 @@ const updateEventTani = async (req, res) => {
       },
       { where: { id: eventId } }
     );
+
+    postActivity({
+      user_id: id,
+      activity: 'EDIT',
+      type: 'EVENT TANI',
+      detail_id: eventId
+    });
+
     res.status(200).json({
       message: 'Event Tani Berhasil DI update'
     });

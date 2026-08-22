@@ -1,7 +1,7 @@
 const router = require('express').Router();
-const { auth, hasPermission } = require('../../midleware/auth');
+const { auth, hasPermission, hasRole } = require('../../midleware/auth');
 const upload = require('../../midleware/uploader');
-const { PERMISSIONS } = require('../../helpers/roleHelpers');
+const { PERMISSIONS, ROLES } = require('../../helpers/roleHelpers');
 const {
   tambahDataPenyuluh,
   presensiKehadiran,
@@ -105,7 +105,7 @@ router.put(
 router.delete(
   '/daftar-penyuluh/:id',
   auth,
-  hasPermission(PERMISSIONS.DATA_PENYULUH_DELETE),
+  hasRole(ROLES.OPERATOR_SUPER_ADMIN),
   deleteDaftarPenyuluh
 );
 

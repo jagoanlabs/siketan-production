@@ -7,7 +7,10 @@ const {
   dataPetani,
   tbl_akun,
   dataPenyuluh,
-  dataOperator
+  dataOperator,
+  dataTanaman,
+  tanamanPetani,
+  kelompok
 } = require('../models');
 
 // Updated activities array - pastikan semua model ada
@@ -36,18 +39,22 @@ const activities = [
     txt: 'DATA OPERATOR',
     value: dataOperator,
     isAccount: true
+  },
+  {
+    txt: 'DATA TANAMAN',
+    value: dataTanaman,
+    isAccount: false
+  },
+  {
+    txt: 'TANAMAN PETANI',
+    value: tanamanPetani,
+    isAccount: false
+  },
+  {
+    txt: 'KELOMPOK',
+    value: kelompok,
+    isAccount: false
   }
-  // Tambahkan activity lain sesuai kebutuhan
-  // {
-  //   txt: 'DATA TANAMAN',
-  //   value: dataTanaman,
-  //   isAccount: false
-  // },
-  // {
-  //   txt: 'KELOMPOK',
-  //   value: kelompok,
-  //   isAccount: false
-  // }
 ];
 
 const errorMessage = (res, type, userInAction) => {

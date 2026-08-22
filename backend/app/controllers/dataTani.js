@@ -356,6 +356,12 @@ const uploadDataPetani = async (req, res) => {
       }
     }
 
+    postActivity({
+      user_id: id,
+      activity: 'IMPORT',
+      type: 'DATA PETANI'
+    });
+
     res.status(201).json({
       message: 'Data berhasil ditambahkan.'
     });

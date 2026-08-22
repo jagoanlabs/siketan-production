@@ -10,6 +10,7 @@ const {
   desa
 } = require('../models');
 const { Op } = require('sequelize');
+const { postActivity } = require('./logActivity');
 
 const usersAll = async (req, res) => {
   const { peran } = req.user || {};
@@ -200,7 +201,14 @@ const updateAccount = async (req, res) => {
         }
       }
     );
-    // const users = await tblAkun.findOne({ where: { id } });
+
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'VERIFIKASI',
+      type: 'USER ACCOUNT',
+      detail_id: id
+    });
+
     return res.status(200).json({
       message: 'User berhasil diverifikasi'
     });
@@ -337,6 +345,14 @@ const deleteUser = async (req, res) => {
           }
         });
       }
+
+      postActivity({
+        user_id: req.user?.id,
+        activity: 'DELETE',
+        type: 'USER ACCOUNT',
+        detail_id: id
+      });
+
       res.status(200).json({
         message: 'User Berhasil Di Hapus'
       });

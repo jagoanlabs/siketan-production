@@ -1,4 +1,3 @@
-// app/controllers/rbac.js
 const {
   role: Role,
   permission: Permission,
@@ -8,6 +7,7 @@ const {
 } = require('../models');
 const ApiError = require('../../utils/ApiError');
 const { Op } = require('sequelize');
+const { postActivity } = require('./logActivity');
 
 // ============ ROLE MANAGEMENT ============
 
@@ -137,6 +137,13 @@ const createRole = async (req, res) => {
 
     await transaction.commit();
 
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'CREATE',
+      type: 'ROLE',
+      detail_id: role.id
+    });
+
     // Fetch complete role data
     const completeRole = await Role.findByPk(role.id, {
       include: [
@@ -214,6 +221,13 @@ const updateRole = async (req, res) => {
 
     await transaction.commit();
 
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'UPDATE',
+      type: 'ROLE',
+      detail_id: id
+    });
+
     // Fetch updated role
     const updatedRole = await Role.findByPk(id, {
       include: [
@@ -278,6 +292,13 @@ const deleteRole = async (req, res) => {
     await role.destroy({ transaction });
 
     await transaction.commit();
+
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'DELETE',
+      type: 'ROLE',
+      detail_id: id
+    });
 
     res.status(200).json({
       success: true,
@@ -469,6 +490,13 @@ const assignRoleToUser = async (req, res) => {
     }
 
     await user.update({ role_id: roleId });
+
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'CHANGE ACCESS',
+      type: 'USER ROLE',
+      detail_id: user.id
+    });
 
     const updatedUser = await User.findByPk(userId, {
       include: [

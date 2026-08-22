@@ -189,6 +189,13 @@ const deleteDaftarOperator = async (req, res) => {
             accountID: data.accountID
           }
         });
+
+        postActivity({
+          user_id: req.user?.id,
+          activity: 'DELETE',
+          type: 'DATA OPERATOR',
+          detail_id: id
+        });
       }
       res.status(200).json({
         message: 'Data operator berhasil dihapus',
@@ -434,6 +441,12 @@ const uploadDataOperator = async (req, res) => {
 
     await dataOperator.bulkCreate(dataOpt);
     await tbl_akun.bulkCreate(dataAkun);
+
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'IMPORT',
+      type: 'DATA OPERATOR'
+    });
 
     res.status(200).json({
       message: 'Data operator berhasil diupload'

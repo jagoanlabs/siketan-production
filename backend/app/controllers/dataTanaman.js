@@ -173,6 +173,14 @@ const getAllDataTanaman = async (req, res) => {
         : filter
     );
 
+    if (isExportFilter && req.user?.id) {
+      postActivity({
+        user_id: req.user.id,
+        activity: 'EXPORT',
+        type: 'DATA TANAMAN'
+      });
+    }
+
     const total = await dataTanaman.count({
       where: whereClause,
       include: [{ model: kelompok, as: 'kelompok', required: true }],
@@ -589,6 +597,12 @@ const uploadDataTanaman = async (req, res) => {
         created_by: userId
       });
     }
+
+    postActivity({
+      user_id: userId,
+      activity: 'IMPORT',
+      type: 'DATA TANAMAN'
+    });
 
     res.status(201).json({ message: 'Data berhasil ditambahkan.' });
   } catch (error) {

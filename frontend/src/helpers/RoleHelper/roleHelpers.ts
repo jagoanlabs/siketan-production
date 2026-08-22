@@ -4,6 +4,16 @@ import { PERMISSIONS, PERMISSION_GROUPS } from "./constants/permission";
 import { User } from "@/types/user";
 
 export class RoleHelper {
+  // Check if user is Super Admin level
+  static isSuperAdmin(user: User | null): boolean {
+    if (!user) return false;
+    const roleName = user.role?.name;
+    if (roleName === ROLES.OPERATOR_SUPER_ADMIN) return true;
+    const peran = user.peran?.toLowerCase();
+    if (peran === "operator_super_admin" || peran === "super_admin" || peran === "super admin") return true;
+    return false;
+  }
+
   // Check if user is admin level
   static isAdmin(user: User | null): boolean {
     if (!user || !user.role) return false;

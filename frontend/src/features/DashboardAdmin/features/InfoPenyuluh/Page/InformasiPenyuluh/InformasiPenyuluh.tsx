@@ -4,22 +4,35 @@ import { Tooltip } from "@heroui/react";
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { FaTrashCan, FaTriangleExclamation } from "react-icons/fa6";
 
 import {
   usePenyuluh,
   useUploadPenyuluhExcel,
+  useDeletePenyuluh,
 } from "@/hook/dashboard/infoPenyuluh/usePenyuluh";
 import { ColumnConfig } from "@/types/table";
 import { Penyuluh } from "@/types/DataPenyuluh/penyuluh";
 import { ReusableTable } from "@/components/Table/ReusableTable";
-import { PERMISSIONS } from "@/helpers/RoleHelper/roleHelpers";
+import { PERMISSIONS, RoleHelper } from "@/helpers/RoleHelper/roleHelpers";
 import PermissionWrapper from "@/components/PermissionWrapper";
+import { useAuth } from "@/hook/UseAuth";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "../../../../../../components/Form/HeroModal";
+import { Button } from "../../../../../../components/Form/HeroButton";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function InformasiPenyuluh() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
+  const isSuperAdmin = RoleHelper.isSuperAdmin(user);
 
   // State management
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,6 +55,10 @@ export default function InformasiPenyuluh() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Delete modal state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedPenyuluhToDelete, setSelectedPenyuluhToDelete] = useState<Penyuluh | null>(null);
+
   // API queries
   const {
     data: penyuluhData,
@@ -56,7 +73,7 @@ export default function InformasiPenyuluh() {
     sortOrder: sortConfig.direction,
   });
 
-  // const deleteMutation = useDeletePenyuluh();
+  const deleteMutation = useDeletePenyuluh();
   const uploadMutation = useUploadPenyuluhExcel();
 
   // Event handlers
@@ -124,6 +141,28 @@ export default function InformasiPenyuluh() {
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteClick = (item: Penyuluh) => {
+    setSelectedPenyuluhToDelete(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedPenyuluhToDelete) return;
+    try {
+      await deleteMutation.mutateAsync(selectedPenyuluhToDelete.id);
+      toast.success(
+        `Data penyuluh ${selectedPenyuluhToDelete.nama} dan akun login berhasil dihapus permanen`
+      );
+      setIsDeleteModalOpen(false);
+      setSelectedPenyuluhToDelete(null);
+      refetch();
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || err?.message || "Gagal menghapus data penyuluh"
+      );
     }
   };
 
@@ -221,7 +260,7 @@ export default function InformasiPenyuluh() {
       key: "actions",
       title: "Aksi",
       align: "center",
-      width: "120px",
+      width: isSuperAdmin ? "150px" : "120px",
       render: (item) => (
         <div className="flex items-center justify-center space-x-1">
           <PermissionWrapper
@@ -286,6 +325,21 @@ export default function InformasiPenyuluh() {
               <Tooltip.Content>Edit penyuluh</Tooltip.Content>
             </Tooltip>
           </PermissionWrapper>
+
+          {/* Tombol Hapus: STRICT HANYA UNTUK OPERATOR SUPER ADMIN */}
+          {isSuperAdmin && (
+            <Tooltip>
+              <Tooltip.Trigger>
+                <button
+                  className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors"
+                  onClick={() => handleDeleteClick(item)}
+                >
+                  <FaTrashCan className="w-3.5 h-3.5" />
+                </button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Hapus penyuluh (Super Admin)</Tooltip.Content>
+            </Tooltip>
+          )}
         </div>
       ),
     },
@@ -401,6 +455,57 @@ export default function InformasiPenyuluh() {
         onClearSearch={handleClearSearch}
         onSearchChange={handleSearchChange}
       />
+
+      {/* Modal Konfirmasi Hapus (Strict Operator Super Admin) */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        size="md"
+        onClose={() => {
+          if (!deleteMutation.isPending) {
+            setIsDeleteModalOpen(false);
+            setSelectedPenyuluhToDelete(null);
+          }
+        }}
+      >
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2 text-red-600 font-bold border-b border-gray-100 pb-3">
+            <FaTriangleExclamation className="text-xl text-red-500" />
+            Konfirmasi Hapus Data Penyuluh
+          </ModalHeader>
+          <ModalBody className="py-4 space-y-3">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Apakah Anda yakin ingin menghapus data penyuluh{" "}
+              <strong className="text-gray-900 font-semibold">
+                "{selectedPenyuluhToDelete?.nama}"
+              </strong>{" "}
+              (NIP: {selectedPenyuluhToDelete?.nik || "-"})?
+            </p>
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">
+              <strong className="font-semibold">Peringatan:</strong> Tindakan ini adalah{" "}
+              <strong>penghapusan permanen (Hard Delete)</strong>. Data penyuluh beserta akun login di sistem akan dihapus selamanya dari database.
+            </div>
+          </ModalBody>
+          <ModalFooter className="border-t border-gray-100 pt-3 flex justify-end gap-2">
+            <Button
+              variant="light"
+              isDisabled={deleteMutation.isPending}
+              onPress={() => {
+                setIsDeleteModalOpen(false);
+                setSelectedPenyuluhToDelete(null);
+              }}
+            >
+              Batal
+            </Button>
+            <Button
+              color="danger"
+              isLoading={deleteMutation.isPending}
+              onPress={handleConfirmDelete}
+            >
+              Hapus Permanen
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

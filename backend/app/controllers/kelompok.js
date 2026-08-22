@@ -363,6 +363,12 @@ const uploadDataKelompoks = async (req, res) => {
       });
     }
 
+    await postActivity({
+      user_id: req.user?.id,
+      activity: 'IMPORT',
+      type: 'KELOMPOK'
+    });
+
     res.status(201).json({
       message: 'Data berhasil ditambahkan.'
     });

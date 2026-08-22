@@ -255,7 +255,7 @@ const tambahLaporanAkhir = async (req, res) => {
 
       postActivity({
         user_id: UserId,
-        activity: 'CREATE',
+        activity: 'REALISASI',
         type: 'LAPORAN AKHIR',
         detail_id: newLaporanTanam.id
       });
@@ -278,7 +278,7 @@ const tambahLaporanAkhir = async (req, res) => {
 
     postActivity({
       user_id: UserId,
-      activity: 'CREATE',
+      activity: 'REALISASI',
       type: 'LAPORAN AKHIR',
       detail_id: newLaporanTanam.id
     });

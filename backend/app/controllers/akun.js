@@ -1644,6 +1644,13 @@ const ubahPeran = async (req, res) => {
       await dataOperator.create(operatorPayload);
     }
 
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'CHANGE ROLE',
+      type: 'USER PERAN',
+      detail_id: user.id
+    });
+
     return res.status(200).json({
       message: 'Peran berhasil diubah'
     });

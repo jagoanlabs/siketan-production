@@ -91,37 +91,37 @@ export const NotificationDropdown: React.FC = () => {
     <div className="relative">
       <button
         aria-label="Notifications"
-        className="dropdown-toggle relative flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 lg:h-11 lg:w-11 transition-colors"
+        className="dropdown-toggle relative flex items-center justify-center w-10 h-10 text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 lg:h-11 lg:w-11 transition-colors shadow-sm"
         onClick={toggleDropdown}
       >
-        <FaBell className="text-lg" />
+        <FaBell className="text-lg text-gray-700" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1 text-[11px] font-bold text-white bg-red-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse">
+          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1 text-[11px] font-bold text-white bg-red-500 rounded-full border-2 border-white animate-pulse">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
 
       <Dropdown
-        className="w-[340px] sm:w-[380px] p-0 overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 right-0"
+        className="w-[340px] sm:w-[380px] p-0 overflow-hidden shadow-2xl border border-gray-200 bg-white right-0 rounded-2xl"
         isOpen={isOpen}
         onClose={closeDropdown}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50">
+        <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 bg-gray-50/90">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+            <h4 className="text-sm font-bold text-gray-900">
               Notifikasi
             </h4>
             {unreadCount > 0 && (
-              <span className="px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded-full dark:bg-red-900/30 dark:text-red-400">
+              <span className="px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded-full">
                 {unreadCount} baru
               </span>
             )}
           </div>
           {unreadCount > 0 && (
             <button
-              className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors disabled:opacity-50"
               disabled={markAllAsReadMutation.isPending}
               onClick={handleMarkAllRead}
             >
@@ -132,17 +132,17 @@ export const NotificationDropdown: React.FC = () => {
         </div>
 
         {/* List Notifications */}
-        <div className="max-h-[380px] overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+        <div className="max-h-[380px] overflow-y-auto divide-y divide-gray-100 bg-white">
           {isLoading ? (
             <div className="py-8 text-center text-sm text-gray-500">
               Memuat notifikasi...
             </div>
           ) : notifications.length === 0 ? (
-            <div className="py-10 text-center px-4">
-              <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 flex items-center justify-center mx-auto mb-2 text-xl">
+            <div className="py-10 text-center px-4 bg-white">
+              <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-2 text-xl">
                 <FaBell />
               </div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-sm font-medium text-gray-700">
                 Tidak ada notifikasi
               </p>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -153,10 +153,10 @@ export const NotificationDropdown: React.FC = () => {
             notifications.map((item) => (
               <div
                 key={item.id}
-                className={`p-4 flex gap-3 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/60 ${
+                className={`p-4 flex gap-3 cursor-pointer transition-colors hover:bg-gray-50 ${
                   !item.is_read
-                    ? "bg-blue-50/40 dark:bg-blue-950/20"
-                    : "bg-white dark:bg-gray-900"
+                    ? "bg-blue-50/50"
+                    : "bg-white"
                 }`}
                 onClick={() => handleNotificationClick(item)}
               >
@@ -166,8 +166,8 @@ export const NotificationDropdown: React.FC = () => {
                     <p
                       className={`text-xs sm:text-sm font-semibold truncate ${
                         !item.is_read
-                          ? "text-gray-900 dark:text-white"
-                          : "text-gray-700 dark:text-gray-300"
+                          ? "text-gray-900"
+                          : "text-gray-700"
                       }`}
                     >
                       {item.title}
@@ -176,12 +176,12 @@ export const NotificationDropdown: React.FC = () => {
                       {formatTime(item.createdAt)}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-3 leading-relaxed">
+                  <p className="text-xs text-gray-600 mt-1 line-clamp-3 leading-relaxed">
                     {item.message}
                   </p>
                   {item.action_url && (
                     <div className="mt-2">
-                      <span className="inline-block text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                      <span className="inline-block text-[11px] font-medium text-blue-600 hover:underline">
                         Input Sekarang &rarr;
                       </span>
                     </div>
@@ -196,9 +196,9 @@ export const NotificationDropdown: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-2.5 text-center border-t border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50">
+        <div className="p-2.5 text-center border-t border-gray-100 bg-gray-50/90">
           <button
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline transition-colors w-full py-1"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors w-full py-1"
             onClick={() => {
               closeDropdown();
               navigate("/dashboard-admin/notifikasi");

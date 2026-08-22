@@ -5,20 +5,54 @@ import { Card, CardBody, CardHeader } from "../../../../../../components/Form/He
 import { Button } from "../../../../../../components/Form/HeroButton";
 import { Tooltip } from "@heroui/react";
 // pages/DetailInformasiPenyuluh.tsx
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+import { FaTrashCan, FaTriangleExclamation } from "react-icons/fa6";
 
 import { Skeleton } from "primereact/skeleton";
-
 import { Badge } from "primereact/badge";
 
 import { usePenyuluhDetail } from "@/hook/dashboard/infoPenyuluh/useEditPenyuluh";
+import { useDeletePenyuluh } from "@/hook/dashboard/infoPenyuluh/usePenyuluh";
+import { RoleHelper } from "@/helpers/RoleHelper/roleHelpers";
+import { useAuth } from "@/hook/UseAuth";
 import PageMeta from "@/layouts/PageMeta";
 import PageBreadcrumb from "@/components/Breadcrumb";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "../../../../../../components/Form/HeroModal";
+
 export const DetailInformasiPenyuluh = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isSuperAdmin = RoleHelper.isSuperAdmin(user);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const deleteMutation = useDeletePenyuluh();
 
   const { data: penyuluhDetail, isLoading, error } = usePenyuluhDetail(id!);
+
+  const handleConfirmDelete = async () => {
+    if (!id) return;
+    try {
+      await deleteMutation.mutateAsync(Number(id));
+      toast.success(
+        `Data penyuluh ${penyuluhDetail?.nama || ""} dan akun login berhasil dihapus permanen`
+      );
+      setIsDeleteModalOpen(false);
+      navigate("/dashboard-admin/data-penyuluh");
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || err?.message || "Gagal menghapus data penyuluh"
+      );
+    }
+  };
 
   // Loading state
   if (isLoading) {
@@ -240,13 +274,30 @@ export const DetailInformasiPenyuluh = () => {
                         </svg>
                       }
                       variant="solid"
-                      onPress={() => navigate(`/daftar-penyuluh/${id}/edit`)}
+                      onPress={() => navigate(`/dashboard-admin/data-penyuluh/${id}/edit`)}
                     >
                       Edit
                     </Button>
                   </Tooltip.Trigger>
                   <Tooltip.Content>Edit informasi penyuluh</Tooltip.Content>
                 </Tooltip>
+
+                {/* Tombol Hapus: STRICT HANYA UNTUK OPERATOR SUPER ADMIN */}
+                {isSuperAdmin && (
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <Button
+                        color="danger"
+                        startContent={<FaTrashCan className="w-3.5 h-3.5" />}
+                        variant="solid"
+                        onPress={() => setIsDeleteModalOpen(true)}
+                      >
+                        Hapus Penyuluh
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Hapus data penyuluh & akun secara permanen (Super Admin)</Tooltip.Content>
+                  </Tooltip>
+                )}
               </div>
             </div>
           </CardBody>
@@ -556,6 +607,53 @@ export const DetailInformasiPenyuluh = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal Konfirmasi Hapus (Strict Operator Super Admin) */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        size="md"
+        onClose={() => {
+          if (!deleteMutation.isPending) {
+            setIsDeleteModalOpen(false);
+          }
+        }}
+      >
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2 text-red-600 font-bold border-b border-gray-100 pb-3">
+            <FaTriangleExclamation className="text-xl text-red-500" />
+            Konfirmasi Hapus Data Penyuluh
+          </ModalHeader>
+          <ModalBody className="py-4 space-y-3">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Apakah Anda yakin ingin menghapus data penyuluh{" "}
+              <strong className="text-gray-900 font-semibold">
+                "{penyuluhDetail?.nama}"
+              </strong>{" "}
+              (NIP: {penyuluhDetail?.nik || "-"})?
+            </p>
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">
+              <strong className="font-semibold">Peringatan:</strong> Tindakan ini adalah{" "}
+              <strong>penghapusan permanen (Hard Delete)</strong>. Data penyuluh beserta akun login di sistem akan dihapus selamanya dari database.
+            </div>
+          </ModalBody>
+          <ModalFooter className="border-t border-gray-100 pt-3 flex justify-end gap-2">
+            <Button
+              variant="light"
+              isDisabled={deleteMutation.isPending}
+              onPress={() => setIsDeleteModalOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              color="danger"
+              isLoading={deleteMutation.isPending}
+              onPress={handleConfirmDelete}
+            >
+              Hapus Permanen
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

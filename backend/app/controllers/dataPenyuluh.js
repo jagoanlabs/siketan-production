@@ -416,6 +416,13 @@ const uploadDataPenyuluh = async (req, res) => {
         detail_id: newPenyuluh.id
       });
     }
+
+    postActivity({
+      user_id: id,
+      activity: 'IMPORT',
+      type: 'DATA PENYULUH'
+    });
+
     res.status(201).json({
       message: 'Data berhasil ditambahkan.'
     });
@@ -532,38 +539,132 @@ const deleteDaftarPenyuluh = async (req, res) => {
   const { id } = req.params;
   const { peran, id: UserId } = req.user || {};
   try {
-    if (peran !== 'operator potan') {
-      throw new ApiError(403, 'Anda tidak memiliki akses.');
-    } else {
-      const data = await dataPenyuluh.findOne({
-        where: {
-          id: id
-        }
-      });
-      if (!data) throw new ApiError(400, 'data tidak ditemukan.');
-      await dataPenyuluh.destroy({
-        where: {
-          id
-        }
-      });
-      await tbl_akun.destroy({
-        where: {
-          accountID: data.accountID
-        }
-      });
-      postActivity({
-        user_id: UserId,
-        activity: 'DELETE',
-        type: 'DATA PENYULUH',
-        detail_id: id
-      });
-      res.status(200).json({
-        message: 'Petani Berhasil Di Hapus'
-      });
+    const isSuperAdmin =
+      (req.user && typeof req.user.hasRole === 'function' && req.user.hasRole('operator_super_admin')) ||
+      peran === 'operator_super_admin' ||
+      peran === 'super_admin' ||
+      peran === 'super admin';
+
+    if (!isSuperAdmin) {
+      throw new ApiError(
+        403,
+        'Akses ditolak. Hanya Operator Super Admin yang memiliki wewenang untuk menghapus data penyuluh.'
+      );
     }
+
+    const data = await dataPenyuluh.findOne({
+      where: { id },
+      paranoid: false
+    });
+
+    if (!data) {
+      throw new ApiError(404, 'Data penyuluh tidak ditemukan.');
+    }
+
+    // 1. Bersihkan relasi wilayah binaan
+    try {
+      await KecamatanBinaanModel.destroy({ where: { penyuluhId: id } });
+      await DesaBinaanModel.destroy({ where: { penyuluhId: id } });
+    } catch (err) {
+      console.error('Error cleaning up wilayah binaan:', err);
+    }
+
+    // 2. Unlink relasi kelompok tani
+    try {
+      await kelompok.update(
+        { penyuluh: null },
+        { where: { penyuluh: String(id) } }
+      );
+    } catch (err) {
+      console.error('Error unlinking kelompoks:', err);
+    }
+
+    // 3. Unlink relasi data petani
+    try {
+      await dataPetani.update(
+        { fk_penyuluhId: null },
+        { where: { fk_penyuluhId: id } }
+      );
+    } catch (err) {
+      console.error('Error unlinking dataPetani:', err);
+    }
+
+    // 4. Bersihkan jurnal harian penyuluh
+    try {
+      if (jurnalHarian) {
+        await jurnalHarian.destroy({
+          where: { fk_penyuluhId: id },
+          force: true
+        });
+      }
+    } catch (err) {
+      console.error('Error cleaning up jurnalHarian:', err);
+    }
+
+    // 5. Cari dan hapus akun terkait jika ada
+    if (data.accountID) {
+      const akunUser = await tbl_akun.findOne({
+        where: { accountID: data.accountID },
+        paranoid: false
+      });
+
+      if (akunUser) {
+        // Unlink created_by di dataTanaman agar tidak merusak data tanaman
+        try {
+          const { dataTanaman: dataTanamanModel } = require('../models');
+          if (dataTanamanModel) {
+            await dataTanamanModel.update(
+              { created_by: null },
+              { where: { created_by: akunUser.id } }
+            );
+          }
+        } catch (err) {
+          console.error('Error unlinking dataTanaman:', err);
+        }
+
+        // Hapus notifikasi user jika ada
+        try {
+          const { notification: notificationModel } = require('../models');
+          if (notificationModel) {
+            await notificationModel.destroy({
+              where: { user_id: akunUser.id },
+              force: true
+            });
+          }
+        } catch (err) {
+          console.error('Error deleting notifications:', err);
+        }
+
+        // Hard delete tbl_akun
+        await tbl_akun.destroy({
+          where: { id: akunUser.id },
+          force: true
+        });
+      }
+    }
+
+    // 6. Hard delete dataPenyuluh
+    await dataPenyuluh.destroy({
+      where: { id },
+      force: true
+    });
+
+    // 6. Catat log aktivitas
+    postActivity({
+      user_id: UserId,
+      activity: 'DELETE',
+      type: 'DATA PENYULUH',
+      detail_id: id
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Data penyuluh dan akun login berhasil dihapus secara permanen.'
+    });
   } catch (error) {
-    res.status(error.statusCode || 500).json({
-      message: `gagal menghapus data petani, ${error.message}`
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Gagal menghapus data penyuluh'
     });
   }
 };
@@ -654,6 +755,14 @@ const tambahPresensiKehadiran = async (req, res) => {
           deskripsiKegiatan,
           FotoKegiatan: img.url
         });
+
+        postActivity({
+          user_id: req.user?.id,
+          activity: 'CREATE',
+          type: 'PRESENSI KEHADIRAN',
+          detail_id: newData.id
+        });
+
         return res.status(200).json({
           message: 'Brhasil menambhakan Data Presensi Kehadiran',
           newData
@@ -665,6 +774,14 @@ const tambahPresensiKehadiran = async (req, res) => {
         judulKegiatan,
         deskripsiKegiatan
       });
+
+      postActivity({
+        user_id: req.user?.id,
+        activity: 'CREATE',
+        type: 'PRESENSI KEHADIRAN',
+        detail_id: newData.id
+      });
+
       res.status(200).json({
         message: 'Brhasil menambhakan Data Presensi Kehadiran',
         newData
@@ -1738,6 +1855,13 @@ const tambahWilayahBinaan = async (req, res) => {
       });
     }
 
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'CREATE',
+      type: 'WILAYAH BINAAN',
+      detail_id: penyuluhId
+    });
+
     return res.status(200).json({
       message: 'Berhasil menambahkan wilayah binaan'
     });
@@ -1772,6 +1896,13 @@ const deleteWilayahBinaan = async (req, res) => {
         }
       });
     }
+
+    postActivity({
+      user_id: req.user?.id,
+      activity: 'DELETE',
+      type: 'WILAYAH BINAAN',
+      detail_id: penyuluhId
+    });
 
     return res.status(200).json({
       message: 'Berhasil menghapus wilayah binaan'
