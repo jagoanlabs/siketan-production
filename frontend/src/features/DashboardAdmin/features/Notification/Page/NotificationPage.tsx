@@ -53,6 +53,23 @@ export const NotificationPage: React.FC = () => {
   const total = notificationData?.data?.total || 0;
   const totalPages = notificationData?.data?.totalPages || 1;
 
+  const totalAll =
+    notificationData?.data?.totalAll !== undefined
+      ? notificationData.data.totalAll
+      : activeFilter === "all"
+        ? total
+        : undefined;
+
+  const [cachedTotalAll, setCachedTotalAll] = useState<number>(0);
+
+  React.useEffect(() => {
+    if (totalAll !== undefined) {
+      setCachedTotalAll(totalAll);
+    }
+  }, [totalAll]);
+
+  const displayTotalAll = totalAll !== undefined ? totalAll : cachedTotalAll;
+
   const handleFilterChange = (filter: "all" | "unread" | "read") => {
     setActiveFilter(filter);
     setCurrentPage(1);
@@ -215,7 +232,7 @@ export const NotificationPage: React.FC = () => {
           }`}
           onClick={() => handleFilterChange("all")}
         >
-          Semua ({total})
+          Semua ({displayTotalAll})
         </button>
         <button
           className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${

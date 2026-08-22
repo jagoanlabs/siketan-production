@@ -101,9 +101,15 @@ const getNotifications = async (req, res) => {
       offset
     });
 
+    const totalAll = await notification.count({
+      where: { user_id: id }
+    });
+
     const unreadCount = await notification.count({
       where: { user_id: id, is_read: false }
     });
+
+    const readCount = Math.max(0, totalAll - unreadCount);
 
     res.status(200).json({
       success: true,
@@ -111,7 +117,9 @@ const getNotifications = async (req, res) => {
       data: {
         notifications: data,
         total,
+        totalAll,
         unreadCount,
+        readCount,
         currentPage: pageFilter,
         limit: limitFilter,
         totalPages: Math.ceil(total / limitFilter)

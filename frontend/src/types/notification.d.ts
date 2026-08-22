@@ -27,7 +27,9 @@ export interface NotificationListResponse {
   data: {
     notifications: NotificationItem[];
     total: number;
+    totalAll?: number;
     unreadCount: number;
+    readCount?: number;
     currentPage: number;
     limit: number;
     totalPages: number;
