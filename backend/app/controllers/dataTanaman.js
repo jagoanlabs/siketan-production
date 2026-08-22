@@ -676,18 +676,16 @@ const getTopKomoditasTanaman = async (req, res) => {
     ];
 
     const countAll = await dataTanaman.count({ where: whereQuery, include: includeQuery, distinct: true });
-    // Khusus untuk tabel prakiraan, batasi total ke 10 produk tertinggi
-    const total = type === 'prakiraan' ? Math.min(countAll, 10) : countAll;
+    // Batasi total data maksimal 10 produk tertinggi
+    const total = Math.min(countAll, 10);
 
     const offset = (pageFilter - 1) * limitFilter;
     let effectiveLimit = limitFilter;
 
-    if (type === 'prakiraan') {
-      if (offset >= 10) {
-        effectiveLimit = 0;
-      } else if (offset + limitFilter > 10) {
-        effectiveLimit = 10 - offset;
-      }
+    if (offset >= 10) {
+      effectiveLimit = 0;
+    } else if (offset + limitFilter > 10) {
+      effectiveLimit = 10 - offset;
     }
 
     const data =

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import AsyncSelect from "react-select/async";
 
 import { DashboardCardAdmin } from "./components/DashboardCardAdmin";
+import { TopKomoditasTable } from "@/features/Home/components/KomoditasTertinggi";
 
 import { ReusableTable } from "@/components/Table/ReusableTable";
 import PageBreadcrumb from "@/components/Breadcrumb";
@@ -349,6 +350,14 @@ export const DashboardAdminIndex = () => {
         onClearSearch={clearTableSearch}
         onSearchChange={handleTableSearchChange}
       />
+
+      {/* Widget Tabel Realisasi Panen Komoditas Tertinggi */}
+      <div className="mt-8">
+        <TopKomoditasTable
+          title="Realisasi Panen Komoditas Tertinggi"
+          type="realisasi"
+        />
+      </div>
     </div>
   );
 };

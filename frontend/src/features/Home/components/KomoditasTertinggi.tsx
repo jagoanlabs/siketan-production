@@ -8,7 +8,7 @@ import { DataTanamanTop } from "@/types/komoditas-tertinggi";
 import { ReusableTable } from "@/components/Table/ReusableTable";
 import { resolvePenyuluhWhatsApp } from "@/utils/phoneSanitizer";
 
-const TopKomoditasTable: React.FC<{
+export const TopKomoditasTable: React.FC<{
   type: "prakiraan" | "realisasi";
   title: string;
 }> = ({ type, title }) => {
@@ -189,34 +189,30 @@ const TopKomoditasTable: React.FC<{
           </span>
         ),
       },
-      ...(type === "prakiraan"
-        ? [
-            {
-              key: "noWaPenyuluh" as const,
-              title: "No. WhatsApp Penyuluh",
-              render: (item: DataTanamanTop) => {
-                const waContact = resolvePenyuluhWhatsApp(item);
+      {
+        key: "noWaPenyuluh" as const,
+        title: "No. WhatsApp Penyuluh",
+        render: (item: DataTanamanTop) => {
+          const waContact = resolvePenyuluhWhatsApp(item);
 
-                if (!waContact) {
-                  return <span className="text-gray-400 font-medium">-</span>;
-                }
+          if (!waContact) {
+            return <span className="text-gray-400 font-medium">-</span>;
+          }
 
-                return (
-                  <a
-                    href={waContact.waLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-green-600 hover:text-green-800 font-medium hover:underline transition-colors whitespace-nowrap"
-                    title={`Hubungi Penyuluh via WhatsApp (${waContact.display})`}
-                  >
-                    <FaWhatsapp className="w-4 h-4 text-green-500 flex-shrink-0" />
-                    <span>{waContact.display}</span>
-                  </a>
-                );
-              },
-            },
-          ]
-        : []),
+          return (
+            <a
+              href={waContact.waLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-green-600 hover:text-green-800 font-medium hover:underline transition-colors whitespace-nowrap"
+              title={`Hubungi Penyuluh via WhatsApp (${waContact.display})`}
+            >
+              <FaWhatsapp className="w-4 h-4 text-green-500 flex-shrink-0" />
+              <span>{waContact.display}</span>
+            </a>
+          );
+        },
+      },
     ],
     [type, currentPage],
   );
@@ -246,11 +242,9 @@ const TopKomoditasTable: React.FC<{
           data={tableData}
           error={error}
           headerActions={
-            type === "prakiraan" ? (
-              <div className="inline-flex items-center px-3.5 py-1.5 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-300 rounded-lg shadow-2xs">
-                Data diambil dari 90 hari terakhir
-              </div>
-            ) : undefined
+            <div className="inline-flex items-center px-3.5 py-1.5 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-300 rounded-lg shadow-2xs">
+              Data diambil dari 90 hari terakhir
+            </div>
           }
           paginationInfo={paginationInfo}
           sortConfig={sortConfig}
