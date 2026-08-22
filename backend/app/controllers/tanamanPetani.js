@@ -240,7 +240,14 @@ const getTanamanPetaniStatistically = async (req, res) => {
       attributes: [
         [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'date'],
         lineChartType,
-        [Sequelize.fn('COUNT', Sequelize.col(lineChartType)), 'count']
+        [
+          Sequelize.fn(
+            'COALESCE',
+            Sequelize.fn('SUM', Sequelize.col('prakiraanHasilPanen')),
+            Sequelize.fn('COUNT', Sequelize.col('id'))
+          ),
+          'count'
+        ]
       ],
       group: [lineChartType, Sequelize.fn('DATE', Sequelize.col('createdAt'))],
       where: {
@@ -250,7 +257,17 @@ const getTanamanPetaniStatistically = async (req, res) => {
       order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']]
     });
     const pieChart = await dataTanaman.findAll({
-      attributes: [pieChartType, [Sequelize.fn('COUNT', Sequelize.col(pieChartType)), 'count']],
+      attributes: [
+        pieChartType,
+        [
+          Sequelize.fn(
+            'COALESCE',
+            Sequelize.fn('SUM', Sequelize.col('prakiraanHasilPanen')),
+            Sequelize.fn('COUNT', Sequelize.col('id'))
+          ),
+          'count'
+        ]
+      ],
       group: [pieChartType],
       where: {
         [pieChartType]: { [Op.not]: null },

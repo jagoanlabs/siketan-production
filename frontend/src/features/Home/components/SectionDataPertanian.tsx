@@ -68,14 +68,24 @@ export const SectionDataPertanian = () => {
         data = await fetchYearlyKomoditasData(selectedYear);
         setCommodityData(data);
         if (data.length > 0) {
+          const activeCommodities = new Set<string>();
           const allCommodities = new Set<string>();
 
           data.forEach((item) => {
-            Object.keys(item.commodities).forEach((commodity) => {
+            Object.entries(item.commodities).forEach(([commodity, val]) => {
               allCommodities.add(commodity);
+              if (val > 0) {
+                activeCommodities.add(commodity);
+              }
             });
           });
-          const commodityList = extractCommodities(Array.from(allCommodities));
+
+          const commodityKeys =
+            activeCommodities.size > 0
+              ? Array.from(activeCommodities)
+              : Array.from(allCommodities);
+
+          const commodityList = extractCommodities(commodityKeys);
 
           setCommodities(commodityList);
           setCommodityColorMap(
@@ -83,6 +93,12 @@ export const SectionDataPertanian = () => {
               commodityList.map((name) => [name, getColorFromString(name)]),
             ),
           );
+
+          setSelectedKomoditas((prev) => {
+            const valid = prev.filter((p) => commodityList.includes(p));
+            if (valid.length > 0) return valid;
+            return commodityList.slice(0, 2);
+          });
         }
         setLoadingChart(false);
       } catch (error) {

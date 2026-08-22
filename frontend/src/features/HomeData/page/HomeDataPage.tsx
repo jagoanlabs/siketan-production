@@ -76,15 +76,25 @@ export const HomeDataPage = () => {
 
         setCommodityData(data);
         if (data.length > 0) {
-          // Extract unique commodities from all months/days
+          // Extract unique commodities that have production > 0 (or all if none)
+          const activeCommodities = new Set<string>();
           const allCommodities = new Set<string>();
 
           data.forEach((item) => {
-            Object.keys(item.commodities).forEach((commodity) => {
+            Object.entries(item.commodities).forEach(([commodity, val]) => {
               allCommodities.add(commodity);
+              if (val > 0) {
+                activeCommodities.add(commodity);
+              }
             });
           });
-          const commodityList = extractCommodities(Array.from(allCommodities));
+
+          const commodityKeys =
+            activeCommodities.size > 0
+              ? Array.from(activeCommodities)
+              : Array.from(allCommodities);
+
+          const commodityList = extractCommodities(commodityKeys);
 
           setCommodities(commodityList);
           // Generate color map
@@ -93,6 +103,13 @@ export const HomeDataPage = () => {
               commodityList.map((name) => [name, getColorFromString(name)]),
             ),
           );
+
+          // Ensure default selected commodity is valid
+          setSelectedKomoditas((prev) => {
+            const valid = prev.filter((p) => commodityList.includes(p));
+            if (valid.length > 0) return valid;
+            return commodityList.slice(0, 2);
+          });
         }
         setLoadingChart(false);
       } catch (error) {

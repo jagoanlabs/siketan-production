@@ -164,13 +164,19 @@ export function extractCommodities(commodityKeys: string[]): string[] {
     kentang: "Kentang",
     wortel: "Wortel",
     kangkung: "Kangkung",
+    melon: "Melon",
     sayuran_lain: "Sayuran Lain",
     perkebunan_tebu: "Perkebunan Tebu",
     perkebunan_tembakau: "Perkebunan Tembakau",
     lainnya: "Lainnya",
   };
 
-  return commodityKeys.map((key) => commodityMap[key] || key);
+  return commodityKeys.map((key) => {
+    if (commodityMap[key]) return commodityMap[key];
+    return key
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  });
 }
 
 export async function fetchKomoditasData(
@@ -219,24 +225,21 @@ export async function fetchKomoditasData(
 }
 
 export async function fetchYearlyKomoditasData(
-  year: number = 2024,
+  year: number = new Date().getFullYear(),
 ): Promise<ProcessedCommodityData[]> {
   try {
-    const fetchPromises = [];
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/landing-statistik?tahun=${year}`,
+    );
 
-    for (let month = 1; month <= 12; month++) {
-      fetchPromises.push(fetchKomoditasData(month, year));
+    if (!response.ok) {
+      throw new Error("Failed to fetch yearly komoditas data");
     }
-    const monthlyResponses = await Promise.all(fetchPromises);
-    const allMonthsData: KomoditasStatistik[] = [];
 
-    monthlyResponses.forEach((response) => {
-      if (response.statistik && response.statistik.length > 0) {
-        allMonthsData.push(...response.statistik);
-      }
-    });
-    if (allMonthsData.length > 0) {
-      return processKomoditasData(allMonthsData);
+    const json = await response.json();
+
+    if (json.success && json.data && Array.isArray(json.data.commodityData)) {
+      return json.data.commodityData;
     }
 
     return MONTH_NAMES.map((month) => ({
