@@ -7,6 +7,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import AsyncSelect from "react-select/async";
 import { useNavigate } from "react-router-dom";
+import { FaCircleInfo } from "react-icons/fa6";
 
 import { GapoktanInfo } from "../Components/GapoktanInfo";
 import { StatistikaForm } from "../Components/StatsitikaForm";
@@ -20,8 +21,18 @@ import { ColumnConfig, PaginationInfo } from "@/types/table";
 import { Kelompok, StatistikaData } from "@/types/Statistika/statistika.d";
 import { ReusableTable } from "@/components/Table/ReusableTable";
 import { useStatistikaData } from "@/hook/dashboard/Statistika/useStatistika";
+import { useAuth } from "@/hook/UseAuth";
+import { RoleHelper } from "@/helpers/RoleHelper/roleHelpers";
 
 export const CreateStatistika = () => {
+  const { user } = useAuth();
+  const isPenyuluh =
+    user?.peran === "penyuluh" ||
+    RoleHelper.isPenyuluh(user) ||
+    (typeof (user as any)?.role === "string"
+      ? ((user as any).role as string).includes("penyuluh")
+      : Boolean((user as any)?.role?.name?.includes("penyuluh")));
+
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [poktanSearchTerm, setPoktanSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -271,6 +282,26 @@ export const CreateStatistika = () => {
           { label: "Tambah Data" },
         ]}
       />
+
+      {/* Info Banner Khusus Penyuluh */}
+      {isPenyuluh && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4 flex items-start gap-3 text-amber-900 dark:text-amber-200 shadow-sm">
+          <FaCircleInfo className="text-amber-600 dark:text-amber-400 text-lg flex-shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm">
+            <p className="font-semibold text-amber-800 dark:text-amber-300">
+              Ketentuan Penginputan Data Tanaman (Penyuluh):
+            </p>
+            <ul className="list-disc list-inside mt-1 space-y-0.5 text-amber-700 dark:text-amber-400">
+              <li>
+                Batas waktu penginputan data tanaman periode bulan tertentu adalah maksimal <strong>tanggal 7 bulan berikutnya (W1) pukul 23:59</strong>.
+              </li>
+              <li>
+                Setiap kelompok tani hanya dapat diinput <strong>1 data tanaman per bulan</strong> secara satu per satu.
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Poktan Selection */}
       <Card>
