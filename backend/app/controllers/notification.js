@@ -61,7 +61,7 @@ const autoCheckDeadlineNotificationForUser = async (user) => {
             type: 'DEADLINE_WARNING',
             category: 'data_tanaman',
             is_read: false,
-            action_url: '/dashboard-admin/data-tanaman/create',
+            action_url: '/dashboard-admin/statistik-pertanian/create',
             metadata: {
               targetMonth: targetMonthName,
               targetYear: targetMonthYear,
@@ -72,6 +72,17 @@ const autoCheckDeadlineNotificationForUser = async (user) => {
         }
       }
     }
+
+    // Auto-migrate legacy action_url if any exists
+    await notification.update(
+      { action_url: '/dashboard-admin/statistik-pertanian/create' },
+      {
+        where: {
+          user_id: user.id,
+          action_url: '/dashboard-admin/data-tanaman/create'
+        }
+      }
+    );
   } catch (err) {
     console.error('Error in autoCheckDeadlineNotificationForUser:', err);
   }

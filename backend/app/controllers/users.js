@@ -221,23 +221,80 @@ const updateAccount = async (req, res) => {
 
 const searchPoktan = async (req, res) => {
   const { search } = req.query;
+  const { peran, role } = req.user || {};
+  const isPenyuluh =
+    peran === 'penyuluh' ||
+    (role && (role.name === 'penyuluh' || role.name === 'penyuluh_swadaya'));
+
   try {
-    const data = await kelompok.findAll({
-      where: {
-        [Op.or]: [
-          {
-            gapoktan: {
-              [Op.like]: `%${search}%`
-            }
-          },
-          {
-            namaKelompok: {
-              [Op.like]: `%${search}%`
-            }
+    let whereClause = {};
+
+    if (isPenyuluh) {
+      const penyuluhData = await dataPenyuluh.findOne({
+        where: {
+          [Op.or]: [
+            { accountID: req.user.accountID || req.user.id },
+            { email: req.user.email || '' },
+            { nik: req.user.nik || req.user.NIK || 0 }
+          ].filter(Boolean)
+        }
+      });
+
+      const penyuluhCondition = penyuluhData
+        ? {
+            [Op.or]: [
+              { penyuluh: penyuluhData.id },
+              { penyuluh: String(penyuluhData.id) },
+              { penyuluh: penyuluhData.nama }
+            ]
           }
-        ]
-      },
-      limit: 10,
+        : { id: -1 };
+
+      if (search && search !== 'undefined' && search.trim() !== '') {
+        whereClause = {
+          [Op.and]: [
+            penyuluhCondition,
+            {
+              [Op.or]: [
+                {
+                  gapoktan: {
+                    [Op.like]: `%${search}%`
+                  }
+                },
+                {
+                  namaKelompok: {
+                    [Op.like]: `%${search}%`
+                  }
+                }
+              ]
+            }
+          ]
+        };
+      } else {
+        whereClause = penyuluhCondition;
+      }
+    } else {
+      if (search && search !== 'undefined' && search.trim() !== '') {
+        whereClause = {
+          [Op.or]: [
+            {
+              gapoktan: {
+                [Op.like]: `%${search}%`
+              }
+            },
+            {
+              namaKelompok: {
+                [Op.like]: `%${search}%`
+              }
+            }
+          ]
+        };
+      }
+    }
+
+    const data = await kelompok.findAll({
+      where: whereClause,
+      limit: isPenyuluh ? undefined : 10,
       include: [
         {
           model: kecamatan,
@@ -250,7 +307,7 @@ const searchPoktan = async (req, res) => {
       ]
     });
     res.status(200).json({
-      message: 'Data semua users berhasil di peroleh',
+      message: 'Data poktan berhasil diperoleh',
       data
     });
   } catch (error) {

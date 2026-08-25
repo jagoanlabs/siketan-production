@@ -51,7 +51,7 @@ flowchart TD
 - **Judul:** `Peringatan Batas Waktu Input Data ([Nama Bulan Lalu])`
 - **Isi Pesan:**
   > *"Anda belum menginput data tanaman untuk periode [Bulan Lalu]. Batas waktu penginputan adalah 7 [Bulan Ini] pukul 23:59 WIB. Segera lengkapi data Anda sebelum sistem mengunci input."*
-- **Action URL:** `/dashboard-admin/data-tanaman/create` (atau form penginputan data tanaman terkait).
+- **Action URL:** `/dashboard-admin/statistik-pertanian/create` (form penginputan data statistik pertanian).
 
 ---
 

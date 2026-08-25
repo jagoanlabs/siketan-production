@@ -95,8 +95,13 @@ export const NotificationPage: React.FC = () => {
     if (!notif.is_read) {
       await markAsReadMutation.mutateAsync(notif.id);
     }
-    if (notif.action_url) {
-      navigate(notif.action_url);
+    const targetUrl =
+      notif.action_url === "/dashboard-admin/data-tanaman/create" || notif.type === "DEADLINE_WARNING"
+        ? "/dashboard-admin/statistik-pertanian/create"
+        : notif.action_url;
+
+    if (targetUrl) {
+      navigate(targetUrl);
     }
   };
 

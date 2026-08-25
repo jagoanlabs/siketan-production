@@ -1,6 +1,16 @@
 import { useDashboardData } from "@/hook/dashboard/useDashboardDataCard";
+import { useAuth } from "@/hook/UseAuth";
+import { RoleHelper } from "@/helpers/RoleHelper/roleHelpers";
 
 export const DashboardCardAdmin = () => {
+  const { user } = useAuth();
+  const isPenyuluh =
+    user?.peran === "penyuluh" ||
+    RoleHelper.isPenyuluh(user) ||
+    (typeof (user as any)?.role === "string"
+      ? ((user as any).role as string).includes("penyuluh")
+      : Boolean((user as any)?.role?.name?.includes("penyuluh")));
+
   const { data: dashboardData, isLoading, isError, error } = useDashboardData();
 
   if (isLoading) {
@@ -37,7 +47,11 @@ export const DashboardCardAdmin = () => {
   return (
     <div>
       {/* Card Statistik dengan data dari API */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
+      <div
+        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${
+          !isPenyuluh ? "xl:grid-cols-5" : ""
+        } gap-4 mb-6`}
+      >
         {/* Card Jumlah Berita */}
         <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800">
           <div className="flex items-center">
@@ -128,65 +142,70 @@ export const DashboardCardAdmin = () => {
           </div>
         </div>
 
-        {/* Card Petani Terverifikasi */}
-        <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800">
-          <div className="flex items-center">
-            <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
-              <svg
-                className="w-6 h-6 text-purple-600 dark:text-purple-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
+        {/* Card Petani Terverifikasi & Belum Terverifikasi (Hanya untuk Admin / Non-Penyuluh) */}
+        {!isPenyuluh && (
+          <>
+            {/* Card Petani Terverifikasi */}
+            <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800">
+              <div className="flex items-center">
+                <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
+                  <svg
+                    className="w-6 h-6 text-purple-600 dark:text-purple-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Petani Terverifikasi
+                  </h3>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {dashboardData?.verifiedPetani || 0}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Petani Terverifikasi
-              </h3>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {dashboardData?.verifiedPetani || 0}
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Card Petani Belum Terverifikasi */}
-        <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800">
-          <div className="flex items-center">
-            <div className="rounded-full bg-red-100 p-3 dark:bg-red-900">
-              <svg
-                className="w-6 h-6 text-red-600 dark:text-red-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
+            {/* Card Petani Belum Terverifikasi */}
+            <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800">
+              <div className="flex items-center">
+                <div className="rounded-full bg-red-100 p-3 dark:bg-red-900">
+                  <svg
+                    className="w-6 h-6 text-red-600 dark:text-red-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Belum Terverifikasi
+                  </h3>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {dashboardData?.unverifiedPetani || 0}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Belum Terverifikasi
-              </h3>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {dashboardData?.unverifiedPetani || 0}
-              </p>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

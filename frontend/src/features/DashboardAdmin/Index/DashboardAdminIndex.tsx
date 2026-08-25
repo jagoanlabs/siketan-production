@@ -16,8 +16,18 @@ import {
 } from "@/types/dashboard/tableTanaman";
 import { useTanamanData } from "@/hook/dashboard/useDashboardDataTable";
 import { ColumnConfig, PaginationInfo } from "@/types/table";
+import { useAuth } from "@/hook/UseAuth";
+import { RoleHelper } from "@/helpers/RoleHelper/roleHelpers";
 
 export const DashboardAdminIndex = () => {
+  const { user } = useAuth();
+  const isPenyuluh =
+    user?.peran === "penyuluh" ||
+    RoleHelper.isPenyuluh(user) ||
+    (typeof (user as any)?.role === "string"
+      ? ((user as any).role as string).includes("penyuluh")
+      : Boolean((user as any)?.role?.name?.includes("penyuluh")));
+
   // AsyncSelect state
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [poktanSearchTerm, setPoktanSearchTerm] = useState("");
@@ -121,7 +131,7 @@ export const DashboardAdminIndex = () => {
   const { data: defaultData } = useDashboardDataPotkan("");
   const defaultOptions = useMemo(() => {
     if (defaultData) {
-      return defaultData.slice(0, 10).map((item: DashoardDataPotkan) => ({
+      return defaultData.map((item: DashoardDataPotkan) => ({
         value: item.id,
         label: item.gapoktan + " - " + item.namaKelompok,
         data: item,
@@ -259,10 +269,22 @@ export const DashboardAdminIndex = () => {
   return (
     <div className="min-h-screen max-w-6xl container mx-auto py-6">
       <PageMeta
-        description="Dashboard Admin untuk mengelola data statistik pertanian"
-        title="Dashboard Admin | Sistem Manajemen Pertanian"
+        description={
+          isPenyuluh
+            ? "Dashboard Penyuluh untuk mengelola data statistik pertanian"
+            : "Dashboard Admin untuk mengelola data statistik pertanian"
+        }
+        title={
+          isPenyuluh
+            ? "Dashboard Penyuluh | Sistem Manajemen Pertanian"
+            : "Dashboard Admin | Sistem Manajemen Pertanian"
+        }
       />
-      <PageBreadcrumb items={[{ label: "Dashboard Admin" }]} />
+      <PageBreadcrumb
+        items={[
+          { label: isPenyuluh ? "Dashboard Penyuluh" : "Dashboard Admin" },
+        ]}
+      />
       {/* Card Statistik */}
       <DashboardCardAdmin />
 
@@ -351,13 +373,15 @@ export const DashboardAdminIndex = () => {
         onSearchChange={handleTableSearchChange}
       />
 
-      {/* Widget Tabel Realisasi Panen Komoditas Tertinggi */}
-      <div className="mt-8">
-        <TopKomoditasTable
-          title="Realisasi Panen Komoditas Tertinggi"
-          type="realisasi"
-        />
-      </div>
+      {/* Widget Tabel Realisasi Panen Komoditas Tertinggi (Hanya untuk Admin / Non-Penyuluh) */}
+      {!isPenyuluh && (
+        <div className="mt-8">
+          <TopKomoditasTable
+            title="Realisasi Panen Komoditas Tertinggi"
+            type="realisasi"
+          />
+        </div>
+      )}
     </div>
   );
 };

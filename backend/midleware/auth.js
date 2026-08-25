@@ -137,6 +137,68 @@ const auth = async (req, res, next) => {
   }
 };
 
+const optionalAuth = async (req, res, next) => {
+  try {
+    const bearerToken = req.headers.authorization;
+    if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
+      return next();
+    }
+
+    const token = bearerToken.split('Bearer ')[1];
+    if (!token || token.trim() === '') {
+      return next();
+    }
+
+    const payload = jwt.verify(token, process.env.SECRET_KEY);
+    let userInstance;
+
+    if (payload.NIK) {
+      userInstance = await dataPerson.findByPk(payload.id, {
+        include: [
+          {
+            model: roleModel,
+            as: 'role',
+            include: [
+              {
+                model: permissionModel,
+                as: 'permissions',
+                where: { is_active: true },
+                required: false
+              }
+            ]
+          }
+        ]
+      });
+    } else {
+      userInstance = await tblAkun.findByPk(payload.id, {
+        include: [
+          {
+            model: roleModel,
+            as: 'role',
+            include: [
+              {
+                model: permissionModel,
+                as: 'permissions',
+                where: { is_active: true },
+                required: false
+              }
+            ]
+          }
+        ]
+      });
+    }
+
+    if (userInstance) {
+      req.user = userInstance;
+      req.payload = payload;
+    }
+
+    return next();
+  } catch (error) {
+    return next();
+  }
+};
+
 // Simple permission checker
 const hasPermission = (permission) => {
   return (req, res, next) => {
@@ -330,6 +392,7 @@ const createRoleMiddleware = (allowedRoles, errorMessage = null) => {
 module.exports = {
   // Basic middleware
   auth,
+  optionalAuth,
   hasPermission,
   hasRole,
   hasAnyRole,
