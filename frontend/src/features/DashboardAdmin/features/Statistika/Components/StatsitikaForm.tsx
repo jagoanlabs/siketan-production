@@ -3,11 +3,8 @@ import { Button } from "../../../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
 import { Radio, RadioGroup } from "@heroui/react";
 // components/StatistikaForm.tsx (Updated)
-import React, { useState, useEffect } from "react";
-
-
-
-
+import React, { useState, useEffect, useMemo } from "react";
+import { FaCircleInfo } from "react-icons/fa6";
 
 import {
   CreateStatistikaFormData,
@@ -20,6 +17,8 @@ import {
   EditStatistikaFormData,
   determineJenisTanaman,
 } from "@/types/Statistika/editStatistika.d";
+import { useAuth } from "@/hook/UseAuth";
+import { RoleHelper } from "@/helpers/RoleHelper/roleHelpers";
 
 interface StatistikaFormProps {
   selectedPoktanId: number | null;
@@ -39,13 +38,44 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
   initialData,
   kelompokData,
 }) => {
+  const { user } = useAuth();
+  const isPenyuluh =
+    user?.peran === "penyuluh" ||
+    RoleHelper.isPenyuluh(user) ||
+    (typeof (user as any)?.role === "string"
+      ? ((user as any).role as string).includes("penyuluh")
+      : Boolean((user as any)?.role?.name?.includes("penyuluh")));
+
+  const now = useMemo(() => new Date(), []);
+  const currentMonthIdx = now.getMonth(); // 0 = Jan, 11 = Des
+  const currentDay = now.getDate();
+  const isW1Period = currentDay <= 7;
+  const currentMonthName = BULAN_OPTIONS[currentMonthIdx];
+  const prevMonthIdx = currentMonthIdx === 0 ? 11 : currentMonthIdx - 1;
+  const prevMonthName = BULAN_OPTIONS[prevMonthIdx];
+
+  // Available periode tanam options based on role & date
+  const availablePeriodeTanamOptions = useMemo(() => {
+    if (isEdit || !isPenyuluh) {
+      // Non-penyuluh (operator/admin) atau mode edit: bisa memilih semua 12 bulan
+      return BULAN_OPTIONS;
+    }
+
+    if (isW1Period) {
+      return [prevMonthName, currentMonthName];
+    } else {
+      return [currentMonthName];
+    }
+  }, [isEdit, isPenyuluh, isW1Period, prevMonthName, currentMonthName]);
+
   const createMutation = useCreateStatistika();
   const updateMutation = useUpdateStatistika();
 
   // Initialize form data based on mode
   const getInitialFormData = (): CreateStatistikaFormData => {
     if (isEdit && initialData) {
-      const normalizedKategori = initialData.kategori === "sayur" ? "jenis_sayur" : initialData.kategori;
+      const normalizedKategori =
+        initialData.kategori === "sayur" ? "jenis_sayur" : initialData.kategori;
       const jenisTanaman = determineJenisTanaman(
         normalizedKategori,
         initialData.komoditas,
@@ -72,12 +102,18 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
     }
 
     // Default for create mode
+    const defaultPeriodeTanam = isPenyuluh
+      ? isW1Period
+        ? prevMonthName
+        : currentMonthName
+      : currentMonthName;
+
     return {
       kategoriTanaman: "pangan",
       jenisTanaman: "semusim",
       komoditasSemusim: "",
       komoditasTahunan: "",
-      periodeTanam: "",
+      periodeTanam: defaultPeriodeTanam,
       luasLahanTanam: 0,
       prakiraanLuasPanen: 0,
       prakiraanHasilPanen: 0,
@@ -104,7 +140,6 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
       setFormData((prev) => ({ ...prev, fk_kelompokId: selectedPoktanId }));
     }
   }, [selectedPoktanId]);
-
 
   const handleInputChange = (
     field: keyof CreateStatistikaFormData,
@@ -136,8 +171,23 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
       newErrors.komoditasTahunan = "Komoditas tahunan wajib dipilih";
     }
 
-    if (!formData.periodeTanam)
+    if (!formData.periodeTanam) {
       newErrors.periodeTanam = "Periode tanam wajib dipilih";
+    } else if (isPenyuluh && !isEdit) {
+      const selectedMonthIdx = BULAN_OPTIONS.indexOf(formData.periodeTanam);
+      if (selectedMonthIdx > currentMonthIdx) {
+        newErrors.periodeTanam = "Bulan/Periode tanam tidak boleh di masa depan";
+      } else if (!isW1Period && formData.periodeTanam !== currentMonthName) {
+        newErrors.periodeTanam = `Batas waktu penginputan bulan lalu telah berakhir. Anda hanya dapat memilih bulan berjalan (${currentMonthName})`;
+      } else if (
+        isW1Period &&
+        formData.periodeTanam !== prevMonthName &&
+        formData.periodeTanam !== currentMonthName
+      ) {
+        newErrors.periodeTanam = `Pada periode W1 (tgl 1-7), Anda hanya dapat memilih ${prevMonthName} atau ${currentMonthName}`;
+      }
+    }
+
     if (!formData.luasLahanTanam || formData.luasLahanTanam <= 0) {
       newErrors.luasLahanTanam = "Luas lahan tanam harus lebih dari 0";
     }
@@ -186,12 +236,18 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
         await createMutation.mutateAsync(formData);
 
         // Reset form for create mode
+        const defaultPeriodeTanam = isPenyuluh
+          ? isW1Period
+            ? prevMonthName
+            : currentMonthName
+          : currentMonthName;
+
         setFormData({
           kategoriTanaman: "pangan",
           jenisTanaman: "semusim",
           komoditasSemusim: "",
           komoditasTahunan: "",
-          periodeTanam: "",
+          periodeTanam: defaultPeriodeTanam,
           luasLahanTanam: 0,
           prakiraanLuasPanen: 0,
           prakiraanHasilPanen: 0,
@@ -384,6 +440,7 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
         <Select
           variant="flat"
           isRequired
+          isDisabled={!isEdit && isPenyuluh && !isW1Period}
           errorMessage={errors.periodeTanam}
           isInvalid={!!errors.periodeTanam}
           label="Periode Tanam"
@@ -395,12 +452,24 @@ export const StatistikaForm: React.FC<StatistikaFormProps> = ({
             handleInputChange("periodeTanam", selected);
           }}
         >
-          {BULAN_OPTIONS.map((bulan) => (
+          {availablePeriodeTanamOptions.map((bulan) => (
             <SelectItem key={bulan} textValue={bulan}>
               {bulan}
             </SelectItem>
           ))}
         </Select>
+        {isPenyuluh && !isEdit && !isW1Period && (
+          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1.5 flex items-center gap-1.5 font-medium">
+            <FaCircleInfo className="inline text-sm flex-shrink-0" />
+            Periode tanam terkunci ke bulan {currentMonthName}
+          </p>
+        )}
+        {isPenyuluh && !isEdit && isW1Period && (
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5 flex items-center gap-1.5 font-medium">
+            <FaCircleInfo className="inline text-sm flex-shrink-0" />
+            Periode W1 aktif (tgl 1-7): Anda dapat memilih laporan {prevMonthName} atau {currentMonthName}.
+          </p>
+        )}
       </div>
 
       {/* Luas Lahan Tanam */}

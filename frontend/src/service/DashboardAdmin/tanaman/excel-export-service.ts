@@ -173,6 +173,12 @@ export const exportAllDataToExcel = async (tahun?: string | null) => {
           item.realisasiProduksiPanen !== undefined
             ? item.realisasiProduksiPanen
             : "0",
+        "CREATED AT": item.createdAt
+          ? new Date(item.createdAt).toLocaleString("id-ID")
+          : "-",
+        "UPDATED AT": item.updatedAt
+          ? new Date(item.updatedAt).toLocaleString("id-ID")
+          : "-",
       }));
 
       // Only create sheet if there's data
@@ -196,6 +202,8 @@ export const exportAllDataToExcel = async (tahun?: string | null) => {
           { wch: 28 }, // PRAKIRAAN HASIL PANEN (TON)
           { wch: 25 }, // REALISASI LUAS PANEN (HA)
           { wch: 30 }, // REALISASI PRODUKSI PANEN (TON)
+          { wch: 22 }, // CREATED AT
+          { wch: 22 }, // UPDATED AT
         ];
 
         ws["!cols"] = columnWidths;

@@ -337,24 +337,44 @@ const tambahDataTanaman = async (req, res) => {
     const kelompokTani = await kelompok.findOne({ where: { id: fk_kelompokId } });
     if (!kelompokTani) throw new ApiError(400, 'Kelompok tidak ditemukan.');
 
-    // Role-based validation khusus role Penyuluh
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthIdx = now.getMonth(); // 0 = Jan, 11 = Des
+    const currentDay = now.getDate();
+    const inputYear = req.body.tahun ? Number(req.body.tahun) : currentYear;
+    const monthIdx = monthOrder.indexOf(periodeTanam);
+
+    if (monthIdx === -1) {
+      throw new ApiError(400, 'Format periode/bulan tanam tidak valid.');
+    }
+
+    // Role-based validation khusus role Penyuluh (Operator/Admin bebas menginput 12 bulan)
     const isPenyuluh = peran === 'penyuluh' || (req.user?.role?.name && req.user.role.name.includes('penyuluh'));
     if (isPenyuluh) {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const inputYear = req.body.tahun ? Number(req.body.tahun) : currentYear;
+      // 1. Penyuluh tidak boleh input bulan tanam di masa depan
+      if (inputYear > currentYear || (inputYear === currentYear && monthIdx > currentMonthIdx)) {
+        throw new ApiError(400, 'Periode/Bulan tanam tidak boleh di masa depan.');
+      }
 
-      const monthIdx = monthOrder.indexOf(periodeTanam);
-      if (monthIdx !== -1) {
-        // Batas waktu: tanggal 7 bulan berikutnya pukul 23:59:59
-        const deadlineDate = new Date(inputYear, monthIdx + 1, 7, 23, 59, 59, 999);
-        if (now > deadlineDate) {
-          const nextMonthName = monthOrder[(monthIdx + 1) % 12];
+      // 2. Sistem W1 untuk penyuluh
+      const isCurrentMonth = inputYear === currentYear && monthIdx === currentMonthIdx;
+      const isPrevMonth =
+        (currentMonthIdx === 0 && monthIdx === 11 && inputYear === currentYear - 1) ||
+        (inputYear === currentYear && monthIdx === currentMonthIdx - 1);
+
+      if (isPrevMonth) {
+        if (currentDay > 7) {
+          const currentMonthName = monthOrder[currentMonthIdx];
           throw new ApiError(
             400,
-            `Batas waktu penginputan data tanaman periode ${periodeTanam} ${inputYear} telah berakhir pada tanggal 7 ${nextMonthName} pukul 23:59.`
+            `Batas waktu penginputan data tanaman periode ${periodeTanam} ${inputYear} telah berakhir pada tanggal 7 ${currentMonthName} pukul 23:59.`
           );
         }
+      } else if (!isCurrentMonth) {
+        throw new ApiError(
+          400,
+          `Penginputan data tanaman periode ${periodeTanam} ${inputYear} sudah melewati batas waktu.`
+        );
       }
 
       // Validasi 1 data per kelompok tani per periode tanam per tahun
