@@ -3,8 +3,6 @@ import { Card, CardBody } from "../../../../../components/Form/HeroCard";
 
 // pages/CreateStatistika.tsx
 import { useCallback, useMemo, useState } from "react";
-
-
 import AsyncSelect from "react-select/async";
 import { useNavigate } from "react-router-dom";
 import { FaCircleInfo } from "react-icons/fa6";
@@ -121,7 +119,7 @@ export const CreateStatistika = () => {
           } else {
             callback([]);
           }
-        }, 600);
+        }, 300);
       }
     },
     [dataPotkan, debouncedSetPoktanSearch, poktanSearchTerm],

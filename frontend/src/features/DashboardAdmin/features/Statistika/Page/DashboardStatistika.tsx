@@ -13,7 +13,7 @@ import AsyncSelect from "react-select/async";
 
 import { Modal, Popover, PopoverContent, PopoverTrigger, SearchField, Tooltip } from "@heroui/react";
 import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
-import { TbTableExport } from "react-icons/tb";
+import { TbTableExport, TbTableOptions, TbTablePlus } from "react-icons/tb";
 import { BsFiletypeXlsx } from "react-icons/bs";
 import { FiCalendar, FiEye } from "react-icons/fi";
 import { BiPencil } from "react-icons/bi";
@@ -21,6 +21,7 @@ import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "primereact/confirmdialog";
 import { toast } from "sonner";
+import templateStatistikaUrl from "@/assets/template/template data statistika.xlsx?url";
 
 import {
   KOMODITAS_OPTIONS,
@@ -543,6 +544,16 @@ export const DashboardStatistika = () => {
     navigate(`/dashboard-admin/statistik-pertanian/create`);
   };
 
+  const handleDownloadTemplate = () => {
+    const link = document.createElement("a");
+    link.href = templateStatistikaUrl;
+    link.download = "template data statistika.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Template data statistika berhasil diunduh");
+  };
+
   const handleExport = () => {
     setIsExportModalOpen(true);
   };
@@ -644,32 +655,32 @@ export const DashboardStatistika = () => {
         return item.kelompok.id;
       },
     },
-      {
-        key: "kategori",
-        title: "Kategori",
-        sortable: true,
-        render: (item) => (
-          <Chip
-            className={
-              item.kategori === "buah"
-                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                : item.kategori === "pangan"
-                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                  : item.kategori === "perkebunan"
-                    ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-                    : item.kategori === "jenis_sayur" || item.kategori === "sayur"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                      : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-            }
-            size="sm"
-            variant="flat"
-          >
-            {item.kategori === "jenis_sayur" || item.kategori === "sayur"
-              ? "Sayur"
-              : item.kategori.charAt(0).toUpperCase() + item.kategori.slice(1)}
-          </Chip>
-        ),
-      },
+    {
+      key: "kategori",
+      title: "Kategori",
+      sortable: true,
+      render: (item) => (
+        <Chip
+          className={
+            item.kategori === "buah"
+              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+              : item.kategori === "pangan"
+                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                : item.kategori === "perkebunan"
+                  ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                  : item.kategori === "jenis_sayur" || item.kategori === "sayur"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+          }
+          size="sm"
+          variant="flat"
+        >
+          {item.kategori === "jenis_sayur" || item.kategori === "sayur"
+            ? "Sayur"
+            : item.kategori.charAt(0).toUpperCase() + item.kategori.slice(1)}
+        </Chip>
+      ),
+    },
     {
       key: "komoditas",
       title: "Komoditas",
@@ -887,50 +898,87 @@ export const DashboardStatistika = () => {
           {selectedItems.length} item dipilih
         </div>
       )}
+
+      {/* 1. Tambah */}
       <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_CREATE]}>
         <Tooltip>
           <Tooltip.Trigger>
-            <Button
-              color="secondary"
-              startContent={<FaPlus className="w-4 h-4" />}
-              onPress={handleCreate}
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#E8F0FE] hover:bg-[#D7E6FD] text-[#1A73E8] dark:bg-blue-950/50 dark:hover:bg-blue-900/50 dark:text-blue-300 transition-all cursor-pointer shadow-xs active:scale-95"
+              onClick={handleCreate}
             >
-              <span className="hidden sm:inline-flex items-center">Tambah</span>
-            </Button>
+              <FaPlus className="w-3.5 h-3.5" />
+              <span>Tambah</span>
+            </button>
           </Tooltip.Trigger>
           <Tooltip.Content>Tambah Data Baru</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
 
-      <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_EXPORT]}>
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              color="success"
-              startContent={<TbTableExport className="w-4 h-4" />}
-              variant="flat"
-              onPress={handleExport}
-            >
-              <span className="hidden sm:inline-flex items-center">Export</span>
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content>Export Data ke XLSX</Tooltip.Content>
-        </Tooltip>
-      </PermissionWrapper>
+      {/* 2. Template */}
+      <Tooltip>
+        <Tooltip.Trigger>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#F3E8FF] hover:bg-[#E9D5FF] text-[#7E22CE] dark:bg-purple-950/50 dark:hover:bg-purple-900/50 dark:text-purple-300 transition-all cursor-pointer shadow-xs active:scale-95"
+            onClick={handleDownloadTemplate}
+          >
+            <TbTablePlus className="w-4 h-4" />
+            <span>Template</span>
+          </button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>Download Template Data Statistika (.xlsx)</Tooltip.Content>
+      </Tooltip>
 
+      {/* 3. Import */}
       <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_IMPORT]}>
         <Tooltip>
           <Tooltip.Trigger>
-            <Button
-              color="warning"
-              startContent={<BsFiletypeXlsx className="w-4 h-4" />}
-              variant="flat"
-              onPress={handleUploadXLSX}
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#FEF3C7] hover:bg-[#FDE68A] text-[#B45309] dark:bg-amber-950/50 dark:hover:bg-amber-900/50 dark:text-amber-300 transition-all cursor-pointer shadow-xs active:scale-95"
+              onClick={handleUploadXLSX}
             >
-              <span className="hidden sm:inline-flex items-center">Upload</span>
-            </Button>
+              <BsFiletypeXlsx className="w-4 h-4" />
+              <span>Import</span>
+            </button>
           </Tooltip.Trigger>
-          <Tooltip.Content>Upload Data dari XLSX</Tooltip.Content>
+          <Tooltip.Content>Import Data dari Excel (.xlsx/.xls)</Tooltip.Content>
+        </Tooltip>
+      </PermissionWrapper>
+
+      {/* 4. Update */}
+      <Tooltip>
+        <Tooltip.Trigger>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] dark:bg-red-950/50 dark:hover:bg-red-900/50 dark:text-red-300 transition-all opacity-90 cursor-pointer shadow-xs active:scale-95"
+            onClick={() => {
+              toast.info("Fitur Update Realisasi Bulk akan didiskusikan lebih lanjut");
+            }}
+          >
+            <TbTableOptions className="w-4 h-4" />
+            <span>Update</span>
+          </button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>Update Realisasi Bulk (Segera Hadir)</Tooltip.Content>
+      </Tooltip>
+
+      {/* 5. Export */}
+      <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_EXPORT]}>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#15803D] dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-emerald-300 transition-all cursor-pointer shadow-xs active:scale-95"
+              onClick={handleExport}
+            >
+              <TbTableExport className="w-4 h-4" />
+              <span>Export</span>
+            </button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Export Data ke XLSX</Tooltip.Content>
         </Tooltip>
       </PermissionWrapper>
     </div>
@@ -1153,11 +1201,10 @@ export const DashboardStatistika = () => {
                       <Button
                         key={shortMonth}
                         size="sm"
-                        className={`py-2 transition-all font-medium rounded-lg text-xs ${
-                          isSelected
+                        className={`py-2 transition-all font-medium rounded-lg text-xs ${isSelected
                             ? "bg-green-600 text-white font-semibold hover:bg-green-700"
                             : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        }`}
+                          }`}
                         onPress={() => {
                           setPrakiraanMin(targetVal);
                           setPrakiraanMax(targetVal);
@@ -1270,11 +1317,10 @@ export const DashboardStatistika = () => {
                     <button
                       type="button"
                       onClick={() => setExportType("all")}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${
-                        exportType === "all"
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${exportType === "all"
                           ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
                           : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
-                      }`}
+                        }`}
                     >
                       <TbTableExport className="w-5 h-5 mb-1.5" />
                       <span className="text-xs">Semua</span>
@@ -1282,11 +1328,10 @@ export const DashboardStatistika = () => {
                     <button
                       type="button"
                       onClick={() => setExportType("year")}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${
-                        exportType === "year"
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${exportType === "year"
                           ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
                           : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
-                      }`}
+                        }`}
                     >
                       <FiCalendar className="w-5 h-5 mb-1.5" />
                       <span className="text-xs">Per Tahun</span>
@@ -1294,11 +1339,10 @@ export const DashboardStatistika = () => {
                     <button
                       type="button"
                       onClick={() => setExportType("month_year")}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${
-                        exportType === "month_year"
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${exportType === "month_year"
                           ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
                           : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
-                      }`}
+                        }`}
                     >
                       <FiCalendar className="w-5 h-5 mb-1.5" />
                       <span className="text-xs">Bulan & Tahun</span>
@@ -1361,11 +1405,10 @@ export const DashboardStatistika = () => {
                           <Button
                             key={shortMonth}
                             size="sm"
-                            className={`py-2 transition-all font-medium rounded-lg text-xs ${
-                              isSelected
+                            className={`py-2 transition-all font-medium rounded-lg text-xs ${isSelected
                                 ? "bg-green-600 text-white font-semibold hover:bg-green-700"
                                 : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70 border border-gray-250 dark:border-gray-700"
-                            }`}
+                              }`}
                             onPress={() => {
                               setSelectedExportMonth(monthValStr);
                             }}
@@ -1379,17 +1422,17 @@ export const DashboardStatistika = () => {
                 )}
               </Modal.Body>
               <Modal.Footer>
-                <Button 
-                  color="danger" 
-                  variant="light" 
-                  isDisabled={exportMutation.isPending} 
+                <Button
+                  color="danger"
+                  variant="light"
+                  isDisabled={exportMutation.isPending}
                   onPress={() => setIsExportModalOpen(false)}
                 >
                   Batal
                 </Button>
-                <Button 
-                  className="text-gray-100" 
-                  color="success" 
+                <Button
+                  className="text-gray-100"
+                  color="success"
                   isLoading={exportMutation.isPending}
                   isDisabled={
                     (exportType === "year" && !selectedExportYear) ||
