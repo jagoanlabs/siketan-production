@@ -35,6 +35,7 @@ import {
   useDeleteStatistika,
   useImportStatistika,
   useExportStatistika,
+  useUpdateRealisasiBulk,
   useStatistikaYears,
 } from "@/hook/dashboard/Statistika/useStatistika";
 import { DashoardDataPotkan } from "@/types/dashboard/searchPoktan";
@@ -47,10 +48,18 @@ import { debounce } from "@/utils/debounce";
 import { ReusableTable } from "@/components/Table/ReusableTable";
 import { LoadingModal } from "@/components/LoadingModal";
 import PermissionWrapper from "@/components/PermissionWrapper";
-import { PERMISSIONS } from "@/helpers/RoleHelper/roleHelpers";
+import { RoleHelper, PERMISSIONS } from "@/helpers/RoleHelper/roleHelpers";
+import { useAuth } from "@/hook/UseAuth";
 
 export const DashboardStatistika = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isPenyuluh =
+    user?.peran === "penyuluh" ||
+    RoleHelper.isPenyuluh(user) ||
+    (typeof (user as any)?.role === "string"
+      ? ((user as any).role as string).includes("penyuluh")
+      : Boolean((user as any)?.role?.name?.includes("penyuluh")));
 
   // AsyncSelect state
   const [selectedOption, setSelectedOption] = useState<any>(null);
@@ -195,6 +204,7 @@ export const DashboardStatistika = () => {
   const bulkDeleteMutation = useDeleteStatistika(true); // isBulkAction = true
   const importMutation = useImportStatistika();
   const exportMutation = useExportStatistika();
+  const updateRealisasiMutation = useUpdateRealisasiBulk();
 
   // Debounce functions
   const debouncedSetTableSearch = useMemo(
@@ -631,6 +641,49 @@ export const DashboardStatistika = () => {
     input.click();
   };
 
+  const handleUpdateRealisasiXLSX = () => {
+    const input = document.createElement("input");
+
+    input.type = "file";
+    input.accept = ".xlsx, .xls, .csv";
+    input.onchange = async (e: any) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+
+      if (file) {
+        const allowedTypes = [
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-excel",
+          "text/csv",
+        ];
+
+        if (
+          !allowedTypes.includes(file.type) &&
+          !file.name.match(/\.(xlsx|xls|csv)$/i)
+        ) {
+          toast.error("File harus berformat .xlsx, .xls, atau .csv");
+          return;
+        }
+
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+          toast.error("Ukuran file maksimal 10MB");
+          return;
+        }
+
+        setShowLoadingModal(true);
+        setLoadingMessage(`Mengupdate data realisasi dari file ${file.name}...`);
+
+        try {
+          await updateRealisasiMutation.mutateAsync(file);
+          await refetchTanamanData();
+        } finally {
+          setShowLoadingModal(false);
+        }
+      }
+    };
+    input.click();
+  };
+
   // Table columns definition
   const columns: ColumnConfig<DataTanaman>[] = [
     {
@@ -916,54 +969,60 @@ export const DashboardStatistika = () => {
         </Tooltip>
       </PermissionWrapper>
 
-      {/* 2. Template */}
-      <Tooltip>
-        <Tooltip.Trigger>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#F3E8FF] hover:bg-[#E9D5FF] text-[#7E22CE] dark:bg-purple-950/50 dark:hover:bg-purple-900/50 dark:text-purple-300 transition-all cursor-pointer shadow-xs active:scale-95"
-            onClick={handleDownloadTemplate}
-          >
-            <TbTablePlus className="w-4 h-4" />
-            <span>Template</span>
-          </button>
-        </Tooltip.Trigger>
-        <Tooltip.Content>Download Template Data Statistika (.xlsx)</Tooltip.Content>
-      </Tooltip>
-
-      {/* 3. Import */}
-      <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_IMPORT]}>
+      {/* 2. Template (Hanya untuk Non-Penyuluh) */}
+      {!isPenyuluh && (
         <Tooltip>
           <Tooltip.Trigger>
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#FEF3C7] hover:bg-[#FDE68A] text-[#B45309] dark:bg-amber-950/50 dark:hover:bg-amber-900/50 dark:text-amber-300 transition-all cursor-pointer shadow-xs active:scale-95"
-              onClick={handleUploadXLSX}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#F3E8FF] hover:bg-[#E9D5FF] text-[#7E22CE] dark:bg-purple-950/50 dark:hover:bg-purple-900/50 dark:text-purple-300 transition-all cursor-pointer shadow-xs active:scale-95"
+              onClick={handleDownloadTemplate}
             >
-              <BsFiletypeXlsx className="w-4 h-4" />
-              <span>Import</span>
+              <TbTablePlus className="w-4 h-4" />
+              <span>Template</span>
             </button>
           </Tooltip.Trigger>
-          <Tooltip.Content>Import Data dari Excel (.xlsx/.xls)</Tooltip.Content>
+          <Tooltip.Content>Download Template Data Statistika (.xlsx)</Tooltip.Content>
         </Tooltip>
-      </PermissionWrapper>
+      )}
 
-      {/* 4. Update */}
-      <Tooltip>
-        <Tooltip.Trigger>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] dark:bg-red-950/50 dark:hover:bg-red-900/50 dark:text-red-300 transition-all opacity-90 cursor-pointer shadow-xs active:scale-95"
-            onClick={() => {
-              toast.info("Fitur Update Realisasi Bulk akan didiskusikan lebih lanjut");
-            }}
-          >
-            <TbTableOptions className="w-4 h-4" />
-            <span>Update</span>
-          </button>
-        </Tooltip.Trigger>
-        <Tooltip.Content>Update Realisasi Bulk (Segera Hadir)</Tooltip.Content>
-      </Tooltip>
+      {/* 3. Import (Hanya untuk Non-Penyuluh) */}
+      {!isPenyuluh && (
+        <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_IMPORT]}>
+          <Tooltip>
+            <Tooltip.Trigger>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#FEF3C7] hover:bg-[#FDE68A] text-[#B45309] dark:bg-amber-950/50 dark:hover:bg-amber-900/50 dark:text-amber-300 transition-all cursor-pointer shadow-xs active:scale-95"
+                onClick={handleUploadXLSX}
+              >
+                <BsFiletypeXlsx className="w-4 h-4" />
+                <span>Import</span>
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>Import Data dari Excel (.xlsx/.xls)</Tooltip.Content>
+          </Tooltip>
+        </PermissionWrapper>
+      )}
+
+      {/* 4. Update (Hanya untuk Non-Penyuluh) */}
+      {!isPenyuluh && (
+        <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_EDIT]}>
+          <Tooltip>
+            <Tooltip.Trigger>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] dark:bg-red-950/50 dark:hover:bg-red-900/50 dark:text-red-300 transition-all cursor-pointer shadow-xs active:scale-95"
+                onClick={handleUpdateRealisasiXLSX}
+              >
+                <TbTableOptions className="w-4 h-4" />
+                <span>Update</span>
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>Update Realisasi Bulk dari Excel (.xlsx/.xls)</Tooltip.Content>
+          </Tooltip>
+        </PermissionWrapper>
+      )}
 
       {/* 5. Export */}
       <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_EXPORT]}>

@@ -497,23 +497,34 @@ const hapusDataTanaman = async (req, res) => {
   }
 };
 
+const toTitleCase = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const uploadDataTanaman = async (req, res) => {
-  const { peran, id: userId } = req.user || {};
+  const { file } = req;
+  const { id: userId, peran } = req.user || {};
 
   try {
     if (peran === 'petani') {
       throw new ApiError(403, 'Anda tidak memiliki akses.');
     }
-
-    const { file } = req;
-    if (!file) throw new ApiError(400, 'File tidak ditemukan.');
+    if (!file) {
+      throw new ApiError(400, 'File tidak boleh kosong.');
+    }
 
     // Validasi tipe file
     const allowedMimeTypes = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel'
+      'application/vnd.ms-excel',
+      'text/csv'
     ];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
+    if (!allowedMimeTypes.includes(file.mimetype) && !file.originalname.match(/\.(xlsx|xls|csv)$/i)) {
       throw new ApiError(
         400,
         'Format file tidak valid. Harap upload file Excel (.xlsx atau .xls).'
@@ -529,17 +540,22 @@ const uploadDataTanaman = async (req, res) => {
         'File Excel tidak valid atau rusak. Pastikan file dalam format .xlsx yang benar.'
       );
     }
-    const worksheet = workbook.getWorksheet(1);
+    const worksheet = workbook.worksheets[0] || workbook.getWorksheet(1);
+    if (!worksheet) {
+      throw new ApiError(400, 'Sheet tidak ditemukan di dalam file Excel.');
+    }
 
     const rowCount = worksheet.rowCount;
     if (rowCount < 2) throw new ApiError(400, 'Data tidak ditemukan.');
+
+    let successCount = 0;
 
     for (let i = 2; i <= rowCount; i++) {
       const row = worksheet.getRow(i);
 
       let isRowEmpty = true;
-      for (let j = 1; j <= 11; j++) {
-        if (row.getCell(j).value) {
+      for (let j = 1; j <= 8; j++) {
+        if (row.getCell(j).value !== null && row.getCell(j).value !== undefined && row.getCell(j).value !== '') {
           isRowEmpty = false;
           break;
         }
@@ -550,72 +566,79 @@ const uploadDataTanaman = async (req, res) => {
 
       const fk_kelompokId = row.getCell(1).value;
       let kategori = row.getCell(2).value;
-      const komoditas = row.getCell(3).value;
-      const periodeTanam = row.getCell(4).value;
+      let komoditas = row.getCell(3).value;
+      let periodeTanam = row.getCell(4).value;
       const luasLahan = row.getCell(5).value;
       const prakiraanLuasPanen = row.getCell(6).value;
       const prakiraanHasilPanen = row.getCell(7).value;
-      const prakiraanBulanPanen = row.getCell(8).value;
-      const realisasiLuasPanen = row.getCell(9).value;
-      const realisasiHasilPanen = row.getCell(10).value;
-      const realisasiBulanPanen = row.getCell(11).value;
+      let prakiraanBulanPanen = row.getCell(8).value;
 
-      if (typeof kategori === 'string') kategori = kategori.toLowerCase().trim();
-      if (!['pangan', 'perkebunan', 'sayur', 'buah'].includes(kategori))
-        throw new ApiError(
-          400,
-          `Kategori (${kategori}) tidak valid. Data ke-${i - 1} (baris ${i})`
-        );
-      if (
-        !tanamanPangan
-          .concat(tanamanPerkebunan)
-          .concat(komoditasSemusim)
-          .concat(komoditasTahunan)
-          .concat(['Perkebunan Tembakau', 'Perkebunan Tebu'])
-          .includes(komoditas)
-      )
-        throw new ApiError(
-          400,
-          `Komoditas (${komoditas}) tidak valid. Data ke-${i - 1} (baris ${i})`
-        );
-      if (!monthOrder.includes(periodeTanam))
-        throw new ApiError(400, `Periode tanam tidak valid. Data ke-${i - 1} (baris ${i})`);
-      if (!luasLahan || isNaN(luasLahan))
-        throw new ApiError(400, `Luas lahan tidak valid. Data ke-${i - 1} (baris ${i})`);
-      if (!prakiraanLuasPanen || isNaN(prakiraanLuasPanen))
-        throw new ApiError(400, `Prakiraan luas panen tidak valid. Data ke-${i - 1} (baris ${i})`);
-      if (!prakiraanHasilPanen || isNaN(prakiraanHasilPanen))
-        throw new ApiError(400, `Prakiraan hasil panen tidak valid. Data ke-${i - 1} (baris ${i})`);
-      if (prakiraanBulanPanen && !monthOrder.includes(prakiraanBulanPanen))
-        throw new ApiError(400, `Prakiraan bulan panen tidak valid. Data ke-${i - 1} (baris ${i})`);
-      if (realisasiLuasPanen && isNaN(realisasiLuasPanen))
-        throw new ApiError(400, `Realisasi luas panen tidak valid. Data ke-${i - 1} (baris ${i})`);
-      if (realisasiHasilPanen && isNaN(realisasiHasilPanen))
-        throw new ApiError(400, `Realisasi hasil panen tidak valid. Data ke-${i - 1} (baris ${i})`);
-      if (realisasiBulanPanen && !monthOrder.includes(realisasiBulanPanen))
-        throw new ApiError(400, `Realisasi bulan panen tidak valid. Data ke-${i - 1} (baris ${i})`);
+      if (!fk_kelompokId) {
+        throw new ApiError(400, `ID Poktan tidak boleh kosong. Data baris ${i}`);
+      }
 
       const kelompokTani = await kelompok.findOne({ where: { id: fk_kelompokId } });
-
-      if (!kelompokTani)
+      if (!kelompokTani) {
         throw new ApiError(
           400,
-          `Kelompok (${fk_kelompokId}) tidak ditemukan.  Data ke-${i - 1} (baris ${i})`
+          `Kelompok tani dengan ID (${fk_kelompokId}) tidak ditemukan. Data baris ${i}`
         );
+      }
+
+      if (typeof kategori === 'string') {
+        kategori = kategori.toLowerCase().trim();
+        if (kategori === 'jenis_sayur') kategori = 'sayur';
+      }
+      if (!['pangan', 'perkebunan', 'sayur', 'buah'].includes(kategori)) {
+        throw new ApiError(
+          400,
+          `Kategori (${kategori}) tidak valid. Data baris ${i}`
+        );
+      }
+
+      if (typeof komoditas === 'string') {
+        komoditas = toTitleCase(komoditas.trim());
+      }
+      if (!komoditas) {
+        throw new ApiError(400, `Komoditas tidak boleh kosong. Data baris ${i}`);
+      }
+
+      if (typeof periodeTanam === 'string') {
+        periodeTanam = toTitleCase(periodeTanam.trim());
+      }
+      if (!monthOrder.includes(periodeTanam)) {
+        throw new ApiError(400, `Periode tanam (${periodeTanam}) tidak valid. Data baris ${i}`);
+      }
+
+      if (!luasLahan || isNaN(Number(luasLahan))) {
+        throw new ApiError(400, `Luas lahan tanam tidak valid. Data baris ${i}`);
+      }
+      if (!prakiraanLuasPanen || isNaN(Number(prakiraanLuasPanen))) {
+        throw new ApiError(400, `Prakiraan luas panen tidak valid. Data baris ${i}`);
+      }
+      if (!prakiraanHasilPanen || isNaN(Number(prakiraanHasilPanen))) {
+        throw new ApiError(400, `Prakiraan hasil panen tidak valid. Data baris ${i}`);
+      }
+
+      if (typeof prakiraanBulanPanen === 'string') {
+        prakiraanBulanPanen = toTitleCase(prakiraanBulanPanen.trim());
+      }
+      if (prakiraanBulanPanen && !monthOrder.includes(prakiraanBulanPanen)) {
+        throw new ApiError(400, `Prakiraan bulan panen (${prakiraanBulanPanen}) tidak valid. Data baris ${i}`);
+      }
+
       await dataTanaman.create({
         fk_kelompokId,
         kategori,
         komoditas,
         periodeTanam,
-        luasLahan,
-        prakiraanLuasPanen,
-        prakiraanHasilPanen,
-        prakiraanBulanPanen,
-        realisasiLuasPanen,
-        realisasiHasilPanen,
-        realisasiBulanPanen,
+        luasLahan: Number(luasLahan),
+        prakiraanLuasPanen: Number(prakiraanLuasPanen),
+        prakiraanHasilPanen: Number(prakiraanHasilPanen),
+        prakiraanBulanPanen: prakiraanBulanPanen || null,
         created_by: userId
       });
+      successCount++;
     }
 
     postActivity({
@@ -624,7 +647,145 @@ const uploadDataTanaman = async (req, res) => {
       type: 'DATA TANAMAN'
     });
 
-    res.status(201).json({ message: 'Data berhasil ditambahkan.' });
+    res.status(201).json({ message: `${successCount} data berhasil diimport.` });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};
+
+const updateRealisasiBulk = async (req, res) => {
+  const { file } = req;
+  const { id: userId, peran } = req.user || {};
+
+  try {
+    if (peran === 'petani') {
+      throw new ApiError(403, 'Anda tidak memiliki akses.');
+    }
+    if (!file) {
+      throw new ApiError(400, 'File tidak boleh kosong.');
+    }
+
+    const allowedMimeTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv'
+    ];
+    if (!allowedMimeTypes.includes(file.mimetype) && !file.originalname.match(/\.(xlsx|xls|csv)$/i)) {
+      throw new ApiError(
+        400,
+        'Format file tidak valid. Harap upload file Excel (.xlsx atau .xls).'
+      );
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    try {
+      await workbook.xlsx.load(file.buffer);
+    } catch (error) {
+      throw new ApiError(
+        400,
+        'File Excel tidak valid atau rusak. Pastikan file dalam format .xlsx yang benar.'
+      );
+    }
+
+    const worksheet = workbook.worksheets[0] || workbook.getWorksheet(1);
+    if (!worksheet || worksheet.rowCount < 2) {
+      throw new ApiError(400, 'Data tidak ditemukan di dalam sheet.');
+    }
+
+    // Identifikasi kolom berdasarkan nama header pada baris ke-1
+    const headerRow = worksheet.getRow(1);
+    let colId = -1;
+    let colRealisasiLuas = -1;
+    let colRealisasiHasil = -1;
+    let colRealisasiBulan = -1;
+
+    headerRow.eachCell((cell, colNumber) => {
+      const val = cell.value ? String(cell.value).toLowerCase().trim() : '';
+      if (val === 'id' || val === 'no id' || val.startsWith('id data')) {
+        colId = colNumber;
+      } else if (val.includes('realisasi') && val.includes('luas')) {
+        colRealisasiLuas = colNumber;
+      } else if (val.includes('realisasi') && (val.includes('hasil') || val.includes('produksi'))) {
+        colRealisasiHasil = colNumber;
+      } else if (val.includes('realisasi') && val.includes('bulan')) {
+        colRealisasiBulan = colNumber;
+      }
+    });
+
+    // Fallback index default jika header tidak terdeteksi via string
+    if (colId === -1) colId = 1;
+    if (colRealisasiLuas === -1) colRealisasiLuas = 14;
+    if (colRealisasiHasil === -1) colRealisasiHasil = 15;
+    if (colRealisasiBulan === -1) colRealisasiBulan = 16;
+
+    let updatedCount = 0;
+    const rowCount = worksheet.rowCount;
+
+    for (let i = 2; i <= rowCount; i++) {
+      const row = worksheet.getRow(i);
+
+      let isRowEmpty = true;
+      for (let j = 1; j <= 20; j++) {
+        if (row.getCell(j).value !== null && row.getCell(j).value !== undefined && row.getCell(j).value !== '') {
+          isRowEmpty = false;
+          break;
+        }
+      }
+      if (isRowEmpty) continue;
+
+      const idVal = row.getCell(colId).value;
+      if (!idVal) continue;
+
+      const recordId = Number(String(idVal).replace(/[^0-9]/g, ''));
+      if (!recordId || isNaN(recordId)) continue;
+
+      const rawLuas = row.getCell(colRealisasiLuas).value;
+      const rawHasil = row.getCell(colRealisasiHasil).value;
+      const rawBulan = row.getCell(colRealisasiBulan).value;
+
+      const item = await dataTanaman.findByPk(recordId);
+      if (!item) continue;
+
+      const updateData = {};
+
+      if (rawLuas !== null && rawLuas !== undefined && rawLuas !== '' && rawLuas !== '-') {
+        const numLuas = parseFloat(rawLuas);
+        if (!isNaN(numLuas)) {
+          updateData.realisasiLuasPanen = numLuas;
+        }
+      }
+
+      if (rawHasil !== null && rawHasil !== undefined && rawHasil !== '' && rawHasil !== '-') {
+        const numHasil = parseFloat(rawHasil);
+        if (!isNaN(numHasil)) {
+          updateData.realisasiHasilPanen = numHasil;
+        }
+      }
+
+      if (rawBulan !== null && rawBulan !== undefined && rawBulan !== '' && rawBulan !== '-') {
+        const strBulan = String(rawBulan).trim();
+        const titleBulan = toTitleCase(strBulan);
+        if (monthOrder.includes(titleBulan) || monthOrder.includes(strBulan)) {
+          updateData.realisasiBulanPanen = monthOrder.includes(titleBulan) ? titleBulan : strBulan;
+        }
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        await item.update(updateData);
+        updatedCount++;
+      }
+    }
+
+    postActivity({
+      user_id: userId,
+      activity: 'UPDATE_REALISASI_BULK',
+      type: 'DATA TANAMAN'
+    });
+
+    res.status(200).json({
+      message: `${updatedCount} data realisasi berhasil diperbarui.`,
+      updatedCount
+    });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
@@ -755,6 +916,7 @@ module.exports = {
   editDataTanaman,
   hapusDataTanaman,
   uploadDataTanaman,
+  updateRealisasiBulk,
   fixKategori,
   fixKomoditas,
   getStatistikYears,

@@ -9,6 +9,7 @@ const {
   editDataTanaman,
   hapusDataTanaman,
   uploadDataTanaman,
+  updateRealisasiBulk,
   fixKategori,
   fixKomoditas,
   getStatistikYears
@@ -26,6 +27,13 @@ router.post(
   hasPermission(PERMISSIONS.STATISTIC_CREATE),
   upload.single('file'),
   uploadDataTanaman
+);
+router.post(
+  '/update-realisasi',
+  auth,
+  hasPermission(PERMISSIONS.STATISTIC_EDIT),
+  upload.single('file'),
+  updateRealisasiBulk
 );
 router.put('/fix/category', auth, fixKategori);
 router.put('/fix/commodity', auth, fixKomoditas);
