@@ -423,25 +423,27 @@ const registerPenyuluh = async (req, res) => {
     // CREATE DESA BINAAN
 
     // 2. CREATE DESA BINAAN
-    if (desaBinaan && desaBinaan.trim() !== '') {
+    if (desaBinaan) {
       try {
-        // ✅ Split by comma and trim each nama desa
-        const desaBinaanArray = desaBinaan
-          .split(',')
-          .map((nama) => nama.trim())
-          .filter((nama) => nama !== '');
+        let desaBinaanArray = [];
+        if (Array.isArray(desaBinaan)) {
+          desaBinaanArray = desaBinaan.map((nama) => String(nama).trim()).filter((nama) => nama !== '');
+        } else if (typeof desaBinaan === 'string' && desaBinaan.trim() !== '') {
+          desaBinaanArray = desaBinaan
+            .split(',')
+            .map((nama) => nama.trim())
+            .filter((nama) => nama !== '');
+        }
 
         console.log('Processing desa binaan:', desaBinaanArray);
 
         for (const namaDesaBinaan of desaBinaanArray) {
-          // ✅ Find desa by NAMA (not ID)
           const desaData = await desa.findOne({
             where: { nama: namaDesaBinaan }
           });
 
           if (desaData) {
             await DesaBinaanModel.create({
-              // ✅ Using renamed model
               penyuluhId: newPenyuluh.id,
               desaId: desaData.id
             });
@@ -456,12 +458,19 @@ const registerPenyuluh = async (req, res) => {
     }
 
     // UPDATE KELOMPOK (jika ada selectedKelompokIds)
-    if (selectedKelompokIds && selectedKelompokIds.trim() !== '') {
+    if (selectedKelompokIds) {
       try {
-        const kelompokIdArray = selectedKelompokIds
-          .split(',')
-          .map((id) => parseInt(id.trim()))
-          .filter((id) => !isNaN(id));
+        let kelompokIdArray = [];
+        if (Array.isArray(selectedKelompokIds)) {
+          kelompokIdArray = selectedKelompokIds
+            .map((id) => parseInt(String(id).trim()))
+            .filter((id) => !isNaN(id));
+        } else if (typeof selectedKelompokIds === 'string' && selectedKelompokIds.trim() !== '') {
+          kelompokIdArray = selectedKelompokIds
+            .split(',')
+            .map((id) => parseInt(id.trim()))
+            .filter((id) => !isNaN(id));
+        }
 
         console.log('Processing kelompok IDs:', kelompokIdArray);
 

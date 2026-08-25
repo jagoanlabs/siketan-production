@@ -3,6 +3,7 @@ import { Input, Textarea } from "../../../components/Form/HeroInput";
 import { Button } from "../../../components/Form/HeroButton";
 import { Modal } from "@heroui/react";
 import { Select, SelectItem } from "../../../components/Form/HeroSelect";
+import ReactSelect from "react-select";
 
 // components/PenyuluhForm.tsx
 import React, { useState, useMemo } from "react";
@@ -45,7 +46,11 @@ import {
 } from "@/hook/dashboard/infoPenyuluh/useCreatePenyuluh";
 import { CreatePenyuluhData } from "@/types/DataPenyuluh/createPenyuluh";
 
-export function PenyuluhForm() {
+interface PenyuluhFormProps {
+  onSuccess?: () => void;
+}
+
+export const PenyuluhForm: React.FC<PenyuluhFormProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
 
   // Penyuluh Form States - Updated to match CreatePenyuluh
@@ -99,6 +104,35 @@ export function PenyuluhForm() {
       (kelompok: any) => kelompok.kecamatanId === formData.kecamatanBinaanId,
     );
   }, [kelompokData, formData.kecamatanBinaanId]);
+
+  // Options for react-select Desa Binaan
+  const desaBinaanOptions = useMemo(() => {
+    return (desaBinaanData?.data || []).map((desa) => ({
+      value: desa.nama,
+      label: desa.nama,
+    }));
+  }, [desaBinaanData]);
+
+  const selectedDesaBinaanValues = useMemo(() => {
+    return desaBinaanOptions.filter((opt) =>
+      formData.desaBinaan.includes(opt.value),
+    );
+  }, [desaBinaanOptions, formData.desaBinaan]);
+
+  // Options for react-select Kelompok Binaan
+  const kelompokBinaanOptions = useMemo(() => {
+    return filteredKelompok.map((kelompok: any) => ({
+      value: String(kelompok.id),
+      label: `${kelompok.namaKelompok} - ${kelompok.desa} (Gapoktan: ${kelompok.gapoktan})`,
+      data: kelompok,
+    }));
+  }, [filteredKelompok]);
+
+  const selectedKelompokValues = useMemo(() => {
+    return kelompokBinaanOptions.filter((opt) =>
+      formData.selectedKelompokIds.includes(opt.value),
+    );
+  }, [kelompokBinaanOptions, formData.selectedKelompokIds]);
 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -290,8 +324,13 @@ export function PenyuluhForm() {
 
     setErrors({});
 
-    registerMutation.mutate(formData as unknown as CreatePenyuluhData, {
-      onSuccess: () => {
+    registerMutation.mutate(
+      {
+        ...formData,
+        foto: selectedFile,
+      } as unknown as CreatePenyuluhData,
+      {
+        onSuccess: () => {
         setFormData({
           NIP: "",
           nama: "",
@@ -314,6 +353,7 @@ export function PenyuluhForm() {
         setErrors({});
         setSelectedFile(null);
         setFilePreview(null);
+        onSuccess?.();
         setTimeout(() => {
           navigate("/login");
         }, 2000);
@@ -818,44 +858,55 @@ export function PenyuluhForm() {
 
             {/* Desa Binaan - Multiple Select */}
             <div>
-              <p className="block text-sm font-semibold text-gray-700 mb-2">
+              <p className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Desa Wilayah Binaan <span className="text-red-500">*</span>
               </p>
-              <Select
-                isInvalid={!!errors.desaBinaan}
-                isDisabled={!formData.kecamatanBinaanId}
+              <ReactSelect
+                isMulti
+                isDisabled={!formData.kecamatanBinaanId || loadingDesaBinaan}
                 isLoading={loadingDesaBinaan}
-                isMultiline={true}
                 placeholder={
                   formData.kecamatanBinaanId
-                    ? "Pilih desa binaan"
+                    ? "Pilih satu atau lebih desa binaan..."
                     : "Pilih kecamatan binaan dulu"
                 }
-                renderValue={(items: any) => (
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((item: any) => (
-                      <div
-                        key={item.key}
-                        className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-                      >
-                        {item.textValue}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                selectedKeys={formData.desaBinaan}
-                selectionMode="multiple"
-                variant="bordered"
-                onSelectionChange={(keys: any) => {
-                  handleInputChange("desaBinaan", Array.from(keys));
+                options={desaBinaanOptions}
+                value={selectedDesaBinaanValues}
+                onChange={(selectedOptions: any) => {
+                  const values = selectedOptions
+                    ? selectedOptions.map((opt: any) => opt.value)
+                    : [];
+                  handleInputChange("desaBinaan", values);
                 }}
-              >
-                {(desaBinaanData?.data || []).map((desa) => (
-                  <SelectItem key={desa.nama} textValue={desa.nama}>
-                    {desa.nama}
-                  </SelectItem>
-                ))}
-              </Select>
+                classNames={{
+                  control: ({ isFocused }) =>
+                    `w-full px-2 py-1 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[42px] ${
+                      errors.desaBinaan
+                        ? "border-red-500 ring-1 ring-red-500"
+                        : isFocused
+                          ? "border-green-500 ring-1 ring-green-500"
+                          : "border-gray-300 dark:border-gray-600"
+                    }`,
+                  placeholder: () => "text-gray-400 text-sm",
+                  multiValue: () =>
+                    "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-lg px-2 py-0.5 m-0.5 text-xs font-medium flex items-center gap-1",
+                  multiValueLabel: () =>
+                    "text-blue-800 dark:text-blue-200 text-xs font-medium",
+                  multiValueRemove: () =>
+                    "hover:bg-blue-200 dark:hover:bg-blue-800 rounded p-0.5 text-blue-600 transition-colors cursor-pointer",
+                  menu: () =>
+                    "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
+                  option: ({ isFocused, isSelected }) =>
+                    `px-3 py-2 text-sm rounded-lg cursor-pointer ${
+                      isSelected
+                        ? "bg-green-600 text-white"
+                        : isFocused
+                          ? "bg-green-50 dark:bg-gray-700 text-green-800 dark:text-green-300"
+                          : "text-gray-700 dark:text-gray-200"
+                    }`,
+                }}
+                unstyled
+              />
               {errors.desaBinaan && (
                 <p className="text-xs text-red-500 mt-1">{errors.desaBinaan}</p>
               )}
@@ -863,50 +914,55 @@ export function PenyuluhForm() {
 
             {/* Kelompok Binaan - Multiple Select */}
             <div className="mb-10">
-              <p className="block text-sm font-semibold text-gray-700 mb-2">
+              <p className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Kelompok Tani Binaan <span className="text-red-500">*</span>
               </p>
-              <Select
-                isInvalid={!!errors.selectedKelompokIds}
-                isDisabled={!formData.kecamatanBinaanId}
+              <ReactSelect
+                isMulti
+                isDisabled={!formData.kecamatanBinaanId || loadingKelompok}
                 isLoading={loadingKelompok}
-                isMultiline={true}
-                placeholder="Pilih kelompok yang akan dibina"
-                renderValue={(items: any) => (
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((item: any) => (
-                      <div
-                        key={item.key}
-                        className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full"
-                      >
-                        {item.textValue}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                selectedKeys={formData.selectedKelompokIds}
-                selectionMode="multiple"
-                variant="bordered"
-                onSelectionChange={(keys: any) => {
-                  handleInputChange("selectedKelompokIds", Array.from(keys));
+                placeholder={
+                  formData.kecamatanBinaanId
+                    ? "Pilih satu atau lebih kelompok tani binaan..."
+                    : "Pilih kecamatan binaan dulu"
+                }
+                options={kelompokBinaanOptions}
+                value={selectedKelompokValues}
+                onChange={(selectedOptions: any) => {
+                  const values = selectedOptions
+                    ? selectedOptions.map((opt: any) => opt.value)
+                    : [];
+                  handleInputChange("selectedKelompokIds", values);
                 }}
-              >
-                {filteredKelompok.map((kelompok: any) => (
-                  <SelectItem
-                    key={kelompok.id}
-                    textValue={`${kelompok.namaKelompok} - ${kelompok.desa}`}
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {kelompok.namaKelompok} - {kelompok.desa}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        Gapoktan: {kelompok.gapoktan}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </Select>
+                classNames={{
+                  control: ({ isFocused }) =>
+                    `w-full px-2 py-1 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[42px] ${
+                      errors.selectedKelompokIds
+                        ? "border-red-500 ring-1 ring-red-500"
+                        : isFocused
+                          ? "border-green-500 ring-1 ring-green-500"
+                          : "border-gray-300 dark:border-gray-600"
+                    }`,
+                  placeholder: () => "text-gray-400 text-sm",
+                  multiValue: () =>
+                    "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 rounded-lg px-2 py-0.5 m-0.5 text-xs font-medium flex items-center gap-1",
+                  multiValueLabel: () =>
+                    "text-green-800 dark:text-green-200 text-xs font-medium",
+                  multiValueRemove: () =>
+                    "hover:bg-green-200 dark:hover:bg-green-800 rounded p-0.5 text-green-600 transition-colors cursor-pointer",
+                  menu: () =>
+                    "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
+                  option: ({ isFocused, isSelected }) =>
+                    `px-3 py-2 text-sm rounded-lg cursor-pointer ${
+                      isSelected
+                        ? "bg-green-600 text-white"
+                        : isFocused
+                          ? "bg-green-50 dark:bg-gray-700 text-green-800 dark:text-green-300"
+                          : "text-gray-700 dark:text-gray-200"
+                    }`,
+                }}
+                unstyled
+              />
               {errors.selectedKelompokIds && (
                 <p className="text-xs text-red-500 mt-1">
                   {errors.selectedKelompokIds}

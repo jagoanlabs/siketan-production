@@ -334,10 +334,10 @@ export const DashboardStatistika = () => {
     },
   ];
 
-  // Default options for AsyncSelect
+  // Default options untuk AsyncSelect
   const defaultOptions = useMemo(() => {
     if (defaultData) {
-      return defaultData.slice(0, 10).map((item: DashoardDataPotkan) => ({
+      return defaultData.map((item: DashoardDataPotkan) => ({
         value: item.id,
         label: item.gapoktan + " - " + item.namaKelompok,
         data: item,
