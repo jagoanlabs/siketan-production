@@ -25,8 +25,8 @@ export interface DataTanaman {
   realisasiBulanPanen: string;
   createdAt: string;
   updatedAt: string;
-  fk_kelompokId: number;
-  kelompok: KelompokData;
+  fk_kelompokId?: number | null;
+  kelompok?: KelompokData | null;
 }
 
 export interface TanamanApiResponse {

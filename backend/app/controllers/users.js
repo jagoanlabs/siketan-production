@@ -220,7 +220,7 @@ const updateAccount = async (req, res) => {
 };
 
 const searchPoktan = async (req, res) => {
-  const { search } = req.query;
+  const { search, limit } = req.query;
   const { peran, role } = req.user || {};
   const isPenyuluh =
     peran === 'penyuluh' ||
@@ -294,7 +294,8 @@ const searchPoktan = async (req, res) => {
 
     const data = await kelompok.findAll({
       where: whereClause,
-      limit: isPenyuluh ? undefined : 10,
+      limit: limit && !isNaN(Number(limit)) ? Number(limit) : undefined,
+      order: [['namaKelompok', 'ASC']],
       include: [
         {
           model: kecamatan,

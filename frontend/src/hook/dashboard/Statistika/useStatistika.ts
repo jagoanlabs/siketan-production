@@ -192,7 +192,7 @@ export const useExportStatistika = () => {
       prakiraanMin,
       prakiraanMax,
     }: {
-      poktanId?: number | null;
+      poktanId?: string | number | null;
       tahun?: string | null;
       kategori?: string | null;
       komoditas?: string | null;

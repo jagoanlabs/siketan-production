@@ -1,9 +1,239 @@
 import { Chip } from "../../../../../components/Form/HeroChip";
 import { Button } from "../../../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
-// pages/DashboardStatistika.tsx - Enhanced dengan bulk actions
-import { useCallback, useEffect, useMemo, useState } from "react";
+import ReactDOM from "react-dom";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AsyncSelect from "react-select/async";
+import { components } from "react-select";
+
+const PoktanHoverBadge = ({
+  count,
+  remainingCount,
+  selectedValues,
+  onRemoveItem,
+  onClearAll,
+}: {
+  count: number;
+  remainingCount: number;
+  selectedValues: any[];
+  onRemoveItem: (item: any) => void;
+  onClearAll: () => void;
+}) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const badgeRef = useRef<HTMLDivElement>(null);
+  const closeTimeoutRef = useRef<any>(null);
+
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    if (badgeRef.current) {
+      const rect = badgeRef.current.getBoundingClientRect();
+      setTooltipPos({
+        top: rect.bottom + 6,
+        left: Math.max(12, Math.min(rect.left, window.innerWidth - 340)),
+      });
+    }
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setShowTooltip(false);
+    }, 150);
+  };
+
+  return (
+    <>
+      <div
+        ref={badgeRef}
+        className="inline-flex shrink-0"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 dark:hover:bg-blue-900 cursor-pointer transition-colors whitespace-nowrap shadow-2xs">
+          +{remainingCount} lainnya
+        </span>
+      </div>
+
+      {/* Floating Tooltip Card portal to document.body */}
+      {showTooltip &&
+        ReactDOM.createPortal(
+          <div
+            style={{
+              position: "fixed",
+              top: `${tooltipPos.top}px`,
+              left: `${tooltipPos.left}px`,
+              zIndex: 999999,
+            }}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-3 min-w-[280px] max-w-[340px] pointer-events-auto cursor-default animate-in fade-in zoom-in-95 duration-100"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gray-150 dark:border-gray-700 pb-2 mb-2">
+              <span className="text-xs font-bold text-gray-800 dark:text-gray-100">
+                {count} Poktan Terpilih
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClearAll();
+                  setShowTooltip(false);
+                }}
+                className="text-[11px] text-red-500 hover:text-red-700 hover:underline font-medium cursor-pointer"
+              >
+                Hapus Semua
+              </button>
+            </div>
+            <ul className="space-y-1.5 max-h-56 overflow-y-auto pr-1 text-xs text-gray-700 dark:text-gray-300">
+              {selectedValues.map((item: any, idx: number) => (
+                <li
+                  key={item.value || idx}
+                  className="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveItem(item);
+                    }}
+                    className="text-gray-400 hover:text-red-500 p-0.5 rounded opacity-70 group-hover:opacity-100 shrink-0 cursor-pointer"
+                    title="Hapus"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+};
+
+// Custom Value Container: Badge pertama di kiri, badge +N lainnya di kanannya
+const CustomValueContainer = ({ children, ...props }: any) => {
+  const selectedValues = props.getValue();
+  const count = selectedValues.length;
+
+  if (count === 0) {
+    return (
+      <components.ValueContainer {...props}>
+        {children}
+      </components.ValueContainer>
+    );
+  }
+
+  const childrenArray = React.Children.toArray(children);
+  const inputChild = childrenArray[childrenArray.length - 1];
+  const firstItem = selectedValues[0];
+  const remainingCount = count - 1;
+
+  const handleRemove = (itemToRemove: any) => {
+    const newValues = selectedValues.filter(
+      (item: any) => item.value !== itemToRemove.value,
+    );
+    props.selectProps.onChange(newValues, {
+      action: "remove-value",
+      removedValue: itemToRemove,
+    });
+  };
+
+  const handleClearAll = () => {
+    props.selectProps.onChange([], { action: "clear" });
+  };
+
+  if (remainingCount === 0) {
+    return (
+      <components.ValueContainer {...props}>
+        <div className="flex items-center gap-1.5 flex-nowrap min-w-0 py-0.5">
+          <div
+            className="inline-flex items-center gap-1 bg-[#E8F0FE] dark:bg-blue-950/70 text-[#1A73E8] dark:text-blue-300 rounded-lg px-2.5 py-0.5 text-xs font-medium max-w-[190px] shrink-0 shadow-2xs"
+            title={firstItem.label}
+          >
+            <span className="truncate">{firstItem.label}</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemove(firstItem);
+              }}
+              className="text-blue-500 hover:text-blue-700 hover:bg-blue-200/60 dark:hover:bg-blue-900 rounded p-0.5 ml-0.5 shrink-0 cursor-pointer"
+              title="Hapus"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex-1 min-w-[20px]">{inputChild}</div>
+        </div>
+      </components.ValueContainer>
+    );
+  }
+
+  // Jika > 1 poktan dipilih:
+  // Baris 1: Badge pertama
+  // Baris 2: Badge +N lainnya di kiri, kursor input di kanannya
+  return (
+    <components.ValueContainer {...props}>
+      <div className="flex flex-col items-start gap-1 py-1 w-full min-w-0">
+        {/* Baris 1: Badge Pertama */}
+        <div
+          className="inline-flex items-center gap-1 bg-[#E8F0FE] dark:bg-blue-950/70 text-[#1A73E8] dark:text-blue-300 rounded-lg px-2.5 py-0.5 text-xs font-medium max-w-full shadow-2xs"
+          title={firstItem.label}
+        >
+          <span className="truncate max-w-[200px]">{firstItem.label}</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemove(firstItem);
+            }}
+            className="text-blue-500 hover:text-blue-700 hover:bg-blue-200/60 dark:hover:bg-blue-900 rounded p-0.5 ml-0.5 shrink-0 cursor-pointer"
+            title="Hapus"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Baris 2: Badge +N lainnya di kiri, kursor input di kanannya */}
+        <div className="flex items-center gap-1.5 w-full min-w-0">
+          <PoktanHoverBadge
+            count={count}
+            remainingCount={remainingCount}
+            selectedValues={selectedValues}
+            onRemoveItem={handleRemove}
+            onClearAll={handleClearAll}
+          />
+          <div className="flex-1 min-w-[20px]">{inputChild}</div>
+        </div>
+      </div>
+    </components.ValueContainer>
+  );
+};
+
+const DummyMultiValue = () => null;
+
+const CustomOption = (props: any) => {
+  return (
+    <components.Option {...props}>
+      <div className="flex items-center justify-between w-full">
+        <span className="truncate">{props.label}</span>
+        {props.isSelected && (
+          <span className="text-xs font-bold ml-2 shrink-0">✓</span>
+        )}
+      </div>
+    </components.Option>
+  );
+};
 
 
 
@@ -11,7 +241,7 @@ import AsyncSelect from "react-select/async";
 
 
 
-import { Modal, Popover, PopoverContent, PopoverTrigger, SearchField, Tooltip } from "@heroui/react";
+import { Modal, Popover, PopoverContent, PopoverTrigger, Tooltip } from "@heroui/react";
 import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { TbTableExport, TbTableOptions, TbTablePlus } from "react-icons/tb";
 import { BsFiletypeXlsx } from "react-icons/bs";
@@ -29,6 +259,7 @@ import {
 } from "@/types/Statistika/statistika.d";
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
+import { getPoktanDashboard } from "@/service/DashboardAdmin/index/dashboard-poktan";
 import { useDashboardDataPotkan } from "@/hook/dashboard/useDashboardDataPotkan";
 import { useTanamanData } from "@/hook/dashboard/useDashboardDataTable";
 import {
@@ -61,9 +292,8 @@ export const DashboardStatistika = () => {
       ? ((user as any).role as string).includes("penyuluh")
       : Boolean((user as any)?.role?.name?.includes("penyuluh")));
 
-  // AsyncSelect state
-  const [selectedOption, setSelectedOption] = useState<any>(null);
-  const [poktanSearchTerm, setPoktanSearchTerm] = useState("");
+  // AsyncSelect state (multi-select poktan)
+  const [selectedPoktan, setSelectedPoktan] = useState<any[]>([]);
 
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
@@ -160,6 +390,7 @@ export const DashboardStatistika = () => {
   };
 
   const handleClearAllFilters = () => {
+    setSelectedPoktan([]);
     setTableSearchTerm("");
     setDebouncedTableSearch("");
     setSelectedCategory("");
@@ -212,11 +443,6 @@ export const DashboardStatistika = () => {
     [],
   );
 
-  const debouncedSetPoktanSearch = useMemo(
-    () => debounce((value: string) => setPoktanSearchTerm(value), 500),
-    [],
-  );
-
   // Update debounced search
   useEffect(() => {
     debouncedSetTableSearch(tableSearchTerm);
@@ -229,7 +455,10 @@ export const DashboardStatistika = () => {
       page: currentPage,
       sortBy: sortConfig.key || "id",
       sortType: sortConfig.direction,
-      poktan_id: selectedOption?.value || undefined,
+      poktan_id:
+        selectedPoktan.length > 0
+          ? selectedPoktan.map((item) => item.value).join(",")
+          : undefined,
       search: debouncedTableSearch || "",
       kategori: selectedCategory || undefined,
       komoditas: selectedCommodity || undefined,
@@ -240,7 +469,7 @@ export const DashboardStatistika = () => {
       itemsPerPage,
       currentPage,
       sortConfig,
-      selectedOption,
+      selectedPoktan,
       debouncedTableSearch,
       selectedCategory,
       selectedCommodity,
@@ -250,11 +479,8 @@ export const DashboardStatistika = () => {
   );
 
   // API Queries
-  const {
-    data: dataPotkan,
-    isLoading: isPotkanLoading,
-    error: potkanError,
-  } = useDashboardDataPotkan(poktanSearchTerm);
+  const { data: defaultData, isLoading: isPotkanLoading } =
+    useDashboardDataPotkan("");
 
   const {
     data: tanamanResponse,
@@ -263,8 +489,6 @@ export const DashboardStatistika = () => {
     error: tanamanError,
     refetch: refetchTanamanData,
   } = useTanamanData(tanamanParams);
-
-  const { data: defaultData } = useDashboardDataPotkan("");
 
   // Define bulk actions
   const selectionActions: SelectionAction[] = [
@@ -350,7 +574,7 @@ export const DashboardStatistika = () => {
     if (defaultData) {
       return defaultData.map((item: DashoardDataPotkan) => ({
         value: item.id,
-        label: item.gapoktan + " - " + item.namaKelompok,
+        label: (item.gapoktan ? `${item.gapoktan} - ` : "") + item.namaKelompok,
         data: item,
       }));
     }
@@ -360,46 +584,27 @@ export const DashboardStatistika = () => {
 
   // AsyncSelect load options
   const loadOptions = useCallback(
-    (inputValue: string, callback: (options: any[]) => void) => {
-      debouncedSetPoktanSearch(inputValue);
-
-      if (!inputValue || inputValue === poktanSearchTerm) {
-        if (dataPotkan) {
-          const options = dataPotkan.map((item: DashoardDataPotkan) => ({
-            value: item.id,
-            label: item.gapoktan + " - " + item.namaKelompok,
-            data: item,
-          }));
-
-          callback(options);
-        } else {
-          callback([]);
-        }
-      } else {
-        setTimeout(() => {
-          if (dataPotkan) {
-            const options = dataPotkan.map((item: DashoardDataPotkan) => ({
-              value: item.id,
-              label: item.gapoktan + " - " + item.namaKelompok,
-              data: item,
-            }));
-
-            callback(options);
-          } else {
-            callback([]);
-          }
-        }, 600);
+    async (inputValue: string) => {
+      try {
+        const res = await getPoktanDashboard(inputValue || "");
+        return (res || []).map((item: DashoardDataPotkan) => ({
+          value: item.id,
+          label: (item.gapoktan ? `${item.gapoktan} - ` : "") + item.namaKelompok,
+          data: item,
+        }));
+      } catch (error) {
+        console.error("Error loading poktan options:", error);
+        return [];
       }
     },
-    [dataPotkan, debouncedSetPoktanSearch, poktanSearchTerm],
+    [],
   );
 
   // Handler functions
-  const handlePoktanChange = (option: any) => {
-    setSelectedOption(option);
+  const handlePoktanChange = (options: any) => {
+    const newOptions = options ? (Array.isArray(options) ? options : [options]) : [];
+    setSelectedPoktan(newOptions);
     setCurrentPage(1);
-    setTableSearchTerm("");
-    setDebouncedTableSearch("");
     setSelectedItems([]); // Clear selection when filter changes
   };
 
@@ -568,6 +773,25 @@ export const DashboardStatistika = () => {
     setIsExportModalOpen(true);
   };
 
+  const handleDownloadFiltered = async () => {
+    try {
+      const poktanIdParam =
+        selectedPoktan.length > 0
+          ? selectedPoktan.map((opt) => opt.value).join(",")
+          : null;
+
+      await exportMutation.mutateAsync({
+        poktanId: poktanIdParam,
+        kategori: selectedCategory || null,
+        komoditas: selectedCommodity || null,
+        prakiraanMin: prakiraanMin || null,
+        prakiraanMax: prakiraanMax || null,
+      });
+    } catch (error) {
+      console.error("Download filtered data failed:", error);
+    }
+  };
+
   const executeExport = async () => {
     try {
       let targetYear = null;
@@ -581,8 +805,13 @@ export const DashboardStatistika = () => {
         targetPrakiraanMax = `${exportPickerYear}-${selectedExportMonth}`;
       }
 
+      const poktanIdParam =
+        selectedPoktan.length > 0
+          ? selectedPoktan.map((opt) => opt.value).join(",")
+          : null;
+
       const response = await exportMutation.mutateAsync({
-        poktanId: selectedOption?.value || null,
+        poktanId: poktanIdParam,
         tahun: targetYear,
         kategori: selectedCategory || null,
         komoditas: selectedCommodity || null,
@@ -705,7 +934,7 @@ export const DashboardStatistika = () => {
       align: "center",
       width: "60px",
       render: (item) => {
-        return item.kelompok.id;
+        return item.kelompok?.id || item.fk_kelompokId || "-";
       },
     },
     {
@@ -743,21 +972,24 @@ export const DashboardStatistika = () => {
     {
       key: "kelompok",
       title: "Kelompok",
-      render: (item) => (
-        <div>
-          <div className="font-medium text-sm">
-            {item.kelompok.namaKelompok}
+      render: (item) =>
+        item.kelompok ? (
+          <div>
+            <div className="font-medium text-sm">
+              {item.kelompok.namaKelompok}
+            </div>
+            <div className="text-xs text-gray-400">{item.kelompok.gapoktan}</div>
           </div>
-          <div className="text-xs text-gray-400">{item.kelompok.gapoktan}</div>
-        </div>
-      ),
+        ) : (
+          <span className="text-gray-400 text-sm">-</span>
+        ),
     },
     {
       key: "kecamatan",
       title: "Kecamatan",
       render: (item) => (
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {item.kelompok.kecamatan || "-"}
+          {item.kelompok?.kecamatan || "-"}
         </span>
       ),
     },
@@ -766,7 +998,7 @@ export const DashboardStatistika = () => {
       title: "Desa",
       render: (item) => (
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {item.kelompok.desa || "-"}
+          {item.kelompok?.desa || "-"}
         </span>
       ),
     },
@@ -1065,93 +1297,71 @@ export const DashboardStatistika = () => {
         type="processing"
       />
 
-      {/* Poktan Select Filter */}
-      <div className="mb-6">
-        <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Filter berdasarkan Poktan
-        </p>
-        <AsyncSelect
-          cacheOptions
-          isClearable
-          unstyled
-          classNames={{
-            control: ({ isFocused }) =>
-              `w-full px-3.5 py-3 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[40px] ${isFocused
-                ? "border-green-500 ring-1 ring-green-500"
-                : "border-gray-300 dark:border-gray-600"
-              }`,
-            placeholder: () => "text-gray-400 text-sm",
-            singleValue: () => "text-gray-700 dark:text-gray-200 text-sm",
-            input: () => "text-gray-700 dark:text-gray-200 text-sm outline-none",
-            menu: () => "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
-            option: ({ isFocused, isSelected }) =>
-              `px-3 py-2.5 text-sm rounded-lg cursor-pointer ${isSelected
-                ? "bg-green-600 text-white"
-                : isFocused
-                  ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  : "text-gray-700 dark:text-gray-200"
-              }`,
-            valueContainer: () => "flex items-center gap-1.5 flex-1",
-            indicatorsContainer: () => "flex items-center gap-1.5 text-gray-400",
-            clearIndicator: () => "hover:text-red-500 cursor-pointer p-0.5",
-            dropdownIndicator: () => "hover:text-gray-600 cursor-pointer p-0.5"
-          }}
-          defaultOptions={defaultOptions}
-          isLoading={isPotkanLoading}
-          loadOptions={loadOptions}
-          menuPlacement="auto"
-          menuPortalTarget={document.body}
-          menuPosition="fixed"
-          noOptionsMessage={({ inputValue }) =>
-            inputValue
-              ? `Tidak ada hasil untuk "${inputValue}"`
-              : "Ketik untuk mencari..."
-          }
-          placeholder="Pilih atau cari poktan..."
-          styles={{
-            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-            menu: (base) => ({ ...base, zIndex: 9999 }),
-          }}
-          value={selectedOption}
-          onChange={handlePoktanChange}
-        />
-
-        {potkanError && (
-          <div className="text-red-500 text-sm mt-1">
-            Error: {potkanError.message}
-          </div>
-        )}
-      </div>
-
       {/* Search and Filters Flex Container */}
-      <div className="flex flex-col md:flex-row gap-4 items-end mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-        {/* Search */}
-        <div className="flex-1 w-full flex flex-col gap-1.5">
-          <SearchField
-            value={tableSearchTerm}
-            onChange={handleTableSearchChange}
-          >
-            <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">Pencarian</span>
-            <SearchField.Group className="w-full bg-transparent border border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 dark:hover:border-gray-500 transition-colors flex items-center gap-1 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 min-h-[46px] pl-1 !pr-1">
-              <SearchField.SearchIcon className="text-gray-400 !ml-3" />
-              <SearchField.Input
-                placeholder="Cari kategori, poktan/kelompok, kecamatan, desa..."
-                className="bg-transparent outline-none border-none ring-0 focus:ring-0 focus:outline-none w-full text-sm text-gray-700 dark:text-gray-200"
-              />
-              {tableSearchTerm && (
-                <SearchField.ClearButton
-                  className="text-gray-400 hover:text-gray-600 cursor-pointer flex items-center justify-center"
-                  onClick={handleClearSearch}
-                />
-              )}
-            </SearchField.Group>
-          </SearchField>
+      <div className="flex flex-col md:flex-row gap-3 items-end mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        {/* Pencarian (Multi-select Poktan) */}
+        <div className="flex-1 w-full min-w-[240px] flex flex-col gap-1.5">
+          <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">
+            Pencarian
+          </span>
+          <AsyncSelect
+            isMulti
+            cacheOptions
+            isClearable={false}
+            unstyled
+            components={{
+              ValueContainer: CustomValueContainer,
+              MultiValue: DummyMultiValue,
+              Option: CustomOption,
+            }}
+            classNames={{
+              control: ({ isFocused }) =>
+                `w-full px-3 py-1.5 bg-transparent border rounded-xl hover:border-gray-400 dark:hover:border-gray-500 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[46px] h-auto relative ${
+                  isFocused
+                    ? "border-green-500 ring-1 ring-green-500"
+                    : "border-gray-300 dark:border-gray-600"
+                }`,
+              placeholder: () => "text-gray-400 text-sm pl-0.5 whitespace-nowrap",
+              input: () => "text-gray-700 dark:text-gray-200 text-sm outline-none min-w-[20px]",
+              menu: () =>
+                "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
+              option: ({ isFocused, isSelected }) =>
+                `px-3 py-2 text-sm rounded-lg cursor-pointer ${
+                  isSelected
+                    ? "bg-green-600 text-white font-medium"
+                    : isFocused
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      : "text-gray-700 dark:text-gray-200"
+                }`,
+              valueContainer: () => "flex items-center flex-1 min-w-0 py-0.5",
+              indicatorsContainer: () => "flex items-center gap-1 text-gray-400 shrink-0 self-center",
+              dropdownIndicator: () => "hover:text-gray-600 cursor-pointer p-0.5",
+            }}
+            defaultOptions={defaultOptions}
+            isLoading={isPotkanLoading}
+            loadOptions={loadOptions}
+            menuPlacement="auto"
+            menuPortalTarget={document.body}
+            menuPosition="fixed"
+            noOptionsMessage={({ inputValue }) =>
+              inputValue
+                ? `Tidak ada hasil untuk "${inputValue}"`
+                : "Ketik untuk mencari..."
+            }
+            placeholder="Cari..."
+            styles={{
+              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              menu: (base) => ({ ...base, zIndex: 9999 }),
+            }}
+            value={selectedPoktan}
+            onChange={handlePoktanChange}
+          />
         </div>
 
-        {/* Jenis Pangan Select */}
-        <div className="w-full md:w-52">
+        {/* Jenis Tanaman Select */}
+        <div className="w-full md:w-48">
           <Select
-            label="Jenis Pangan"
+            label="Jenis Tanaman"
             placeholder="Semua Jenis"
             variant="bordered"
             selectedKeys={selectedCategory ? [selectedCategory] : []}
@@ -1181,7 +1391,7 @@ export const DashboardStatistika = () => {
         </div>
 
         {/* Commodity Select */}
-        <div className="w-full md:w-60">
+        <div className="w-full md:w-56">
           <Select
             label="Komoditas"
             placeholder="Semua Komoditas"
@@ -1206,7 +1416,7 @@ export const DashboardStatistika = () => {
         </div>
 
         {/* Harvest Range Month-Year Popover */}
-        <div className="w-full md:w-72 flex flex-col gap-1.5">
+        <div className="w-full md:w-60 flex flex-col gap-1.5">
           <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">Prakiraan Panen</span>
           <Popover isOpen={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger>
@@ -1301,17 +1511,24 @@ export const DashboardStatistika = () => {
           </Popover>
         </div>
 
-        {/* Reset Filters */}
-        {(tableSearchTerm || selectedCategory || selectedCommodity || prakiraanMin || prakiraanMax) && (
-          <Button
-            className="w-full min-h-[46px] md:w-auto"
-            color="danger"
-            variant="flat"
-            onPress={handleClearAllFilters}
+        {/* Actions: Reset & Download */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <button
+            type="button"
+            onClick={handleClearAllFilters}
+            className="w-full md:w-auto min-h-[46px] px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] dark:bg-red-950/50 dark:hover:bg-red-900/50 dark:text-red-300 transition-all cursor-pointer shadow-xs active:scale-95 flex items-center justify-center"
           >
             Reset
-          </Button>
-        )}
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadFiltered}
+            disabled={exportMutation.isPending}
+            className="w-full md:w-auto min-h-[46px] px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#15803D] dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-emerald-300 transition-all cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {exportMutation.isPending ? "Mengunduh..." : "Download"}
+          </button>
+        </div>
       </div>
 
       {/* Enhanced ReusableTable with Bulk Actions */}
@@ -1343,9 +1560,9 @@ export const DashboardStatistika = () => {
         searchTerm={tableSearchTerm}
         selectedItems={selectedItems}
         subtitle={
-          selectedOption ? (
+          selectedPoktan.length > 0 ? (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Filter: <strong>{selectedOption.label}</strong>
+              Filter: <strong>{selectedPoktan.map((item) => item.label).join(", ")}</strong>
             </p>
           ) : null
         }

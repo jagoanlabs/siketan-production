@@ -50,7 +50,17 @@ const getAllDataTanaman = async (req, res) => {
 
     // filter poktan
     if (poktan_id && poktan_id !== 'undefined') {
-      whereClause.fk_kelompokId = { [Op.eq]: poktan_id };
+      const poktanArray = Array.isArray(poktan_id)
+        ? poktan_id
+        : typeof poktan_id === 'string' && poktan_id.includes(',')
+          ? poktan_id.split(',').map((id) => id.trim()).filter(Boolean)
+          : [poktan_id];
+
+      if (poktanArray.length === 1) {
+        whereClause.fk_kelompokId = { [Op.eq]: poktanArray[0] };
+      } else if (poktanArray.length > 1) {
+        whereClause.fk_kelompokId = { [Op.in]: poktanArray };
+      }
     }
 
     // filter kategori
@@ -159,9 +169,11 @@ const getAllDataTanaman = async (req, res) => {
       ];
     }
 
+    const isFilteredByPoktan = Boolean(poktan_id && poktan_id !== 'undefined');
+
     const filter = {
       where: whereClause,
-      include: [{ model: kelompok, as: 'kelompok', required: true }],
+      include: [{ model: kelompok, as: 'kelompok', required: isFilteredByPoktan }],
       limit: limitFilter,
       offset: (pageFilter - 1) * limitFilter,
       order: [[sortBy || 'id', sortType || 'DESC']]
@@ -169,7 +181,7 @@ const getAllDataTanaman = async (req, res) => {
 
     const data = await dataTanaman.findAll(
       isExportFilter
-        ? { where: whereClause, include: [{ model: kelompok, as: 'kelompok', required: true }] }
+        ? { where: whereClause, include: [{ model: kelompok, as: 'kelompok', required: isFilteredByPoktan }] }
         : filter
     );
 
@@ -183,7 +195,7 @@ const getAllDataTanaman = async (req, res) => {
 
     const total = await dataTanaman.count({
       where: whereClause,
-      include: [{ model: kelompok, as: 'kelompok', required: true }],
+      include: [{ model: kelompok, as: 'kelompok', required: isFilteredByPoktan }],
       distinct: true
     });
 

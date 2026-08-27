@@ -205,14 +205,17 @@ export const DashboardAdminIndex = () => {
       {
         key: "kelompok",
         title: "Kelompok",
-        render: (item: DataTanaman) => (
-          <div>
-            <div className="font-medium">{item.kelompok.namaKelompok}</div>
-            <div className="text-xs text-gray-400">
-              {item.kelompok.gapoktan}
+        render: (item: DataTanaman) =>
+          item.kelompok ? (
+            <div>
+              <div className="font-medium">{item.kelompok.namaKelompok}</div>
+              <div className="text-xs text-gray-400">
+                {item.kelompok.gapoktan}
+              </div>
             </div>
-          </div>
-        ),
+          ) : (
+            <span className="text-gray-400 text-sm">-</span>
+          ),
       },
       {
         key: "luasLahan",
