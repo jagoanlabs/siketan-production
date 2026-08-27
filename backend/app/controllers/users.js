@@ -47,7 +47,7 @@ const usersAll = async (req, res) => {
 };
 
 const userVerify = async (req, res) => {
-  const { page, limit, search, sort } = req.query;
+  const { page, limit, search, sort, sortBy, sortDirection, startDate, endDate } = req.query;
   const { peran: userRole } = req.user || {};
 
   try {
@@ -60,15 +60,45 @@ const userVerify = async (req, res) => {
     const limitFilter = Number(limit) || 10;
 
     // Sorting logic
-    let orderFilter = [['id', 'ASC']];
-    if (sort === 'verified_desc') {
+    let orderFilter = [
+      ['isVerified', 'ASC'],
+      ['createdAt', 'ASC'],
+      ['id', 'ASC']
+    ];
+
+    if (sortBy) {
+      const dir = (sortDirection && String(sortDirection).toUpperCase() === 'DESC') ? 'DESC' : 'ASC';
+      if (sortBy === 'createdAt') {
+        orderFilter = [['createdAt', dir], ['id', 'ASC']];
+      } else if (sortBy === 'nama') {
+        orderFilter = [['nama', dir], ['id', 'ASC']];
+      } else if (sortBy === 'isVerified' || sortBy === 'status') {
+        orderFilter = [['isVerified', dir], ['createdAt', 'ASC'], ['id', 'ASC']];
+      } else if (sortBy === 'peran') {
+        orderFilter = [['peran', dir], ['createdAt', 'ASC'], ['id', 'ASC']];
+      } else if (sortBy === 'id') {
+        orderFilter = [['id', dir]];
+      }
+    } else if (sort === 'verified_desc') {
       orderFilter = [
         ['isVerified', 'DESC'],
+        ['createdAt', 'ASC'],
         ['id', 'ASC']
       ];
     } else if (sort === 'verified_asc') {
       orderFilter = [
         ['isVerified', 'ASC'],
+        ['createdAt', 'ASC'],
+        ['id', 'ASC']
+      ];
+    } else if (sort === 'created_desc') {
+      orderFilter = [
+        ['createdAt', 'DESC'],
+        ['id', 'ASC']
+      ];
+    } else if (sort === 'created_asc') {
+      orderFilter = [
+        ['createdAt', 'ASC'],
         ['id', 'ASC']
       ];
     }
@@ -81,6 +111,31 @@ const userVerify = async (req, res) => {
       'operator admin',
       'operator poktan'
     ];
+
+    // Date Filter condition
+    let dateCondition = {};
+    if (startDate && endDate) {
+      dateCondition = {
+        createdAt: {
+          [Op.between]: [
+            new Date(`${startDate} 00:00:00`),
+            new Date(`${endDate} 23:59:59`)
+          ]
+        }
+      };
+    } else if (startDate) {
+      dateCondition = {
+        createdAt: {
+          [Op.gte]: new Date(`${startDate} 00:00:00`)
+        }
+      };
+    } else if (endDate) {
+      dateCondition = {
+        createdAt: {
+          [Op.lte]: new Date(`${endDate} 23:59:59`)
+        }
+      };
+    }
 
     // Search condition
     const searchCondition = search
@@ -125,9 +180,10 @@ const userVerify = async (req, res) => {
           { '$penyuluh.id$': { [Op.not]: null } },
           { '$operator.id$': { [Op.not]: null } }
         ],
-        ...searchCondition
+        ...searchCondition,
+        ...dateCondition
       },
-      attributes: ['id', 'nama', 'peran', 'no_wa', 'email', 'isVerified'],
+      attributes: ['id', 'nama', 'peran', 'no_wa', 'email', 'isVerified', 'createdAt'],
       order: orderFilter,
       limit: limitFilter,
       offset: (pageFilter - 1) * limitFilter,
@@ -165,7 +221,8 @@ const userVerify = async (req, res) => {
           { '$penyuluh.id$': { [Op.not]: null } },
           { '$operator.id$': { [Op.not]: null } }
         ],
-        ...searchCondition
+        ...searchCondition,
+        ...dateCondition
       },
       distinct: true
     });

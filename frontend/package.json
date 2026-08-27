@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroui/react": "^3.2.2",
     "@heroui/styles": "^3.2.2",
+    "@internationalized/date": "^3.12.3",
     "@react-aria/i18n": "^3.12.9",
     "@react-aria/ssr": "^3.9.7",
     "@react-aria/visually-hidden": "3.8.26",

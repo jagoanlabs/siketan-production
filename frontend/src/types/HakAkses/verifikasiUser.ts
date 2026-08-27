@@ -5,6 +5,7 @@ export interface VerifikasiUserData {
   no_wa: string;
   email: string | null;
   isVerified: boolean;
+  createdAt?: string;
   dataPetani: {
     NIK: string;
   } | null;
@@ -14,7 +15,11 @@ export interface VerifikasiUserQueryParams {
   page: number;
   limit: number;
   search?: string;
-  sort?: "verified_desc" | "verified_asc"; // New sort parameter
+  sort?: "verified_desc" | "verified_asc" | "created_desc" | "created_asc";
+  sortBy?: string;
+  sortDirection?: "ASC" | "DESC";
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface VerifikasiUserResponse {

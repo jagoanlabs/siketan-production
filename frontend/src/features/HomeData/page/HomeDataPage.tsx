@@ -191,66 +191,64 @@ export const HomeDataPage = () => {
           >
             <div className="bg-white border-2 border-gray-300 rounded-xl lg:rounded-2xl overflow-hidden">
               <div className="p-4 sm:p-6 lg:p-8 xl:p-10">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
-                  <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 items-stretch">
+                  <StatCard
+                    bgColor="bg-green-50/70 dark:bg-green-950/20"
+                    highlightColor="bg-green-600"
+                    icon={<FaUser />}
+                    loading={loading}
+                    textColor="text-green-600 dark:text-green-400"
+                    title="Jumlah Petani"
+                    value={ringkasan?.jumlahPetani}
+                  />
+                  <Link
+                    className="block h-full transition-transform hover:scale-[1.02] active:scale-[0.98] duration-200 group"
+                    title="Klik untuk melihat daftar lengkap Kelompok Tani"
+                    to="/home/kelompok"
+                  >
                     <StatCard
-                      bgColor="bg-green-50"
-                      highlightColor="bg-green-600"
-                      icon={<FaUser />}
+                      bgColor="bg-blue-50/70 dark:bg-blue-950/20 group-hover:bg-blue-100/70 dark:group-hover:bg-blue-900/30 transition-colors cursor-pointer"
+                      highlightColor="bg-blue-600"
+                      icon={<FaUserGroup className="group-hover:scale-105 transition-transform" />}
                       loading={loading}
-                      textColor="text-green-600"
-                      title="Jumlah Petani"
-                      value={ringkasan?.jumlahPetani}
+                      textColor="text-blue-600 dark:text-blue-400"
+                      title="Kelompok Petani"
+                      value={ringkasan?.jumlahGapoktan}
                     />
-                    <Link
-                      className="block transition-transform hover:scale-[1.03] active:scale-[0.98] duration-200 group"
-                      title="Klik untuk melihat daftar lengkap Kelompok Tani"
-                      to="/home/kelompok"
-                    >
-                      <StatCard
-                        bgColor="bg-blue-50 group-hover:bg-blue-100/80 transition-colors cursor-pointer"
-                        highlightColor="bg-blue-600"
-                        icon={<FaUserGroup className="group-hover:scale-110 transition-transform" />}
-                        loading={loading}
-                        textColor="text-blue-600"
-                        title="Kelompok Petani"
-                        value={ringkasan?.jumlahGapoktan}
-                      />
-                    </Link>
+                  </Link>
+                  <StatCard
+                    bgColor="bg-red-50/70 dark:bg-red-950/20"
+                    highlightColor="bg-red-600"
+                    icon={<FaUserGroup />}
+                    loading={loading}
+                    textColor="text-red-600 dark:text-red-400"
+                    title="Penyuluh"
+                    value={ringkasan?.jumlahPenyuluh}
+                  />
+                  <StatCard
+                    bgColor="bg-amber-50/70 dark:bg-amber-950/20"
+                    highlightColor="bg-amber-600"
+                    icon={<FaUserGroup />}
+                    loading={loading}
+                    textColor="text-amber-600 dark:text-amber-400"
+                    title="Komoditas"
+                    value={ringkasan?.jumlahKomoditas}
+                  />
+                  <div className="col-span-2 sm:col-span-1 h-full">
                     <StatCard
-                      bgColor="bg-red-50"
-                      highlightColor="bg-red-600"
+                      bgColor="bg-yellow-50/70 dark:bg-yellow-950/20"
+                      highlightColor="bg-yellow-600"
                       icon={<FaUserGroup />}
                       loading={loading}
-                      textColor="text-red-600"
-                      title="Penyuluh"
-                      value={ringkasan?.jumlahPenyuluh}
+                      textColor="text-yellow-600 dark:text-yellow-400"
+                      title="Area Pertanian"
+                      value={
+                        ringkasan
+                          ? formatAreaPertanian(ringkasan.areaPertanian)
+                          : undefined
+                      }
                     />
-                    <StatCard
-                      bgColor="bg-amber-50"
-                      highlightColor="bg-amber-600"
-                      icon={<FaUserGroup />}
-                      loading={loading}
-                      textColor="text-amber-600"
-                      title="Komoditas"
-                      value={ringkasan?.jumlahKomoditas}
-                    />
-                    <div className="col-span-2 sm:col-span-1">
-                      <StatCard
-                        bgColor="bg-yellow-50"
-                        highlightColor="bg-yellow-600"
-                        icon={<FaUserGroup />}
-                        loading={loading}
-                        textColor="text-yellow-600"
-                        title="Area Pertanian"
-                        value={
-                          ringkasan
-                            ? formatAreaPertanian(ringkasan.areaPertanian)
-                            : undefined
-                        }
-                      />
-                    </div>
-                  </>
+                  </div>
                 </div>
 
                 {/* Quick link button to Poktan list */}

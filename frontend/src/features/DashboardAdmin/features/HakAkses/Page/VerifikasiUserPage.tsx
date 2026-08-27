@@ -1,28 +1,37 @@
 import { Tooltip } from "@heroui/react";
-// hooks/useVerifikasiTableState.ts
-
 import React, { useMemo, useState, useEffect } from "react";
 import { confirmDialog } from "primereact/confirmdialog";
 import { toast } from "sonner";
 
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { FiRefreshCw } from "react-icons/fi";
 
 import { debounce } from "@/utils/debounce";
-// pages/VerifikasiUserPage.tsx
 import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
 import { ReusableTable } from "@/components/Table/ReusableTable";
+import { DateRangeFilter } from "@/components/DateRangeFilter";
 import { VerifikasiUserQueryParams } from "@/types/HakAkses/verifikasiUser";
+
 export type SortOption = "verified_desc" | "verified_asc" | "default";
+
 const useVerifikasiTableState = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Sorting state - simplified to match backend
+  // Sorting state
   const [sortOption, setSortOption] = useState<SortOption>("verified_asc"); // Default: unverified first
+  const [sortConfig, setSortConfig] = useState<{
+    key: string | null;
+    direction: "ASC" | "DESC";
+  }>({ key: null, direction: "ASC" });
+
+  // Date filter state
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   // Debounce search
   const debouncedSetSearch = useMemo(
@@ -40,9 +49,13 @@ const useVerifikasiTableState = () => {
       page: currentPage,
       limit: itemsPerPage,
       search: debouncedSearch || undefined,
-      sort: sortOption === "default" ? undefined : sortOption, // Don't send sort if default
+      sort: sortConfig.key ? undefined : (sortOption === "default" ? undefined : sortOption),
+      sortBy: sortConfig.key || undefined,
+      sortDirection: sortConfig.key ? sortConfig.direction : undefined,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
     }),
-    [currentPage, itemsPerPage, debouncedSearch, sortOption],
+    [currentPage, itemsPerPage, debouncedSearch, sortOption, sortConfig, startDate, endDate],
   );
 
   const handleSearchChange = (value: string) => {
@@ -59,6 +72,30 @@ const useVerifikasiTableState = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      const isAsc = prev.key === key && prev.direction === "ASC";
+      return {
+        key,
+        direction: isAsc ? "DESC" : "ASC",
+      };
+    });
+    setCurrentPage(1);
+  };
+
+  const handleDateRangeChange = (start: string, end: string) => {
+    setStartDate(start);
+    setEndDate(end);
+    setCurrentPage(1);
+  };
+
+  const clearDateFilter = () => {
+    setStartDate("");
+    setEndDate("");
+    setCurrentPage(1);
+  };
+
   // Sorting handlers
   const toggleVerifiedSort = () => {
     if (sortOption === "verified_asc") {
@@ -68,10 +105,18 @@ const useVerifikasiTableState = () => {
     } else {
       setSortOption("verified_asc"); // Default to unverified first
     }
+    setSortConfig({ key: null, direction: "ASC" });
     setCurrentPage(1);
   };
+
   // Helper to get current sort display info
   const getSortInfo = () => {
+    if (sortConfig.key) {
+      return {
+        label: `${sortConfig.key} (${sortConfig.direction})`,
+        icon: sortConfig.direction === "ASC" ? "↑" : "↓",
+      };
+    }
     switch (sortOption) {
       case "verified_desc":
         return { label: "Terverifikasi Dulu", icon: "↓" };
@@ -89,11 +134,17 @@ const useVerifikasiTableState = () => {
     debouncedSearch,
     queryParams,
     sortOption,
+    sortConfig,
+    startDate,
+    endDate,
 
     // Handlers
     handleSearchChange,
     clearSearch,
     handlePageChange,
+    handleSort,
+    handleDateRangeChange,
+    clearDateFilter,
     toggleVerifiedSort,
 
     // Helpers
@@ -119,13 +170,12 @@ import PermissionWrapper from "@/components/PermissionWrapper";
 const StatusBadge: React.FC<{ isVerified: boolean }> = ({ isVerified }) => {
   return (
     <span
-      className={`px-2 py-1 text-xs font-medium rounded-full border ${
-        isVerified
+      className={`px-2 py-1 text-xs font-medium rounded-full border ${isVerified
           ? "bg-green-100 text-green-800 border-green-200"
           : "bg-yellow-100 text-yellow-800 border-yellow-200"
-      }`}
+        }`}
     >
-      {isVerified ? "✅ Terverifikasi" : "⏳ Belum Terverifikasi"}
+      {isVerified ? "Terverifikasi" : "Belum Terverifikasi"}
     </span>
   );
 };
@@ -137,9 +187,15 @@ export const VerifikasiUserPage = () => {
     debouncedSearch,
     queryParams,
     sortOption,
+    sortConfig,
+    startDate,
+    endDate,
     handleSearchChange,
     clearSearch,
     handlePageChange,
+    handleSort,
+    handleDateRangeChange,
+    clearDateFilter,
     toggleVerifiedSort,
     getSortInfo,
   } = useVerifikasiTableState();
@@ -493,6 +549,7 @@ export const VerifikasiUserPage = () => {
       {
         key: "nama",
         title: "Nama",
+        sortable: true,
         render: (item) => (
           <div>
             <p className="font-medium text-gray-900 dark:text-white">
@@ -500,7 +557,7 @@ export const VerifikasiUserPage = () => {
             </p>
           </div>
         ),
-        width: "200px",
+        width: "190px",
       },
       {
         key: "nik",
@@ -510,12 +567,13 @@ export const VerifikasiUserPage = () => {
             {item.dataPetani?.NIK || "-"}
           </span>
         ),
-        width: "150px",
+        width: "140px",
         align: "center",
       },
       {
         key: "peran",
         title: "Profesi",
+        sortable: true,
         render: (item) => (
           <span className="capitalize text-gray-700 dark:text-gray-300">
             {item.peran}
@@ -532,7 +590,7 @@ export const VerifikasiUserPage = () => {
             {item.no_wa}
           </span>
         ),
-        width: "140px",
+        width: "130px",
       },
       {
         key: "email",
@@ -542,11 +600,41 @@ export const VerifikasiUserPage = () => {
             {item.email || "-"}
           </span>
         ),
-        width: "180px",
+        width: "170px",
+      },
+      {
+        key: "createdAt",
+        title: "Waktu Daftar",
+        sortable: true,
+        align: "center",
+        render: (item) => {
+          if (!item.createdAt) return <span className="text-gray-400">-</span>;
+          const date = new Date(item.createdAt);
+          return (
+            <div className="flex flex-col items-center">
+              <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                {date.toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                {date.toLocaleTimeString("id-ID", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}{" "}
+                WIB
+              </span>
+            </div>
+          );
+        },
+        width: "140px",
       },
       {
         key: "status",
         title: "Status Akun",
+        sortable: true,
         render: (item) => <StatusBadge isVerified={item.isVerified} />,
         width: "140px",
         align: "center",
@@ -571,7 +659,7 @@ export const VerifikasiUserPage = () => {
                         onClick={() => showApproveDialog(item)}
                       >
                         {approveMutation.isPending &&
-                        approveDialog.user?.id === item.id ? (
+                          approveDialog.user?.id === item.id ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600" />
                         ) : (
                           <svg
@@ -607,7 +695,7 @@ export const VerifikasiUserPage = () => {
                         onClick={() => showRejectDialog(item)}
                       >
                         {rejectMutation.isPending &&
-                        rejectDialog.user?.id === item.id ? (
+                          rejectDialog.user?.id === item.id ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600" />
                         ) : (
                           <svg
@@ -658,12 +746,12 @@ export const VerifikasiUserPage = () => {
   const tableData = verifikasiResponse?.data || [];
   const paginationInfo = verifikasiResponse
     ? {
-        total: verifikasiResponse.total,
-        currentPages: verifikasiResponse.currentPages,
-        maxPages: verifikasiResponse.maxPages,
-        from: verifikasiResponse.from,
-        to: verifikasiResponse.to,
-      }
+      total: verifikasiResponse.total,
+      currentPages: verifikasiResponse.currentPages,
+      maxPages: verifikasiResponse.maxPages,
+      from: verifikasiResponse.from,
+      to: verifikasiResponse.to,
+    }
     : undefined;
 
   return (
@@ -820,28 +908,32 @@ export const VerifikasiUserPage = () => {
           getItemId={(item) => item.id}
           selectionActions={selectionActions}
 
-          // Search
+          // Search & Date Filter Header
           headerActions={
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <DateRangeFilter
+                startDate={startDate}
+                endDate={endDate}
+                onChange={handleDateRangeChange}
+                onClear={clearDateFilter}
+                placeholder="Filter Tanggal Daftar"
+              />
+
               <button
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 flex items-center gap-2"
-                onClick={() => {
-                  window.location.reload();
-                }}
-                disabled={approveMutation.isPending || rejectMutation.isPending}
+                className="px-3.5 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                onClick={() => refetchVerifikasiUser()}
+                disabled={isLoading || approveMutation.isPending || rejectMutation.isPending}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                {(approveMutation.isPending || rejectMutation.isPending)
-                  ? 'Processing...'
-                  : 'Refresh'}
+                <FiRefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                <span>{isLoading ? "Memuat..." : "Refresh"}</span>
               </button>
             </div>
           }
           paginationInfo={paginationInfo}
           searchTerm={searchTerm}
           selectedItems={selectedItems}
+          sortConfig={sortConfig}
+          onSort={handleSort}
           searchPlaceholder="Cari nama, email, atau NIK user..."
 
           // Pagination
