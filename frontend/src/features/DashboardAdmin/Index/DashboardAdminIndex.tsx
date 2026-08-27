@@ -182,10 +182,23 @@ export const DashboardAdminIndex = () => {
       {
         key: "no",
         title: "No",
-        width: "80px",
+        width: "60px",
+        align: "center",
         render: (_, index, paginationInfo) => {
           return paginationInfo ? paginationInfo.from + index : index + 1;
         },
+      },
+      {
+        key: "id",
+        title: "ID Data",
+        sortable: true,
+        align: "center",
+        width: "90px",
+        render: (item: DataTanaman) => (
+          <span className="font-mono text-xs font-bold px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800/60">
+            {item.id}
+          </span>
+        ),
       },
       {
         key: "kategori",

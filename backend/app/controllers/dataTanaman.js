@@ -41,26 +41,83 @@ const getAllDataTanaman = async (req, res) => {
     // base filter
     const whereClause = {};
 
-    // role-based filter: operator bisa lihat semua data, selain itu hanya data yang dia buat
+    // Role detection
     const operatorRoles = ['operator_super_admin', 'operator_admin', 'operator_poktan'];
-    const isOperator = role && operatorRoles.includes(role.name);
-    if (!isOperator) {
-      whereClause.created_by = userId;
-    }
+    const isOperator = (role && operatorRoles.includes(role.name)) || peran === 'operator';
+    const isPenyuluh =
+      peran === 'penyuluh' ||
+      (role && (role.name === 'penyuluh' || role.name === 'penyuluh_swadaya' || role.name?.includes('penyuluh')));
 
-    // filter poktan
-    if (poktan_id && poktan_id !== 'undefined') {
-      const poktanArray = Array.isArray(poktan_id)
-        ? poktan_id
-        : typeof poktan_id === 'string' && poktan_id.includes(',')
-          ? poktan_id.split(',').map((id) => id.trim()).filter(Boolean)
-          : [poktan_id];
+    if (isPenyuluh) {
+      const orConditions = [];
+      if (req.user.accountID) orConditions.push({ accountID: req.user.accountID });
+      if (req.user.id) orConditions.push({ accountID: req.user.id });
+      if (req.user.email) orConditions.push({ email: req.user.email });
+      if (req.user.nik || req.user.NIK) orConditions.push({ nik: req.user.nik || req.user.NIK });
+      if (req.user.nama) orConditions.push({ nama: req.user.nama });
 
-      if (poktanArray.length === 1) {
-        whereClause.fk_kelompokId = { [Op.eq]: poktanArray[0] };
-      } else if (poktanArray.length > 1) {
-        whereClause.fk_kelompokId = { [Op.in]: poktanArray };
+      const penyuluhData = orConditions.length > 0
+        ? await dataPenyuluh.findOne({
+            where: { [Op.or]: orConditions }
+          })
+        : null;
+
+      let penyuluhCondition = { id: -1 };
+      if (penyuluhData) {
+        const condList = [
+          { penyuluh: penyuluhData.id },
+          { penyuluh: String(penyuluhData.id) }
+        ];
+        if (penyuluhData.nama) condList.push({ penyuluh: penyuluhData.nama });
+        if (penyuluhData.nik) condList.push({ penyuluh: String(penyuluhData.nik) });
+
+        if (penyuluhData.desaBinaan) {
+          const desas = penyuluhData.desaBinaan.split(',').map((d) => d.trim()).filter(Boolean);
+          if (desas.length > 0) condList.push({ desa: { [Op.in]: desas } });
+        }
+        if (penyuluhData.kecamatanBinaan) {
+          const kecamatans = penyuluhData.kecamatanBinaan.split(',').map((k) => k.trim()).filter(Boolean);
+          if (kecamatans.length > 0) condList.push({ kecamatan: { [Op.in]: kecamatans } });
+        }
+
+        penyuluhCondition = { [Op.or]: condList };
       }
+
+      const poktanBinaan = await kelompok.findAll({
+        where: penyuluhCondition,
+        attributes: ['id']
+      });
+      const binaanIds = poktanBinaan.map((k) => k.id);
+
+      if (poktan_id && poktan_id !== 'undefined') {
+        const poktanArray = Array.isArray(poktan_id)
+          ? poktan_id
+          : typeof poktan_id === 'string' && poktan_id.includes(',')
+            ? poktan_id.split(',').map((id) => Number(id.trim())).filter(Boolean)
+            : [Number(poktan_id)];
+
+        const allowedPoktan = poktanArray.filter((id) => binaanIds.includes(id));
+        whereClause.fk_kelompokId = { [Op.in]: allowedPoktan.length > 0 ? allowedPoktan : [-1] };
+      } else {
+        whereClause.fk_kelompokId = { [Op.in]: binaanIds.length > 0 ? binaanIds : [-1] };
+      }
+    } else if (isOperator) {
+      // Operator bisa melihat semua data, atau filter berdasarkan poktan jika dipilih
+      if (poktan_id && poktan_id !== 'undefined') {
+        const poktanArray = Array.isArray(poktan_id)
+          ? poktan_id
+          : typeof poktan_id === 'string' && poktan_id.includes(',')
+            ? poktan_id.split(',').map((id) => id.trim()).filter(Boolean)
+            : [poktan_id];
+
+        if (poktanArray.length === 1) {
+          whereClause.fk_kelompokId = { [Op.eq]: poktanArray[0] };
+        } else if (poktanArray.length > 1) {
+          whereClause.fk_kelompokId = { [Op.in]: poktanArray };
+        }
+      }
+    } else {
+      whereClause.created_by = userId;
     }
 
     // filter kategori
@@ -169,7 +226,7 @@ const getAllDataTanaman = async (req, res) => {
       ];
     }
 
-    const isFilteredByPoktan = Boolean(poktan_id && poktan_id !== 'undefined');
+    const isFilteredByPoktan = isPenyuluh || Boolean(poktan_id && poktan_id !== 'undefined');
 
     const filter = {
       where: whereClause,
@@ -804,13 +861,62 @@ const updateRealisasiBulk = async (req, res) => {
 };
 
 const getStatistikYears = async (req, res) => {
-  const { peran } = req.user || {};
+  const { peran, role } = req.user || {};
   try {
     if (peran === 'petani') {
       throw new ApiError(403, 'Anda tidak memiliki akses.');
     }
 
+    const isPenyuluh =
+      peran === 'penyuluh' ||
+      (role && (role.name === 'penyuluh' || role.name === 'penyuluh_swadaya' || role.name?.includes('penyuluh')));
+
+    const whereQuery = {};
+    if (isPenyuluh) {
+      const orConditions = [];
+      if (req.user.accountID) orConditions.push({ accountID: req.user.accountID });
+      if (req.user.id) orConditions.push({ accountID: req.user.id });
+      if (req.user.email) orConditions.push({ email: req.user.email });
+      if (req.user.nik || req.user.NIK) orConditions.push({ nik: req.user.nik || req.user.NIK });
+      if (req.user.nama) orConditions.push({ nama: req.user.nama });
+
+      const penyuluhData = orConditions.length > 0
+        ? await dataPenyuluh.findOne({
+            where: { [Op.or]: orConditions }
+          })
+        : null;
+
+      let penyuluhCondition = { id: -1 };
+      if (penyuluhData) {
+        const condList = [
+          { penyuluh: penyuluhData.id },
+          { penyuluh: String(penyuluhData.id) }
+        ];
+        if (penyuluhData.nama) condList.push({ penyuluh: penyuluhData.nama });
+        if (penyuluhData.nik) condList.push({ penyuluh: String(penyuluhData.nik) });
+
+        if (penyuluhData.desaBinaan) {
+          const desas = penyuluhData.desaBinaan.split(',').map((d) => d.trim()).filter(Boolean);
+          if (desas.length > 0) condList.push({ desa: { [Op.in]: desas } });
+        }
+        if (penyuluhData.kecamatanBinaan) {
+          const kecamatans = penyuluhData.kecamatanBinaan.split(',').map((k) => k.trim()).filter(Boolean);
+          if (kecamatans.length > 0) condList.push({ kecamatan: { [Op.in]: kecamatans } });
+        }
+
+        penyuluhCondition = { [Op.or]: condList };
+      }
+
+      const poktanBinaan = await kelompok.findAll({
+        where: penyuluhCondition,
+        attributes: ['id']
+      });
+      const binaanIds = poktanBinaan.map((k) => k.id);
+      whereQuery.fk_kelompokId = { [Op.in]: binaanIds.length > 0 ? binaanIds : [-1] };
+    }
+
     const data = await dataTanaman.findAll({
+      where: whereQuery,
       attributes: [
         [Sequelize.fn('YEAR', Sequelize.col('createdAt')), 'year']
       ],

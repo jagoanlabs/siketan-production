@@ -230,25 +230,39 @@ const searchPoktan = async (req, res) => {
     let whereClause = {};
 
     if (isPenyuluh) {
-      const penyuluhData = await dataPenyuluh.findOne({
-        where: {
-          [Op.or]: [
-            { accountID: req.user.accountID || req.user.id },
-            { email: req.user.email || '' },
-            { nik: req.user.nik || req.user.NIK || 0 }
-          ].filter(Boolean)
-        }
-      });
+      const orConditions = [];
+      if (req.user.accountID) orConditions.push({ accountID: req.user.accountID });
+      if (req.user.id) orConditions.push({ accountID: req.user.id });
+      if (req.user.email) orConditions.push({ email: req.user.email });
+      if (req.user.nik || req.user.NIK) orConditions.push({ nik: req.user.nik || req.user.NIK });
+      if (req.user.nama) orConditions.push({ nama: req.user.nama });
 
-      const penyuluhCondition = penyuluhData
-        ? {
-            [Op.or]: [
-              { penyuluh: penyuluhData.id },
-              { penyuluh: String(penyuluhData.id) },
-              { penyuluh: penyuluhData.nama }
-            ]
-          }
-        : { id: -1 };
+      const penyuluhData = orConditions.length > 0
+        ? await dataPenyuluh.findOne({
+            where: { [Op.or]: orConditions }
+          })
+        : null;
+
+      let penyuluhCondition = { id: -1 };
+      if (penyuluhData) {
+        const condList = [
+          { penyuluh: penyuluhData.id },
+          { penyuluh: String(penyuluhData.id) }
+        ];
+        if (penyuluhData.nama) condList.push({ penyuluh: penyuluhData.nama });
+        if (penyuluhData.nik) condList.push({ penyuluh: String(penyuluhData.nik) });
+
+        if (penyuluhData.desaBinaan) {
+          const desas = penyuluhData.desaBinaan.split(',').map((d) => d.trim()).filter(Boolean);
+          if (desas.length > 0) condList.push({ desa: { [Op.in]: desas } });
+        }
+        if (penyuluhData.kecamatanBinaan) {
+          const kecamatans = penyuluhData.kecamatanBinaan.split(',').map((k) => k.trim()).filter(Boolean);
+          if (kecamatans.length > 0) condList.push({ kecamatan: { [Op.in]: kecamatans } });
+        }
+
+        penyuluhCondition = { [Op.or]: condList };
+      }
 
       if (search && search !== 'undefined' && search.trim() !== '') {
         whereClause = {

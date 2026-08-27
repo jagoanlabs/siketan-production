@@ -252,6 +252,7 @@ import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "primereact/confirmdialog";
 import { toast } from "sonner";
 import templateStatistikaUrl from "@/assets/template/template data statistika.xlsx?url";
+import templateRealisasiUrl from "@/assets/template/template realisasi data statistika.xlsx?url";
 
 import {
   KOMODITAS_OPTIONS,
@@ -312,6 +313,10 @@ export const DashboardStatistika = () => {
   const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // Template Download Modal state
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [selectedTemplateType, setSelectedTemplateType] = useState<"prakiraan" | "realisasi">("prakiraan");
 
   // Export Modal states
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -760,13 +765,37 @@ export const DashboardStatistika = () => {
   };
 
   const handleDownloadTemplate = () => {
+    setIsTemplateModalOpen(true);
+  };
+
+  const handleDownloadPrakiraanTemplate = () => {
     const link = document.createElement("a");
     link.href = templateStatistikaUrl;
     link.download = "template data statistika.xlsx";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success("Template data statistika berhasil diunduh");
+    toast.success("Template upload data statistika berhasil diunduh");
+    setIsTemplateModalOpen(false);
+  };
+
+  const handleDownloadRealisasiTemplate = () => {
+    const link = document.createElement("a");
+    link.href = templateRealisasiUrl;
+    link.download = "template realisasi data statistika.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Template realisasi data statistika berhasil diunduh");
+    setIsTemplateModalOpen(false);
+  };
+
+  const handleDownloadSelectedTemplate = () => {
+    if (selectedTemplateType === "prakiraan") {
+      handleDownloadPrakiraanTemplate();
+    } else {
+      handleDownloadRealisasiTemplate();
+    }
   };
 
   const handleExport = () => {
@@ -930,6 +959,18 @@ export const DashboardStatistika = () => {
     },
     {
       key: "id",
+      title: "ID Data",
+      sortable: true,
+      align: "center",
+      width: "85px",
+      render: (item) => (
+        <span className="font-mono text-xs font-bold px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800/60">
+          {item.id}
+        </span>
+      ),
+    },
+    {
+      key: "fk_kelompokId",
       title: "No. Poktan",
       align: "center",
       width: "60px",
@@ -1717,6 +1758,141 @@ export const DashboardStatistika = () => {
                   onPress={executeExport}
                 >
                   Export ke Excel
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+
+      {/* Download Template Selection Modal */}
+      <Modal isOpen={isTemplateModalOpen} onOpenChange={setIsTemplateModalOpen}>
+        <Modal.Backdrop variant="blur">
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-md bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg">
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <Modal.Heading>Pilih Template Excel</Modal.Heading>
+              </Modal.Header>
+
+              <Modal.Body className="space-y-4 p-6">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Silakan pilih jenis template spreadsheet yang ingin Anda unduh:
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  {/* Option 1: Template Upload Data Statistika */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedTemplateType("prakiraan")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        setSelectedTemplateType("prakiraan");
+                      }
+                    }}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${
+                      selectedTemplateType === "prakiraan"
+                        ? "border-green-500 bg-green-50/60 dark:bg-green-950/30 ring-2 ring-green-500/20"
+                        : "border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 hover:bg-gray-100/60 dark:hover:bg-gray-750"
+                    }`}
+                  >
+                    <div
+                      className={`p-2.5 rounded-lg shrink-0 transition-colors ${
+                        selectedTemplateType === "prakiraan"
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                      }`}
+                    >
+                      <TbTablePlus className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          Template Upload Data Statistika
+                        </h4>
+                        <span
+                          className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                            selectedTemplateType === "prakiraan"
+                              ? "border-green-500 bg-green-500 text-white"
+                              : "border-gray-300 dark:border-gray-600"
+                          }`}
+                        >
+                          {selectedTemplateType === "prakiraan" && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          )}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+                        Digunakan untuk mengunggah kumpulan data baru tanaman, periode tanam, luas lahan, serta estimasi/prakiraan hasil panen.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Option 2: Template Realisasi Data Statistika */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedTemplateType("realisasi")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        setSelectedTemplateType("realisasi");
+                      }
+                    }}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${
+                      selectedTemplateType === "realisasi"
+                        ? "border-green-500 bg-green-50/60 dark:bg-green-950/30 ring-2 ring-green-500/20"
+                        : "border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 hover:bg-gray-100/60 dark:hover:bg-gray-750"
+                    }`}
+                  >
+                    <div
+                      className={`p-2.5 rounded-lg shrink-0 transition-colors ${
+                        selectedTemplateType === "realisasi"
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                      }`}
+                    >
+                      <IoIosCheckmarkCircleOutline className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          Template Realisasi Data Statistika
+                        </h4>
+                        <span
+                          className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                            selectedTemplateType === "realisasi"
+                              ? "border-green-500 bg-green-500 text-white"
+                              : "border-gray-300 dark:border-gray-600"
+                          }`}
+                        >
+                          {selectedTemplateType === "realisasi" && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          )}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+                        Digunakan untuk mengisi atau memperbarui data realisasi luas, hasil, dan bulan panen berdasarkan <strong className="text-blue-600 dark:text-blue-400">ID Data</strong>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Modal.Body>
+
+              <Modal.Footer>
+                <Button
+                  color="danger"
+                  variant="light"
+                  onPress={() => setIsTemplateModalOpen(false)}
+                >
+                  Tutup
+                </Button>
+                <Button
+                  className="text-gray-100 font-medium"
+                  color="success"
+                  onPress={handleDownloadSelectedTemplate}
+                >
+                  Unduh Template
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>
