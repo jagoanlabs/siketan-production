@@ -8,7 +8,9 @@
     "dev": "nodemon index",
     "start": "node index",
     "lint:fix": "eslint --cache --fix \"**/*.{js,jsx}\"",
-    "swagger": "node ./swagger.js"
+    "swagger": "node ./swagger.js",
+    "migrate:poktan": "node ./helpers/migration-kelompok.js",
+    "restore:poktan": "node ./helpers/restore-kelompok.js"
   },
   "author": "",
   "license": "ISC",

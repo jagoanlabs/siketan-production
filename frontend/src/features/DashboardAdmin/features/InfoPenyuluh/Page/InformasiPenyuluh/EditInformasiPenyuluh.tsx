@@ -462,12 +462,12 @@ export const EditInformasiPenyuluh = () => {
               <p className="text-gray-600 mb-4">
                 Penyuluh dengan ID {id} tidak ditemukan.
               </p>
-                <Button
-                  variant="primary"
-                  onPress={() => navigate("/dashboard-admin/data-penyuluh")}
-                >
-                  Kembali ke Daftar Penyuluh
-                </Button>
+              <Button
+                variant="primary"
+                onPress={() => navigate("/dashboard-admin/data-penyuluh")}
+              >
+                Kembali ke Daftar Penyuluh
+              </Button>
             </div>
           </Card>
         </div>
@@ -731,10 +731,9 @@ export const EditInformasiPenyuluh = () => {
                     }}
                     classNames={{
                       control: ({ isFocused }) =>
-                        `w-full px-3 py-1 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[42px] ${
-                          isFocused
-                            ? "border-green-500 ring-1 ring-green-500"
-                            : "border-gray-300 dark:border-gray-600"
+                        `w-full px-3 py-1 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[42px] ${isFocused
+                          ? "border-green-500 ring-1 ring-green-500"
+                          : "border-gray-300 dark:border-gray-600"
                         }`,
                       valueContainer: () => "flex items-center gap-1.5 flex-1 flex-wrap py-0.5",
                       input: () => "text-gray-800 dark:text-gray-100 text-sm m-0 p-0 outline-none border-none ring-0 focus:ring-0",
@@ -751,12 +750,11 @@ export const EditInformasiPenyuluh = () => {
                       menu: () =>
                         "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
                       option: ({ isFocused, isSelected }) =>
-                        `px-3 py-2 text-sm rounded-lg cursor-pointer ${
-                          isSelected
-                            ? "bg-green-600 text-white"
-                            : isFocused
-                              ? "bg-green-50 dark:bg-gray-700 text-green-800 dark:text-green-300"
-                              : "text-gray-700 dark:text-gray-200"
+                        `px-3 py-2 text-sm rounded-lg cursor-pointer ${isSelected
+                          ? "bg-green-600 text-white"
+                          : isFocused
+                            ? "bg-green-50 dark:bg-gray-700 text-green-800 dark:text-green-300"
+                            : "text-gray-700 dark:text-gray-200"
                         }`,
                     }}
                     unstyled
@@ -797,10 +795,9 @@ export const EditInformasiPenyuluh = () => {
                     }}
                     classNames={{
                       control: ({ isFocused }) =>
-                        `w-full px-3 py-1 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[42px] ${
-                          isFocused
-                            ? "border-green-500 ring-1 ring-green-500"
-                            : "border-gray-300 dark:border-gray-600"
+                        `w-full px-3 py-1 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[42px] ${isFocused
+                          ? "border-green-500 ring-1 ring-green-500"
+                          : "border-gray-300 dark:border-gray-600"
                         }`,
                       valueContainer: () => "flex items-center gap-1.5 flex-1 flex-wrap py-0.5",
                       input: () => "text-gray-800 dark:text-gray-100 text-sm m-0 p-0 outline-none border-none ring-0 focus:ring-0",
@@ -817,12 +814,11 @@ export const EditInformasiPenyuluh = () => {
                       menu: () =>
                         "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
                       option: ({ isFocused, isSelected }) =>
-                        `px-3 py-2 text-sm rounded-lg cursor-pointer ${
-                          isSelected
-                            ? "bg-green-600 text-white"
-                            : isFocused
-                              ? "bg-green-50 dark:bg-gray-700 text-green-800 dark:text-green-300"
-                              : "text-gray-700 dark:text-gray-200"
+                        `px-3 py-2 text-sm rounded-lg cursor-pointer ${isSelected
+                          ? "bg-green-600 text-white"
+                          : isFocused
+                            ? "bg-green-50 dark:bg-gray-700 text-green-800 dark:text-green-300"
+                            : "text-gray-700 dark:text-gray-200"
                         }`,
                     }}
                     unstyled
