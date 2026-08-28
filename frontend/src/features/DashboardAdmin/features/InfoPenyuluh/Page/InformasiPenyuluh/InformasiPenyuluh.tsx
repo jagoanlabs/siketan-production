@@ -272,7 +272,7 @@ export default function InformasiPenyuluh() {
             <Tooltip>
               <Tooltip.Trigger>
                 <Link
-                  className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full transition-colors"
+                  className="w-8 h-8 inline-flex items-center justify-center text-green-600 hover:text-green-900 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 rounded-full transition-colors cursor-pointer"
                   to={`/dashboard-admin/data-penyuluh/${item.id}`}
                 >
                   <svg
@@ -304,7 +304,7 @@ export default function InformasiPenyuluh() {
             <Tooltip>
               <Tooltip.Trigger>
                 <Link
-                  className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-full transition-colors"
+                  className="w-8 h-8 inline-flex items-center justify-center text-blue-600 hover:text-blue-900 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30 rounded-full transition-colors cursor-pointer"
                   to={`/dashboard-admin/data-penyuluh/${item.id}/edit`}
                 >
                   <svg
@@ -331,10 +331,11 @@ export default function InformasiPenyuluh() {
             <Tooltip>
               <Tooltip.Trigger>
                 <button
-                  className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors"
+                  type="button"
+                  className="w-8 h-8 inline-flex items-center justify-center text-red-600 hover:text-red-900 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
                   onClick={() => handleDeleteClick(item)}
                 >
-                  <FaTrashCan className="w-3.5 h-3.5" />
+                  <FaTrashCan className="w-4 h-4" />
                 </button>
               </Tooltip.Trigger>
               <Tooltip.Content>Hapus penyuluh (Super Admin)</Tooltip.Content>

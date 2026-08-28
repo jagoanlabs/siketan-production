@@ -5,6 +5,7 @@ import { Button } from "../../../../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../../../../components/Form/HeroSelect";
 
 import { Skeleton } from "primereact/skeleton";
+import ReactSelect from "react-select";
 
 // pages/EditInformasiPenyuluh.tsx
 import React, { useState, useRef, useEffect, useMemo } from "react";
@@ -83,12 +84,94 @@ export const EditInformasiPenyuluh = () => {
     );
   }, [kelompokData, formData.kecamatanBinaanId]);
 
+  // Options for react-select Desa Binaan
+  const desaBinaanOptions = useMemo(() => {
+    const map = new Map<string, { value: string; label: string }>();
+
+    (desaBinaanData?.data || []).forEach((desa) => {
+      map.set(desa.nama, {
+        value: desa.nama,
+        label: desa.nama,
+      });
+    });
+
+    // Pastikan desa binaan yang sudah terpilih tetap ada dalam pilihan opsi
+    formData.desaBinaan.forEach((desaNama) => {
+      if (desaNama && !map.has(desaNama)) {
+        map.set(desaNama, {
+          value: desaNama,
+          label: desaNama,
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [desaBinaanData, formData.desaBinaan]);
+
+  const selectedDesaBinaanValues = useMemo(() => {
+    return formData.desaBinaan.map((nama) => {
+      const found = desaBinaanOptions.find((opt) => opt.value === nama);
+      return found || { value: nama, label: nama };
+    });
+  }, [desaBinaanOptions, formData.desaBinaan]);
+
+  // Options for react-select Kelompok Binaan
+  const kelompokBinaanOptions = useMemo(() => {
+    const map = new Map<string, { value: string; label: string; data?: Kelompok }>();
+
+    filteredKelompok.forEach((kelompok: Kelompok) => {
+      map.set(String(kelompok.id), {
+        value: String(kelompok.id),
+        label: `${kelompok.namaKelompok} - ${kelompok.desa}${kelompok.gapoktan ? ` (Gapoktan: ${kelompok.gapoktan})` : ""}`,
+        data: kelompok,
+      });
+    });
+
+    // Pastikan kelompok binaan yang sudah ada pada penyuluhDetail tetap ada dalam opsi
+    if (penyuluhDetail?.kelompoks) {
+      penyuluhDetail.kelompoks.forEach((kelompok: any) => {
+        const idStr = String(kelompok.id);
+        if (!map.has(idStr)) {
+          map.set(idStr, {
+            value: idStr,
+            label: `${kelompok.namaKelompok} - ${kelompok.desa}${kelompok.gapoktan ? ` (Gapoktan: ${kelompok.gapoktan})` : ""}`,
+            data: kelompok,
+          });
+        }
+      });
+    }
+
+    return Array.from(map.values());
+  }, [filteredKelompok, penyuluhDetail]);
+
+  const selectedKelompokValues = useMemo(() => {
+    return formData.selectedKelompokIds.map((id) => {
+      const found = kelompokBinaanOptions.find((opt) => opt.value === String(id));
+      if (found) return found;
+
+      const existingInDetail = penyuluhDetail?.kelompoks?.find(
+        (k: any) => String(k.id) === String(id),
+      );
+      if (existingInDetail) {
+        return {
+          value: String(id),
+          label: `${existingInDetail.namaKelompok} - ${existingInDetail.desa}${existingInDetail.gapoktan ? ` (Gapoktan: ${existingInDetail.gapoktan})` : ""}`,
+        };
+      }
+
+      return {
+        value: String(id),
+        label: `Kelompok #${id}`,
+      };
+    });
+  }, [kelompokBinaanOptions, formData.selectedKelompokIds, penyuluhDetail]);
+
   // Load initial data when penyuluhDetail is available
   useEffect(() => {
     if (penyuluhDetail && !dataLoaded) {
       console.log("Loading penyuluh detail:", penyuluhDetail);
 
-      // Find kecamatan binaan ID from kecamatanBinaanData
+      // Find kecamatan binaan ID from kecamatanBinaanData or match with kecamatanData
       let kecamatanBinaanId = null;
 
       if (
@@ -96,11 +179,41 @@ export const EditInformasiPenyuluh = () => {
         penyuluhDetail.kecamatanBinaanData.length > 0
       ) {
         kecamatanBinaanId = penyuluhDetail.kecamatanBinaanData[0].kecamatanId;
+      } else if (penyuluhDetail.kecamatanBinaan && kecamatanData?.data) {
+        const found = kecamatanData.data.find(
+          (k) =>
+            k.nama.toLowerCase() ===
+            penyuluhDetail.kecamatanBinaan.toLowerCase(),
+        );
+        if (found) {
+          kecamatanBinaanId = found.id;
+        }
+      }
+
+      // Jika kecamatanBinaan ada tetapi belum ditemukan id-nya dan data kecamatan masih loading, tunggu
+      if (
+        penyuluhDetail.kecamatanBinaan &&
+        !kecamatanBinaanId &&
+        loadingKecamatan
+      ) {
+        return;
       }
 
       // Extract desa binaan names
-      const desaBinaanNames =
-        penyuluhDetail.desaBinaanData?.map((item: any) => item.desa.nama) || [];
+      let desaBinaanNames: string[] = [];
+      if (
+        penyuluhDetail.desaBinaanData &&
+        penyuluhDetail.desaBinaanData.length > 0
+      ) {
+        desaBinaanNames = penyuluhDetail.desaBinaanData
+          .map((item: any) => item.desa?.nama)
+          .filter(Boolean);
+      } else if (penyuluhDetail.desaBinaan) {
+        desaBinaanNames = penyuluhDetail.desaBinaan
+          .split(",")
+          .map((nama: string) => nama.trim())
+          .filter(Boolean);
+      }
 
       // Extract kelompok IDs
       const kelompokIds =
@@ -134,7 +247,7 @@ export const EditInformasiPenyuluh = () => {
 
       setDataLoaded(true);
     }
-  }, [penyuluhDetail, dataLoaded]);
+  }, [penyuluhDetail, dataLoaded, kecamatanData, loadingKecamatan]);
 
   // Handle input changes
   const handleInputChange = (field: string, value: any) => {
@@ -245,13 +358,13 @@ export const EditInformasiPenyuluh = () => {
     }
 
     if (formData.desaBinaan.length === 0) {
-      toast.error("Silakan pilih minimal satu desa binaan");
+      toast.error("Silakan pilih minimal satu desa wilayah binaan");
 
       return;
     }
 
     if (formData.selectedKelompokIds.length === 0) {
-      toast.error("Silakan pilih minimal satu kelompok");
+      toast.error("Silakan pilih minimal satu kelompok tani binaan");
 
       return;
     }
@@ -305,7 +418,7 @@ export const EditInformasiPenyuluh = () => {
         <PageBreadcrumb
           items={[
             { label: "Dashboard", to: "/dashboard-admin" },
-            { label: "Informasi Penyuluh", to: "/data-penyuluh" },
+            { label: "Informasi Penyuluh", to: "/dashboard-admin/data-penyuluh" },
             { label: "Ubah Informasi Penyuluh" },
           ]}
         />
@@ -335,7 +448,7 @@ export const EditInformasiPenyuluh = () => {
         <PageBreadcrumb
           items={[
             { label: "Dashboard", to: "/dashboard-admin" },
-            { label: "Informasi Penyuluh", to: "/data-penyuluh" },
+            { label: "Informasi Penyuluh", to: "/dashboard-admin/data-penyuluh" },
             { label: "Ubah Informasi Penyuluh" },
           ]}
         />
@@ -351,7 +464,7 @@ export const EditInformasiPenyuluh = () => {
               </p>
                 <Button
                   variant="primary"
-                  onPress={() => navigate("/data-penyuluh")}
+                  onPress={() => navigate("/dashboard-admin/data-penyuluh")}
                 >
                   Kembali ke Daftar Penyuluh
                 </Button>
@@ -587,85 +700,137 @@ export const EditInformasiPenyuluh = () => {
                   ))}
                 </Select>
 
-                {/* Desa Binaan - Multiple Select */}
-                <Select
-                  isRequired
-                  isDisabled={!formData.kecamatanBinaanId}
-                  isLoading={loadingDesaBinaan}
-                  isMultiline={true}
-                  label="Desa Wilayah Binaan"
-                  placeholder="Pilih desa binaan"
-                  renderValue={(items: any) => {
-                    return (
-                      <div className="flex flex-wrap gap-2">
-                        {items.map((item: any) => (
-                          <div
-                            key={item.key}
-                            className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-                          >
-                            {item.textValue}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }}
-                  selectedKeys={formData.desaBinaan}
-                  selectionMode="multiple"
-                  variant="bordered"
-                  onSelectionChange={(keys: any) => {
-                    handleInputChange("desaBinaan", Array.from(keys));
-                  }}
-                >
-                  {(desaBinaanData?.data || []).map((desa) => (
-                    <SelectItem key={desa.nama} textValue={desa.nama}>
-                      {desa.nama}
-                    </SelectItem>
-                  ))}
-                </Select>
+                {/* Desa Wilayah Binaan - Multiple Select with Search */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Desa Wilayah Binaan <span className="text-red-500">*</span>
+                  </label>
+                  <ReactSelect
+                    isClearable
+                    isMulti
+                    isSearchable
+                    isDisabled={!formData.kecamatanBinaanId || loadingDesaBinaan}
+                    isLoading={loadingDesaBinaan}
+                    options={desaBinaanOptions}
+                    placeholder={
+                      formData.kecamatanBinaanId
+                        ? "Cari dan pilih satu atau lebih desa binaan..."
+                        : "Pilih kecamatan binaan terlebih dahulu"
+                    }
+                    noOptionsMessage={({ inputValue }) =>
+                      inputValue
+                        ? `Tidak ada desa "${inputValue}"`
+                        : "Tidak ada data desa"
+                    }
+                    value={selectedDesaBinaanValues}
+                    onChange={(selectedOptions: any) => {
+                      const values = selectedOptions
+                        ? selectedOptions.map((opt: any) => opt.value)
+                        : [];
+                      handleInputChange("desaBinaan", values);
+                    }}
+                    classNames={{
+                      control: ({ isFocused }) =>
+                        `w-full px-3 py-1 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[42px] ${
+                          isFocused
+                            ? "border-green-500 ring-1 ring-green-500"
+                            : "border-gray-300 dark:border-gray-600"
+                        }`,
+                      valueContainer: () => "flex items-center gap-1.5 flex-1 flex-wrap py-0.5",
+                      input: () => "text-gray-800 dark:text-gray-100 text-sm m-0 p-0 outline-none border-none ring-0 focus:ring-0",
+                      placeholder: () => "text-gray-400 text-sm",
+                      indicatorsContainer: () => "flex items-center gap-1 text-gray-400",
+                      dropdownIndicator: () => "p-1 hover:text-gray-600 cursor-pointer",
+                      clearIndicator: () => "p-1 hover:text-red-500 cursor-pointer",
+                      multiValue: () =>
+                        "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-lg px-2 py-0.5 m-0.5 text-xs font-medium flex items-center gap-1",
+                      multiValueLabel: () =>
+                        "text-blue-800 dark:text-blue-200 text-xs font-medium",
+                      multiValueRemove: () =>
+                        "hover:bg-blue-200 dark:hover:bg-blue-800 rounded p-0.5 text-blue-600 transition-colors cursor-pointer",
+                      menu: () =>
+                        "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
+                      option: ({ isFocused, isSelected }) =>
+                        `px-3 py-2 text-sm rounded-lg cursor-pointer ${
+                          isSelected
+                            ? "bg-green-600 text-white"
+                            : isFocused
+                              ? "bg-green-50 dark:bg-gray-700 text-green-800 dark:text-green-300"
+                              : "text-gray-700 dark:text-gray-200"
+                        }`,
+                    }}
+                    unstyled
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Dapat memilih lebih dari satu desa binaan. Ketik untuk mencari desa.
+                  </p>
+                </div>
 
-                {/* Pilih Kelompok - Multiple Select */}
-                <Select
-                  isRequired
-                  isDisabled={!formData.kecamatanBinaanId}
-                  isLoading={loadingKelompok}
-                  isMultiline={true}
-                  label="Pilih Kelompok"
-                  placeholder="Pilih kelompok yang akan dibina"
-                  renderValue={(items: any) => {
-                    return (
-                      <div className="flex flex-wrap gap-2">
-                        {items.map((item: any) => (
-                          <div
-                            key={item.key}
-                            className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full"
-                          >
-                            {item.textValue}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }}
-                  selectedKeys={formData.selectedKelompokIds}
-                  selectionMode="multiple"
-                  variant="bordered"
-                  onSelectionChange={(keys: any) => {
-                    handleInputChange("selectedKelompokIds", Array.from(keys));
-                  }}
-                >
-                  {filteredKelompok.map((kelompok) => (
-                    <SelectItem
-                      key={kelompok.id}
-                      textValue={`${kelompok.namaKelompok} - ${kelompok.desa}`}
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {kelompok.namaKelompok} - {kelompok.desa} -{" "}
-                          {kelompok.gapoktan}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </Select>
+                {/* Kelompok Tani Binaan - Multiple Select with Search */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Kelompok Tani Binaan <span className="text-red-500">*</span>
+                  </label>
+                  <ReactSelect
+                    isClearable
+                    isMulti
+                    isSearchable
+                    isDisabled={!formData.kecamatanBinaanId || loadingKelompok}
+                    isLoading={loadingKelompok}
+                    options={kelompokBinaanOptions}
+                    placeholder={
+                      formData.kecamatanBinaanId
+                        ? "Cari dan pilih satu atau lebih kelompok tani binaan..."
+                        : "Pilih kecamatan binaan terlebih dahulu"
+                    }
+                    noOptionsMessage={({ inputValue }) =>
+                      inputValue
+                        ? `Tidak ada kelompok tani "${inputValue}"`
+                        : "Tidak ada data kelompok tani"
+                    }
+                    value={selectedKelompokValues}
+                    onChange={(selectedOptions: any) => {
+                      const values = selectedOptions
+                        ? selectedOptions.map((opt: any) => opt.value)
+                        : [];
+                      handleInputChange("selectedKelompokIds", values);
+                    }}
+                    classNames={{
+                      control: ({ isFocused }) =>
+                        `w-full px-3 py-1 bg-transparent border rounded-xl hover:border-gray-400 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[42px] ${
+                          isFocused
+                            ? "border-green-500 ring-1 ring-green-500"
+                            : "border-gray-300 dark:border-gray-600"
+                        }`,
+                      valueContainer: () => "flex items-center gap-1.5 flex-1 flex-wrap py-0.5",
+                      input: () => "text-gray-800 dark:text-gray-100 text-sm m-0 p-0 outline-none border-none ring-0 focus:ring-0",
+                      placeholder: () => "text-gray-400 text-sm",
+                      indicatorsContainer: () => "flex items-center gap-1 text-gray-400",
+                      dropdownIndicator: () => "p-1 hover:text-gray-600 cursor-pointer",
+                      clearIndicator: () => "p-1 hover:text-red-500 cursor-pointer",
+                      multiValue: () =>
+                        "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 rounded-lg px-2 py-0.5 m-0.5 text-xs font-medium flex items-center gap-1",
+                      multiValueLabel: () =>
+                        "text-green-800 dark:text-green-200 text-xs font-medium",
+                      multiValueRemove: () =>
+                        "hover:bg-green-200 dark:hover:bg-green-800 rounded p-0.5 text-green-600 transition-colors cursor-pointer",
+                      menu: () =>
+                        "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
+                      option: ({ isFocused, isSelected }) =>
+                        `px-3 py-2 text-sm rounded-lg cursor-pointer ${
+                          isSelected
+                            ? "bg-green-600 text-white"
+                            : isFocused
+                              ? "bg-green-50 dark:bg-gray-700 text-green-800 dark:text-green-300"
+                              : "text-gray-700 dark:text-gray-200"
+                        }`,
+                    }}
+                    unstyled
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Dapat memilih lebih dari satu kelompok tani binaan. Ketik untuk mencari kelompok.
+                  </p>
+                </div>
 
                 <Input
                   label="Nama Produk"
@@ -680,18 +845,36 @@ export const EditInformasiPenyuluh = () => {
             </div>
 
             {/* Form Actions */}
-            <div className="flex gap-4 justify-end pt-6 border-t">
+            <div className="flex gap-4 justify-end pt-6 border-t border-gray-100 dark:border-gray-700">
               <Button
                 type="button"
                 variant="bordered"
-                onPress={() => navigate("/data-penyuluh")}
+                onPress={() => navigate("/dashboard-admin/data-penyuluh")}
               >
                 Batal
               </Button>
               <Button
-                variant="primary"
+                color="primary"
                 isLoading={updateMutation.isPending}
                 type="submit"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-md hover:shadow-lg transition-all text-white font-medium"
+                startContent={
+                  !updateMutation.isPending && (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M5 13l4 4L19 7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  )
+                }
               >
                 {updateMutation.isPending ? "Mengupdate..." : "Update Data"}
               </Button>

@@ -1293,9 +1293,10 @@ const updatePenyuluh = async (req, res) => {
       }
 
       // ✅ 2. CREATE NEW KECAMATAN BINAAN
+      let kecamatanBinaanData = null;
       if (kecamatanBinaan && kecamatanBinaan.trim() !== '') {
         try {
-          const kecamatanBinaanData = await kecamatan.findOne({
+          kecamatanBinaanData = await kecamatan.findOne({
             where: { nama: kecamatanBinaan.trim() }
           });
 
@@ -1332,9 +1333,17 @@ const updatePenyuluh = async (req, res) => {
           console.log('Processing new desa binaan:', desaBinaanArray);
 
           for (const namaDesaBinaan of desaBinaanArray) {
-            const desaData = await desa.findOne({
-              where: { nama: namaDesaBinaan }
-            });
+            let desaData = null;
+            if (kecamatanBinaanData) {
+              desaData = await desa.findOne({
+                where: { nama: namaDesaBinaan, kecamatanId: kecamatanBinaanData.id }
+              });
+            }
+            if (!desaData) {
+              desaData = await desa.findOne({
+                where: { nama: namaDesaBinaan }
+              });
+            }
 
             if (desaData) {
               await DesaBinaanModel.create({

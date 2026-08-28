@@ -48,6 +48,7 @@ const updatePenyuluh = async (
 
   // Append foto with proper field name
   if (data.foto) {
+    formData.append("foto", data.foto);
     formData.append("file", data.foto);
   }
 

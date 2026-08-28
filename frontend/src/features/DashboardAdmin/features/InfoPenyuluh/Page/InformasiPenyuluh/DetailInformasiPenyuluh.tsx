@@ -2,13 +2,15 @@ import { Divider } from "../../../../../../components/Form/HeroDivider";
 import { Chip } from "../../../../../../components/Form/HeroChip";
 import { Avatar } from "../../../../../../components/Form/HeroAvatar";
 import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { Input } from "../../../../../../components/Form/HeroInput";
 import { Button } from "../../../../../../components/Form/HeroButton";
 import { Tooltip } from "@heroui/react";
 // pages/DetailInformasiPenyuluh.tsx
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { FaTrashCan, FaTriangleExclamation } from "react-icons/fa6";
+import { FiSearch } from "react-icons/fi";
 
 import { Skeleton } from "primereact/skeleton";
 import { Badge } from "primereact/badge";
@@ -37,6 +39,34 @@ export const DetailInformasiPenyuluh = () => {
   const deleteMutation = useDeletePenyuluh();
 
   const { data: penyuluhDetail, isLoading, error } = usePenyuluhDetail(id!);
+
+  // Search states
+  const [searchKelompok, setSearchKelompok] = useState("");
+  const [searchDesaBinaan, setSearchDesaBinaan] = useState("");
+
+  // Filtered Kelompok Binaan
+  const filteredKelompoks = useMemo(() => {
+    if (!penyuluhDetail?.kelompoks) return [];
+    if (!searchKelompok.trim()) return penyuluhDetail.kelompoks;
+    const query = searchKelompok.toLowerCase();
+    return penyuluhDetail.kelompoks.filter((kelompok: any) =>
+      kelompok.namaKelompok?.toLowerCase().includes(query) ||
+      kelompok.desa?.toLowerCase().includes(query) ||
+      kelompok.gapoktan?.toLowerCase().includes(query) ||
+      kelompok.kecamatan?.toLowerCase().includes(query)
+    );
+  }, [penyuluhDetail?.kelompoks, searchKelompok]);
+
+  // Filtered Desa Binaan
+  const filteredDesaBinaan = useMemo(() => {
+    if (!penyuluhDetail?.desaBinaanData) return [];
+    if (!searchDesaBinaan.trim()) return penyuluhDetail.desaBinaanData;
+    const query = searchDesaBinaan.toLowerCase();
+    return penyuluhDetail.desaBinaanData.filter((item: any) =>
+      item.desa?.nama?.toLowerCase().includes(query) ||
+      item.desa?.kecamatan?.nama?.toLowerCase().includes(query)
+    );
+  }, [penyuluhDetail?.desaBinaanData, searchDesaBinaan]);
 
   const handleConfirmDelete = async () => {
     if (!id) return;
@@ -67,7 +97,7 @@ export const DetailInformasiPenyuluh = () => {
             { label: "Dashboard", to: "/dashboard-admin" },
             {
               label: "Informasi Penyuluh",
-              to: "/dashboard-admin/daftar-penyuluh",
+              to: "/dashboard-admin/data-penyuluh",
             },
             { label: "Detail Informasi Penyuluh" },
           ]}
@@ -125,7 +155,7 @@ export const DetailInformasiPenyuluh = () => {
         <PageBreadcrumb
           items={[
             { label: "Dashboard", to: "/dashboard-admin" },
-            { label: "Informasi Penyuluh", to: "/daftar-penyuluh" },
+            { label: "Informasi Penyuluh", to: "/dashboard-admin/data-penyuluh" },
             { label: "Detail Informasi Penyuluh" },
           ]}
         />
@@ -156,7 +186,7 @@ export const DetailInformasiPenyuluh = () => {
               </p>
               <Button
                 color="primary"
-                onPress={() => navigate("/daftar-penyuluh")}
+                onPress={() => navigate("/dashboard-admin/data-penyuluh")}
               >
                 Kembali ke Daftar Penyuluh
               </Button>
@@ -383,45 +413,66 @@ export const DetailInformasiPenyuluh = () => {
 
             {/* Kelompok Binaan */}
             <Card className="shadow-md p-5">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <h2 className="text-lg font-semibold">Kelompok Binaan</h2>
-                  {penyuluhDetail.kelompoks?.length > 0 && (
-                    <Badge
-                      color="secondary"
-                      content={penyuluhDetail.kelompoks.length}
-                    />
-                  )}
+              <CardHeader className="pb-3 flex flex-col gap-3">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    <h2 className="text-lg font-semibold">Kelompok Binaan</h2>
+                    {penyuluhDetail.kelompoks?.length > 0 && (
+                      <Badge
+                        color="secondary"
+                        content={
+                          searchKelompok
+                            ? `${filteredKelompoks.length}/${penyuluhDetail.kelompoks.length}`
+                            : penyuluhDetail.kelompoks.length
+                        }
+                      />
+                    )}
+                  </div>
                 </div>
+
+                {penyuluhDetail.kelompoks?.length > 0 && (
+                  <div className="w-full">
+                    <Input
+                      isClearable
+                      placeholder="Cari nama kelompok tani, desa, gapoktan..."
+                      size="sm"
+                      variant="bordered"
+                      value={searchKelompok}
+                      onChange={(e: any) => setSearchKelompok(e.target.value)}
+                      onClear={() => setSearchKelompok("")}
+                      startContent={<FiSearch className="text-gray-400 text-base" />}
+                    />
+                  </div>
+                )}
               </CardHeader>
               <CardBody>
-                {penyuluhDetail.kelompoks?.length > 0 ? (
+                {filteredKelompoks.length > 0 ? (
                   <div className="space-y-3">
-                    {penyuluhDetail.kelompoks.map((kelompok: any) => (
-                      <Card key={kelompok.id} className="bg-gray-50">
+                    {filteredKelompoks.map((kelompok: any) => (
+                      <Card key={kelompok.id} className="bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700">
                         <CardBody className="p-4">
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-semibold text-gray-800">
+                              <h4 className="font-semibold text-gray-800 dark:text-gray-200">
                                 {kelompok.namaKelompok}
                               </h4>
-                              <p className="text-sm text-gray-600">
-                                Gapoktan: {kelompok.gapoktan}
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Gapoktan: {kelompok.gapoktan || "-"}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {kelompok.desa}, {kelompok.kecamatan}
                               </p>
                             </div>
@@ -429,6 +480,10 @@ export const DetailInformasiPenyuluh = () => {
                         </CardBody>
                       </Card>
                     ))}
+                  </div>
+                ) : searchKelompok ? (
+                  <div className="text-center py-6 text-gray-500">
+                    <p className="text-sm">Tidak ada kelompok tani yang cocok dengan "{searchKelompok}"</p>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
@@ -535,23 +590,50 @@ export const DetailInformasiPenyuluh = () => {
 
             {/* Assignment Areas */}
             <Card className="shadow-md p-5">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-orange-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
+              <CardHeader className="pb-3 flex flex-col gap-3">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-orange-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    <h2 className="text-lg font-semibold">Wilayah Binaan</h2>
+                  </div>
+                  {penyuluhDetail.desaBinaanData?.length > 0 && (
+                    <Badge
+                      color="warning"
+                      content={
+                        searchDesaBinaan
+                          ? `${filteredDesaBinaan.length}/${penyuluhDetail.desaBinaanData.length}`
+                          : penyuluhDetail.desaBinaanData.length
+                      }
                     />
-                  </svg>
-                  <h2 className="text-lg font-semibold">Wilayah Binaan</h2>
+                  )}
                 </div>
+
+                {penyuluhDetail.desaBinaanData?.length > 0 && (
+                  <div className="w-full">
+                    <Input
+                      isClearable
+                      placeholder="Cari desa wilayah binaan..."
+                      size="sm"
+                      variant="bordered"
+                      value={searchDesaBinaan}
+                      onChange={(e: any) => setSearchDesaBinaan(e.target.value)}
+                      onClear={() => setSearchDesaBinaan("")}
+                      startContent={<FiSearch className="text-gray-400 text-base" />}
+                    />
+                  </div>
+                )}
               </CardHeader>
               <CardBody className="space-y-4">
                 <div>
@@ -582,7 +664,7 @@ export const DetailInformasiPenyuluh = () => {
                     Desa Binaan
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {penyuluhDetail.desaBinaanData?.map((item: any) => (
+                    {filteredDesaBinaan?.map((item: any) => (
                       <Chip
                         key={item.id}
                         className="cursor-default"
@@ -591,11 +673,19 @@ export const DetailInformasiPenyuluh = () => {
                         variant="flat"
                       >
                         {item.desa.nama}
-                        <span className="text-xs ml-1">
-                          ({item.desa.kecamatan?.nama})
-                        </span>
+                        {item.desa.kecamatan?.nama && (
+                          <span className="text-xs ml-1">
+                            ({item.desa.kecamatan.nama})
+                          </span>
+                        )}
                       </Chip>
-                    )) || (
+                    ))}
+                    {filteredDesaBinaan.length === 0 && searchDesaBinaan && (
+                      <span className="text-gray-500 text-sm">
+                        Tidak ada desa yang cocok dengan "{searchDesaBinaan}"
+                      </span>
+                    )}
+                    {(!penyuluhDetail.desaBinaanData || penyuluhDetail.desaBinaanData.length === 0) && (
                       <span className="text-gray-500 text-sm">
                         Belum ada desa binaan
                       </span>
