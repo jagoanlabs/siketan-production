@@ -60,42 +60,42 @@ const userVerify = async (req, res) => {
     const pageFilter = Number(page) || 1;
     const limitFilter = Number(limit) || 10;
 
-    // Sorting logic
+    // Sorting logic: Unverified first, newest createdAt first
     let orderFilter = [
       ['isVerified', 'ASC'],
-      ['createdAt', 'ASC'],
-      ['id', 'ASC']
+      ['createdAt', 'DESC'],
+      ['id', 'DESC']
     ];
 
     if (sortBy) {
       const dir = (sortDirection && String(sortDirection).toUpperCase() === 'DESC') ? 'DESC' : 'ASC';
       if (sortBy === 'createdAt') {
-        orderFilter = [['createdAt', dir], ['id', 'ASC']];
+        orderFilter = [['createdAt', dir], ['id', 'DESC']];
       } else if (sortBy === 'nama') {
         orderFilter = [['nama', dir], ['id', 'ASC']];
       } else if (sortBy === 'isVerified' || sortBy === 'status') {
-        orderFilter = [['isVerified', dir], ['createdAt', 'ASC'], ['id', 'ASC']];
+        orderFilter = [['isVerified', dir], ['createdAt', 'DESC'], ['id', 'DESC']];
       } else if (sortBy === 'peran') {
-        orderFilter = [['peran', dir], ['createdAt', 'ASC'], ['id', 'ASC']];
+        orderFilter = [['peran', dir], ['createdAt', 'DESC'], ['id', 'DESC']];
       } else if (sortBy === 'id') {
         orderFilter = [['id', dir]];
       }
     } else if (sort === 'verified_desc') {
       orderFilter = [
         ['isVerified', 'DESC'],
-        ['createdAt', 'ASC'],
-        ['id', 'ASC']
+        ['createdAt', 'DESC'],
+        ['id', 'DESC']
       ];
     } else if (sort === 'verified_asc') {
       orderFilter = [
         ['isVerified', 'ASC'],
-        ['createdAt', 'ASC'],
-        ['id', 'ASC']
+        ['createdAt', 'DESC'],
+        ['id', 'DESC']
       ];
     } else if (sort === 'created_desc') {
       orderFilter = [
         ['createdAt', 'DESC'],
-        ['id', 'ASC']
+        ['id', 'DESC']
       ];
     } else if (sort === 'created_asc') {
       orderFilter = [
