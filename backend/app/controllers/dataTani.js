@@ -19,6 +19,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const ExcelJS = require('exceljs');
 const { postActivity } = require('./logActivity');
+const { getPenyuluhRecord, getAssignedPoktanIds, isPenyuluhUser } = require('../../helpers/penyuluhHelper');
 
 const laporanPetani = async (req, res) => {
   try {
@@ -443,7 +444,32 @@ const daftarTani = async (req, res) => {
             ['id', 'ASC']
           ];
 
+    const isPenyuluh = isPenyuluhUser(req.user);
+    const whereConditions = [];
+
+    if (isPenyuluh) {
+      whereConditions.push({ createdAt: { [Op.not]: null } });
+
+      const penyuluhData = await getPenyuluhRecord(req.user);
+      const binaanIds = penyuluhData ? await getAssignedPoktanIds(penyuluhData.id) : [];
+
+      const penyuluhPetaniOr = [];
+      if (binaanIds.length > 0) {
+        penyuluhPetaniOr.push({ fk_kelompokId: { [Op.in]: binaanIds } });
+      }
+      if (penyuluhData) {
+        penyuluhPetaniOr.push({ fk_penyuluhId: penyuluhData.id });
+      }
+
+      if (penyuluhPetaniOr.length > 0) {
+        whereConditions.push({ [Op.or]: penyuluhPetaniOr });
+      } else {
+        whereConditions.push({ id: -1 });
+      }
+    }
+
     const query = {
+      where: whereConditions.length > 0 ? { [Op.and]: whereConditions } : undefined,
       include: [
         {
           model: kelompok

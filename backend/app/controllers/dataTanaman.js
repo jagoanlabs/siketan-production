@@ -14,6 +14,7 @@ const { Op, Sequelize } = require('sequelize');
 const ExcelJS = require('exceljs');
 const moment = require('moment');
 const { postActivity } = require('./logActivity');
+const { getPenyuluhRecord, getAssignedPoktanIds, isPenyuluhUser } = require('../../helpers/penyuluhHelper');
 const {
   tanamanPangan,
   tanamanPerkebunan,
@@ -44,50 +45,14 @@ const getAllDataTanaman = async (req, res) => {
     // Role detection
     const operatorRoles = ['operator_super_admin', 'operator_admin', 'operator_poktan'];
     const isOperator = (role && operatorRoles.includes(role.name)) || peran === 'operator';
-    const isPenyuluh =
-      peran === 'penyuluh' ||
-      (role && (role.name === 'penyuluh' || role.name === 'penyuluh_swadaya' || role.name?.includes('penyuluh')));
+    const isPenyuluh = isPenyuluhUser(req.user);
 
     if (isPenyuluh) {
-      const orConditions = [];
-      if (req.user.accountID) orConditions.push({ accountID: req.user.accountID });
-      if (req.user.id) orConditions.push({ accountID: req.user.id });
-      if (req.user.email) orConditions.push({ email: req.user.email });
-      if (req.user.nik || req.user.NIK) orConditions.push({ nik: req.user.nik || req.user.NIK });
-      if (req.user.nama) orConditions.push({ nama: req.user.nama });
+      // Exclude data without createdAt for Penyuluh
+      whereClause.createdAt = { [Op.not]: null };
 
-      const penyuluhData = orConditions.length > 0
-        ? await dataPenyuluh.findOne({
-            where: { [Op.or]: orConditions }
-          })
-        : null;
-
-      let penyuluhCondition = { id: -1 };
-      if (penyuluhData) {
-        const condList = [
-          { penyuluh: penyuluhData.id },
-          { penyuluh: String(penyuluhData.id) }
-        ];
-        if (penyuluhData.nama) condList.push({ penyuluh: penyuluhData.nama });
-        if (penyuluhData.nik) condList.push({ penyuluh: String(penyuluhData.nik) });
-
-        if (penyuluhData.desaBinaan) {
-          const desas = penyuluhData.desaBinaan.split(',').map((d) => d.trim()).filter(Boolean);
-          if (desas.length > 0) condList.push({ desa: { [Op.in]: desas } });
-        }
-        if (penyuluhData.kecamatanBinaan) {
-          const kecamatans = penyuluhData.kecamatanBinaan.split(',').map((k) => k.trim()).filter(Boolean);
-          if (kecamatans.length > 0) condList.push({ kecamatan: { [Op.in]: kecamatans } });
-        }
-
-        penyuluhCondition = { [Op.or]: condList };
-      }
-
-      const poktanBinaan = await kelompok.findAll({
-        where: penyuluhCondition,
-        attributes: ['id']
-      });
-      const binaanIds = poktanBinaan.map((k) => k.id);
+      const penyuluhData = await getPenyuluhRecord(req.user);
+      const binaanIds = penyuluhData ? await getAssignedPoktanIds(penyuluhData.id) : [];
 
       if (poktan_id && poktan_id !== 'undefined') {
         const poktanArray = Array.isArray(poktan_id)

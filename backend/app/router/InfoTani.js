@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { PERMISSIONS } = require('../../helpers/roleHelpers');
-const { auth, hasPermission } = require('../../midleware/auth');
+const { auth, optionalAuth, hasPermission } = require('../../midleware/auth');
 const upload = require('../../midleware/uploader');
 const {
   infoTani,
@@ -23,7 +23,7 @@ router.post(
   tambahInfoTani
 );
 router.get('/info-tani/:id', infoTaniById);
-router.get('/info-tani', infoTani);
+router.get('/info-tani', optionalAuth, infoTani);
 router.put(
   '/info-tani/:id',
   auth,
@@ -45,7 +45,7 @@ router.post(
   upload.single('fotoKegiatan'),
   tambahEventTani
 );
-router.get('/event-tani', eventTani);
+router.get('/event-tani', optionalAuth, eventTani);
 router.get('/event-tani/:id', eventTaniById);
 router.delete(
   '/event-tani/:id',

@@ -3,12 +3,21 @@ const ApiError = require('../../utils/ApiError');
 const imageKit = require('../../midleware/imageKit');
 const { postActivity } = require('./logActivity');
 const { Op } = require('sequelize');
+const { isPenyuluhUser } = require('../../helpers/penyuluhHelper');
 
 const infoTani = async (req, res) => {
   try {
     const { category, search } = req.query; // ambil search dari query params
+    const isPenyuluh = isPenyuluhUser(req.user);
 
     const whereClause = {};
+
+    if (isPenyuluh) {
+      whereClause.createdAt = { [Op.not]: null };
+      if (req.user.nama) {
+        whereClause.createdBy = req.user.nama;
+      }
+    }
 
     if (category) {
       whereClause.kategori = category;
@@ -118,7 +127,20 @@ const tambahInfoTani = async (req, res) => {
 };
 const eventTani = async (req, res) => {
   try {
-    const data = await EventTani.findAll({ order: [['id', 'DESC']] });
+    const isPenyuluh = isPenyuluhUser(req.user);
+    const whereClause = {};
+
+    if (isPenyuluh) {
+      whereClause.createdAt = { [Op.not]: null };
+      if (req.user.nama) {
+        whereClause.createdBy = req.user.nama;
+      }
+    }
+
+    const data = await EventTani.findAll({
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+      order: [['id', 'DESC']]
+    });
     res.status(200).json({
       message: 'Berhasil Mendapatkan Data Info Tani',
       infotani: data

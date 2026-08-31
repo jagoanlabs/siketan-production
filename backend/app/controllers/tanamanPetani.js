@@ -14,6 +14,7 @@ const ExcelJS = require('exceljs');
 const moment = require('moment');
 const monthOrder = require('../../utils/constants/months');
 const { postActivity } = require('./logActivity');
+const { getPenyuluhRecord, getAssignedPoktanIds, isPenyuluhUser } = require('../../helpers/penyuluhHelper');
 
 dotenv.config();
 
@@ -26,21 +27,53 @@ const getAllTanamanPetani = async (req, res) => {
       throw new ApiError(403, 'Anda tidak memiliki akses.');
     }
 
-    // Include petaniId in the query if it's provided
-    const limitFilter = Number(limit);
-    const pageFilter = Number(page);
+    const limitFilter = Number(limit) || 10;
+    const pageFilter = Number(page) || 1;
     const isExportFilter = Boolean(isExport);
 
+    // Include petaniId in the query if it's provided
+    const isPenyuluh = isPenyuluhUser(req.user);
+
+    let petaniIncludeWhere = {};
+    if (isPenyuluh) {
+      const penyuluhData = await getPenyuluhRecord(req.user);
+      const binaanIds = penyuluhData ? await getAssignedPoktanIds(penyuluhData.id) : [];
+
+      const penyuluhPetaniConditions = [];
+      if (binaanIds.length > 0) {
+        penyuluhPetaniConditions.push({ fk_kelompokId: { [Op.in]: binaanIds } });
+      }
+      if (penyuluhData) {
+        penyuluhPetaniConditions.push({ fk_penyuluhId: penyuluhData.id });
+      }
+
+      petaniIncludeWhere = penyuluhPetaniConditions.length > 0
+        ? { [Op.or]: penyuluhPetaniConditions }
+        : { id: -1 };
+    }
+
     const query = {
-      include: [{ model: dataPetani, as: 'dataPetani' }],
+      include: [
+        {
+          model: dataPetani,
+          as: 'dataPetani',
+          where: isPenyuluh ? petaniIncludeWhere : undefined,
+          required: isPenyuluh
+        }
+      ],
       limit: limitFilter,
       offset: (pageFilter - 1) * limitFilter,
       order: [['createdAt', 'DESC']]
-      // limit: parseInt(limit),
     };
 
+    if (isPenyuluh) {
+      query.where = {
+        createdAt: { [Op.not]: null }
+      };
+    }
+
     if (petaniId) {
-      query.where = { fk_petaniId: petaniId };
+      query.where = { ...query.where, fk_petaniId: petaniId };
     }
 
     if (search) {
@@ -76,6 +109,8 @@ const getAllTanamanPetani = async (req, res) => {
             {
               model: dataPetani,
               as: 'dataPetani',
+              where: isPenyuluh ? petaniIncludeWhere : undefined,
+              required: isPenyuluh,
               include: [
                 { model: kelompok },
                 { model: kecamatan, as: 'kecamatanData' },

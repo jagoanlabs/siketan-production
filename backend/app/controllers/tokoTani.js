@@ -3,6 +3,7 @@ const ApiError = require('../../utils/ApiError');
 const imageKit = require('../../midleware/imageKit');
 const { postActivity } = require('./logActivity');
 const { Op } = require('sequelize');
+const { getPenyuluhRecord, getAssignedPoktanIds, isPenyuluhUser } = require('../../helpers/penyuluhHelper');
 
 const tambahDaftarPenjual = async (req, res) => {
   try {
@@ -132,6 +133,51 @@ const productPetani = async (req, res) => {
   try {
     const limitFilter = Number(limit);
     const pageFilter = Number(page);
+    const isPenyuluh = isPenyuluhUser(req.user);
+
+    const whereConditions = [];
+
+    if (isPenyuluh) {
+      whereConditions.push({ createdAt: { [Op.not]: null } });
+
+      const penyuluhData = await getPenyuluhRecord(req.user);
+      const binaanIds = penyuluhData ? await getAssignedPoktanIds(penyuluhData.id) : [];
+
+      // Dapatkan accountID petani binaan
+      const petaniBinaan = binaanIds.length > 0 || penyuluhData
+        ? await dataPetani.findAll({
+            where: {
+              [Op.or]: [
+                ...(binaanIds.length > 0 ? [{ fk_kelompokId: { [Op.in]: binaanIds } }] : []),
+                ...(penyuluhData ? [{ fk_penyuluhId: penyuluhData.id }] : [])
+              ]
+            },
+            attributes: ['accountID']
+          })
+        : [];
+
+      const allowedAccountIDs = petaniBinaan
+        .map((p) => p.accountID)
+        .filter(Boolean);
+
+      if (req.user?.accountID) allowedAccountIDs.push(req.user.accountID);
+      if (penyuluhData?.accountID) allowedAccountIDs.push(penyuluhData.accountID);
+
+      if (allowedAccountIDs.length > 0) {
+        whereConditions.push({ accountID: { [Op.in]: allowedAccountIDs } });
+      } else {
+        whereConditions.push({ id: -1 });
+      }
+    }
+
+    if (search) {
+      whereConditions.push({
+        [Op.or]: [
+          { namaProducts: { [Op.like]: `%${search}%` } }, // cari di penjual
+          { '$tbl_akun.nama$': { [Op.like]: `%${search}%` } } // cari di relasi tblAkun
+        ]
+      });
+    }
 
     const query = {
       include: [
@@ -152,20 +198,10 @@ const productPetani = async (req, res) => {
           ]
         }
       ],
-      where: {},
+      where: whereConditions.length > 0 ? { [Op.and]: whereConditions } : {},
       limit: limitFilter,
       offset: (pageFilter - 1) * limitFilter
     };
-
-    // kalau ada search, filter namaProduct (penjual) atau namaLengkap (tblAkun)
-    if (search) {
-      query.where = {
-        [Op.or]: [
-          { namaProducts: { [Op.like]: `%${search}%` } }, // cari di penjual
-          { '$tbl_akun.nama$': { [Op.like]: `%${search}%` } } // cari di relasi tblAkun
-        ]
-      };
-    }
 
     const data = await penjual.findAll(query);
 

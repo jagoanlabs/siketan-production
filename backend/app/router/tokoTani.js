@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { PERMISSIONS } = require('../../helpers/roleHelpers');
-const { auth, hasPermission } = require('../../midleware/auth');
+const { auth, optionalAuth, hasPermission } = require('../../midleware/auth');
 const upload = require('../../midleware/uploader');
 const {
   tambahDaftarPenjual,
@@ -28,7 +28,7 @@ router.get(
   productPenyuluh
 );
 router.get('/product-petani', auth, hasPermission(PERMISSIONS.TOKO_PETANI_INDEX), productPetani);
-router.get('/product-petani-no-auth', productPetani);
+router.get('/product-petani-no-auth', optionalAuth, productPetani);
 router.get('/product-petani/:id', getDetailProduk);
 router.get('/list-product/:id', listProduk); //list product by id account
 router.get('/list-toko', listToko);

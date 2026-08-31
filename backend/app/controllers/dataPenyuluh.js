@@ -21,6 +21,7 @@ const crypto = require('crypto');
 const ExcelJS = require('exceljs');
 const { postActivity } = require('./logActivity');
 const { Op, col, fn, literal } = require('sequelize');
+const { getPenyuluhRecord, isPenyuluhUser } = require('../../helpers/penyuluhHelper');
 
 dotenv.config();
 
@@ -800,7 +801,21 @@ const jurnalKegiatan = async (req, res) => {
     if (peran === 'petani') {
       throw new ApiError(403, 'Anda tidak memiliki akses.');
     } else {
+      const isPenyuluh = isPenyuluhUser(req.user);
+      const whereClause = {};
+
+      if (isPenyuluh) {
+        whereClause.createdAt = { [Op.not]: null };
+        const penyuluhData = await getPenyuluhRecord(req.user);
+        if (penyuluhData) {
+          whereClause.fk_penyuluhId = penyuluhData.id;
+        } else {
+          whereClause.id = -1;
+        }
+      }
+
       const newData = await jurnalHarian.findAll({
+        where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
         include: [
           // { model: jurnalHarian, required: true },
           { model: dataPenyuluh }
