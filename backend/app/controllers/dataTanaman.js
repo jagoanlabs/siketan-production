@@ -27,7 +27,7 @@ dotenv.config();
 
 const getAllDataTanaman = async (req, res) => {
   const { peran, id: userId, role } = req.user || {};
-  const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas, tahun, prakiraanMin, prakiraanMax } =
+  const { limit, page, sortBy, sortType, poktan_id, isExport, search, kategori, komoditas, tahun, prakiraanMin, prakiraanMax, kecamatan } =
     req.query;
 
   try {
@@ -192,10 +192,23 @@ const getAllDataTanaman = async (req, res) => {
     }
 
     const isFilteredByPoktan = isPenyuluh || Boolean(poktan_id && poktan_id !== 'undefined');
+    const isFilteredByKecamatan = Boolean(kecamatan && kecamatan !== 'undefined' && kecamatan.trim() !== '');
+
+    const kelompokWhere = {};
+    if (isFilteredByKecamatan) {
+      kelompokWhere.kecamatan = kecamatan.trim();
+    }
+
+    const kelompokInclude = {
+      model: kelompok,
+      as: 'kelompok',
+      required: isFilteredByPoktan || isFilteredByKecamatan,
+      ...(isFilteredByKecamatan ? { where: kelompokWhere } : {})
+    };
 
     const filter = {
       where: whereClause,
-      include: [{ model: kelompok, as: 'kelompok', required: isFilteredByPoktan }],
+      include: [kelompokInclude],
       limit: limitFilter,
       offset: (pageFilter - 1) * limitFilter,
       order: [[sortBy || 'id', sortType || 'DESC']]
@@ -203,7 +216,7 @@ const getAllDataTanaman = async (req, res) => {
 
     const data = await dataTanaman.findAll(
       isExportFilter
-        ? { where: whereClause, include: [{ model: kelompok, as: 'kelompok', required: isFilteredByPoktan }] }
+        ? { where: whereClause, include: [kelompokInclude] }
         : filter
     );
 
@@ -217,7 +230,7 @@ const getAllDataTanaman = async (req, res) => {
 
     const total = await dataTanaman.count({
       where: whereClause,
-      include: [{ model: kelompok, as: 'kelompok', required: isFilteredByPoktan }],
+      include: [kelompokInclude],
       distinct: true
     });
 

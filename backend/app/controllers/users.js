@@ -278,7 +278,7 @@ const updateAccount = async (req, res) => {
 };
 
 const searchPoktan = async (req, res) => {
-  const { search, limit } = req.query;
+  const { search, limit, kecamatan: kecamatanFilter } = req.query;
   const isPenyuluh = isPenyuluhUser(req.user);
 
   try {
@@ -297,45 +297,42 @@ const searchPoktan = async (req, res) => {
         };
       }
 
+      const conditions = [penyuluhCondition];
+
       if (search && search !== 'undefined' && search.trim() !== '') {
-        whereClause = {
-          [Op.and]: [
-            penyuluhCondition,
-            {
-              [Op.or]: [
-                {
-                  gapoktan: {
-                    [Op.like]: `%${search}%`
-                  }
-                },
-                {
-                  namaKelompok: {
-                    [Op.like]: `%${search}%`
-                  }
-                }
-              ]
-            }
-          ]
-        };
-      } else {
-        whereClause = penyuluhCondition;
-      }
-    } else {
-      if (search && search !== 'undefined' && search.trim() !== '') {
-        whereClause = {
+        conditions.push({
           [Op.or]: [
-            {
-              gapoktan: {
-                [Op.like]: `%${search}%`
-              }
-            },
-            {
-              namaKelompok: {
-                [Op.like]: `%${search}%`
-              }
-            }
+            { gapoktan: { [Op.like]: `%${search}%` } },
+            { namaKelompok: { [Op.like]: `%${search}%` } }
           ]
-        };
+        });
+      }
+
+      if (kecamatanFilter && kecamatanFilter !== 'undefined' && kecamatanFilter.trim() !== '') {
+        conditions.push({ kecamatan: kecamatanFilter.trim() });
+      }
+
+      whereClause = conditions.length === 1 ? conditions[0] : { [Op.and]: conditions };
+    } else {
+      const conditions = [];
+
+      if (search && search !== 'undefined' && search.trim() !== '') {
+        conditions.push({
+          [Op.or]: [
+            { gapoktan: { [Op.like]: `%${search}%` } },
+            { namaKelompok: { [Op.like]: `%${search}%` } }
+          ]
+        });
+      }
+
+      if (kecamatanFilter && kecamatanFilter !== 'undefined' && kecamatanFilter.trim() !== '') {
+        conditions.push({ kecamatan: kecamatanFilter.trim() });
+      }
+
+      if (conditions.length === 1) {
+        whereClause = conditions[0];
+      } else if (conditions.length > 1) {
+        whereClause = { [Op.and]: conditions };
       }
     }
 

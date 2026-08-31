@@ -39,6 +39,9 @@ export const getAllDataTanaman = async (
     if (params.prakiraanMax) {
       queryParams.append("prakiraanMax", params.prakiraanMax);
     }
+    if (params.kecamatan) {
+      queryParams.append("kecamatan", params.kecamatan);
+    }
 
     const url = `/statistik?${queryParams.toString()}`;
 

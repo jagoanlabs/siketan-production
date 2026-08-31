@@ -1,226 +1,30 @@
 import { Chip } from "../../../../../components/Form/HeroChip";
 import { Button } from "../../../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../../../components/Form/HeroSelect";
-import ReactDOM from "react-dom";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AsyncSelect from "react-select/async";
 import { components } from "react-select";
 
-const PoktanHoverBadge = ({
-  count,
-  remainingCount,
-  selectedValues,
-  onRemoveItem,
-  onClearAll,
-}: {
-  count: number;
-  remainingCount: number;
-  selectedValues: any[];
-  onRemoveItem: (item: any) => void;
-  onClearAll: () => void;
-}) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
-  const badgeRef = useRef<HTMLDivElement>(null);
-  const closeTimeoutRef = useRef<any>(null);
-
-  const handleMouseEnter = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-    }
-    if (badgeRef.current) {
-      const rect = badgeRef.current.getBoundingClientRect();
-      setTooltipPos({
-        top: rect.bottom + 6,
-        left: Math.max(12, Math.min(rect.left, window.innerWidth - 340)),
-      });
-    }
-    setShowTooltip(true);
-  };
-
-  const handleMouseLeave = () => {
-    closeTimeoutRef.current = setTimeout(() => {
-      setShowTooltip(false);
-    }, 150);
-  };
-
+// Custom MultiValue: Chip pil biru persis seperti desain ([Gapoktan - Poktan x])
+const CustomMultiValue = (props: any) => {
+  const { data, removeProps } = props;
   return (
-    <>
-      <div
-        ref={badgeRef}
-        className="inline-flex shrink-0"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={(e) => e.stopPropagation()}
+    <div className="inline-flex items-center gap-1.5 bg-[#E8F0FE] dark:bg-blue-950/70 text-[#1A73E8] dark:text-blue-300 rounded-lg px-2.5 py-1 text-xs font-medium m-0.5 shadow-2xs">
+      <span className="truncate max-w-[220px]">{data.label}</span>
+      <button
+        type="button"
+        {...removeProps}
+        onClick={(e) => {
+          removeProps?.onClick?.(e);
+        }}
+        className="text-blue-500 hover:text-blue-700 hover:bg-blue-200/60 dark:hover:bg-blue-900 rounded p-0.5 ml-0.5 shrink-0 cursor-pointer"
+        title="Hapus"
       >
-        <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 dark:hover:bg-blue-900 cursor-pointer transition-colors whitespace-nowrap shadow-2xs">
-          +{remainingCount} lainnya
-        </span>
-      </div>
-
-      {/* Floating Tooltip Card portal to document.body */}
-      {showTooltip &&
-        ReactDOM.createPortal(
-          <div
-            style={{
-              position: "fixed",
-              top: `${tooltipPos.top}px`,
-              left: `${tooltipPos.left}px`,
-              zIndex: 999999,
-            }}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-3 min-w-[280px] max-w-[340px] pointer-events-auto cursor-default animate-in fade-in zoom-in-95 duration-100"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-gray-150 dark:border-gray-700 pb-2 mb-2">
-              <span className="text-xs font-bold text-gray-800 dark:text-gray-100">
-                {count} Poktan Terpilih
-              </span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClearAll();
-                  setShowTooltip(false);
-                }}
-                className="text-[11px] text-red-500 hover:text-red-700 hover:underline font-medium cursor-pointer"
-              >
-                Hapus Semua
-              </button>
-            </div>
-            <ul className="space-y-1.5 max-h-56 overflow-y-auto pr-1 text-xs text-gray-700 dark:text-gray-300">
-              {selectedValues.map((item: any, idx: number) => (
-                <li
-                  key={item.value || idx}
-                  className="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveItem(item);
-                    }}
-                    className="text-gray-400 hover:text-red-500 p-0.5 rounded opacity-70 group-hover:opacity-100 shrink-0 cursor-pointer"
-                    title="Hapus"
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>,
-          document.body,
-        )}
-    </>
+        ✕
+      </button>
+    </div>
   );
 };
-
-// Custom Value Container: Badge pertama di kiri, badge +N lainnya di kanannya
-const CustomValueContainer = ({ children, ...props }: any) => {
-  const selectedValues = props.getValue();
-  const count = selectedValues.length;
-
-  if (count === 0) {
-    return (
-      <components.ValueContainer {...props}>
-        {children}
-      </components.ValueContainer>
-    );
-  }
-
-  const childrenArray = React.Children.toArray(children);
-  const inputChild = childrenArray[childrenArray.length - 1];
-  const firstItem = selectedValues[0];
-  const remainingCount = count - 1;
-
-  const handleRemove = (itemToRemove: any) => {
-    const newValues = selectedValues.filter(
-      (item: any) => item.value !== itemToRemove.value,
-    );
-    props.selectProps.onChange(newValues, {
-      action: "remove-value",
-      removedValue: itemToRemove,
-    });
-  };
-
-  const handleClearAll = () => {
-    props.selectProps.onChange([], { action: "clear" });
-  };
-
-  if (remainingCount === 0) {
-    return (
-      <components.ValueContainer {...props}>
-        <div className="flex items-center gap-1.5 flex-nowrap min-w-0 py-0.5">
-          <div
-            className="inline-flex items-center gap-1 bg-[#E8F0FE] dark:bg-blue-950/70 text-[#1A73E8] dark:text-blue-300 rounded-lg px-2.5 py-0.5 text-xs font-medium max-w-[190px] shrink-0 shadow-2xs"
-            title={firstItem.label}
-          >
-            <span className="truncate">{firstItem.label}</span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRemove(firstItem);
-              }}
-              className="text-blue-500 hover:text-blue-700 hover:bg-blue-200/60 dark:hover:bg-blue-900 rounded p-0.5 ml-0.5 shrink-0 cursor-pointer"
-              title="Hapus"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="flex-1 min-w-[20px]">{inputChild}</div>
-        </div>
-      </components.ValueContainer>
-    );
-  }
-
-  // Jika > 1 poktan dipilih:
-  // Baris 1: Badge pertama
-  // Baris 2: Badge +N lainnya di kiri, kursor input di kanannya
-  return (
-    <components.ValueContainer {...props}>
-      <div className="flex flex-col items-start gap-1 py-1 w-full min-w-0">
-        {/* Baris 1: Badge Pertama */}
-        <div
-          className="inline-flex items-center gap-1 bg-[#E8F0FE] dark:bg-blue-950/70 text-[#1A73E8] dark:text-blue-300 rounded-lg px-2.5 py-0.5 text-xs font-medium max-w-full shadow-2xs"
-          title={firstItem.label}
-        >
-          <span className="truncate max-w-[200px]">{firstItem.label}</span>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRemove(firstItem);
-            }}
-            className="text-blue-500 hover:text-blue-700 hover:bg-blue-200/60 dark:hover:bg-blue-900 rounded p-0.5 ml-0.5 shrink-0 cursor-pointer"
-            title="Hapus"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Baris 2: Badge +N lainnya di kiri, kursor input di kanannya */}
-        <div className="flex items-center gap-1.5 w-full min-w-0">
-          <PoktanHoverBadge
-            count={count}
-            remainingCount={remainingCount}
-            selectedValues={selectedValues}
-            onRemoveItem={handleRemove}
-            onClearAll={handleClearAll}
-          />
-          <div className="flex-1 min-w-[20px]">{inputChild}</div>
-        </div>
-      </div>
-    </components.ValueContainer>
-  );
-};
-
-const DummyMultiValue = () => null;
 
 const CustomOption = (props: any) => {
   return (
@@ -263,6 +67,7 @@ import PageMeta from "@/layouts/PageMeta";
 import { getPoktanDashboard } from "@/service/DashboardAdmin/index/dashboard-poktan";
 import { useDashboardDataPotkan } from "@/hook/dashboard/useDashboardDataPotkan";
 import { useTanamanData } from "@/hook/dashboard/useDashboardDataTable";
+import { useKecamatanList } from "@/hook/dashboard/dataPetani/useCreateEditDataPetani";
 import {
   useDeleteStatistika,
   useImportStatistika,
@@ -327,6 +132,7 @@ export const DashboardStatistika = () => {
   const { data: availableYears = [] } = useStatistikaYears();
 
   // New Filter States
+  const [selectedKecamatan, setSelectedKecamatan] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedCommodity, setSelectedCommodity] = useState<string>("");
   const [prakiraanMin, setPrakiraanMin] = useState<string>("");
@@ -334,6 +140,9 @@ export const DashboardStatistika = () => {
   // Month Grid Picker States
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState<number>(new Date().getFullYear());
+
+  // Kecamatan list for Operator filter
+  const { data: kecamatanList = [], isLoading: isKecamatanLoading } = useKecamatanList();
 
   // Options for Commodity Dropdown
   const allCommodityOptions = useMemo(() => {
@@ -396,6 +205,7 @@ export const DashboardStatistika = () => {
 
   const handleClearAllFilters = () => {
     setSelectedPoktan([]);
+    setSelectedKecamatan("");
     setTableSearchTerm("");
     setDebouncedTableSearch("");
     setSelectedCategory("");
@@ -469,6 +279,7 @@ export const DashboardStatistika = () => {
       komoditas: selectedCommodity || undefined,
       prakiraanMin: prakiraanMin || undefined,
       prakiraanMax: prakiraanMax || undefined,
+      kecamatan: selectedKecamatan || undefined,
     }),
     [
       itemsPerPage,
@@ -480,12 +291,13 @@ export const DashboardStatistika = () => {
       selectedCommodity,
       prakiraanMin,
       prakiraanMax,
+      selectedKecamatan,
     ],
   );
 
   // API Queries
   const { data: defaultData, isLoading: isPotkanLoading } =
-    useDashboardDataPotkan("");
+    useDashboardDataPotkan("", selectedKecamatan || undefined);
 
   const {
     data: tanamanResponse,
@@ -591,7 +403,7 @@ export const DashboardStatistika = () => {
   const loadOptions = useCallback(
     async (inputValue: string) => {
       try {
-        const res = await getPoktanDashboard(inputValue || "");
+        const res = await getPoktanDashboard(inputValue || "", selectedKecamatan || undefined);
         return (res || []).map((item: DashoardDataPotkan) => ({
           value: item.id,
           label: (item.gapoktan ? `${item.gapoktan} - ` : "") + item.namaKelompok,
@@ -602,7 +414,7 @@ export const DashboardStatistika = () => {
         return [];
       }
     },
-    [],
+    [selectedKecamatan],
   );
 
   // Handler functions
@@ -815,6 +627,7 @@ export const DashboardStatistika = () => {
         komoditas: selectedCommodity || null,
         prakiraanMin: prakiraanMin || null,
         prakiraanMax: prakiraanMax || null,
+        kecamatan: selectedKecamatan || null,
       });
     } catch (error) {
       console.error("Download filtered data failed:", error);
@@ -1338,12 +1151,12 @@ export const DashboardStatistika = () => {
         type="processing"
       />
 
-      {/* Search and Filters Flex Container */}
-      <div className="flex flex-col md:flex-row gap-3 items-end mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-        {/* Pencarian (Multi-select Poktan) */}
-        <div className="flex-1 w-full min-w-[240px] flex flex-col gap-1.5">
+      {/* Search and Filters Container */}
+      <div className="flex flex-col gap-4 mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        {/* Row 1: Gapoktan/Poktan Multi-Select (Full Width) */}
+        <div className="w-full flex flex-col gap-1.5">
           <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">
-            Pencarian
+            Gapoktan/Poktan
           </span>
           <AsyncSelect
             isMulti
@@ -1351,30 +1164,27 @@ export const DashboardStatistika = () => {
             isClearable={false}
             unstyled
             components={{
-              ValueContainer: CustomValueContainer,
-              MultiValue: DummyMultiValue,
+              MultiValue: CustomMultiValue,
               Option: CustomOption,
             }}
             classNames={{
               control: ({ isFocused }) =>
-                `w-full px-3 py-1.5 bg-transparent border rounded-xl hover:border-gray-400 dark:hover:border-gray-500 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[46px] h-auto relative ${
-                  isFocused
-                    ? "border-green-500 ring-1 ring-green-500"
-                    : "border-gray-300 dark:border-gray-600"
+                `w-full px-3 py-1 bg-transparent border rounded-xl hover:border-gray-400 dark:hover:border-gray-500 transition-colors outline-none focus:outline-none flex items-center justify-between min-h-[46px] h-auto relative flex-wrap gap-1 ${isFocused
+                  ? "border-green-500 ring-1 ring-green-500"
+                  : "border-gray-300 dark:border-gray-600"
                 }`,
-              placeholder: () => "text-gray-400 text-sm pl-0.5 whitespace-nowrap",
-              input: () => "text-gray-700 dark:text-gray-200 text-sm outline-none min-w-[20px]",
+              placeholder: () => "text-gray-400 text-sm pl-1 whitespace-nowrap",
+              input: () => "text-gray-700 dark:text-gray-200 text-sm outline-none min-w-[120px] py-1",
               menu: () =>
                 "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg mt-1 p-1 z-[9999]",
               option: ({ isFocused, isSelected }) =>
-                `px-3 py-2 text-sm rounded-lg cursor-pointer ${
-                  isSelected
-                    ? "bg-green-600 text-white font-medium"
-                    : isFocused
-                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      : "text-gray-700 dark:text-gray-200"
+                `px-3 py-2 text-sm rounded-lg cursor-pointer ${isSelected
+                  ? "bg-green-600 text-white font-medium"
+                  : isFocused
+                    ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    : "text-gray-700 dark:text-gray-200"
                 }`,
-              valueContainer: () => "flex items-center flex-1 min-w-0 py-0.5",
+              valueContainer: () => "flex items-center flex-wrap flex-1 min-w-0 py-0.5 gap-1",
               indicatorsContainer: () => "flex items-center gap-1 text-gray-400 shrink-0 self-center",
               dropdownIndicator: () => "hover:text-gray-600 cursor-pointer p-0.5",
             }}
@@ -1389,7 +1199,7 @@ export const DashboardStatistika = () => {
                 ? `Tidak ada hasil untuk "${inputValue}"`
                 : "Ketik untuk mencari..."
             }
-            placeholder="Cari..."
+            placeholder="Cari Gapoktan/Poktan..."
             styles={{
               menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               menu: (base) => ({ ...base, zIndex: 9999 }),
@@ -1399,176 +1209,205 @@ export const DashboardStatistika = () => {
           />
         </div>
 
-        {/* Jenis Tanaman Select */}
-        <div className="w-full md:w-48">
-          <Select
-            label="Jenis Tanaman"
-            placeholder="Semua Jenis"
-            variant="bordered"
-            selectedKeys={selectedCategory ? [selectedCategory] : []}
-            onSelectionChange={(keys: any) => {
-              const selected = Array.from(keys)[0] as string;
-              setSelectedCategory(selected || "");
-              setCurrentPage(1);
-            }}
-            classNames={{
-              trigger: "border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 min-h-[46px] px-3.5 py-3 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 text-sm font-normal text-gray-700 dark:text-gray-200",
-              label: "font-normal"
-            }}
-          >
-            <SelectItem key="pangan" textValue="Tanaman Pangan">
-              Tanaman Pangan
-            </SelectItem>
-            <SelectItem key="perkebunan" textValue="Perkebunan">
-              Perkebunan
-            </SelectItem>
-            <SelectItem key="sayur" textValue="Sayur">
-              Sayur
-            </SelectItem>
-            <SelectItem key="buah" textValue="Buah">
-              Buah
-            </SelectItem>
-          </Select>
-        </div>
+        {/* Row 2: Secondary Filters & Action Buttons */}
+        <div className="flex flex-col md:flex-row gap-3 items-end">
+          {/* Kecamatan Select */}
+          <div className="flex-1 w-full min-w-[180px]">
+            <Select
+              label="Kecamatan"
+              placeholder="Semua Kecamatan"
+              variant="bordered"
+              isLoading={isKecamatanLoading}
+              selectedKeys={selectedKecamatan ? [selectedKecamatan] : []}
+              onSelectionChange={(keys: any) => {
+                const selected = Array.from(keys)[0] as string;
+                setSelectedKecamatan(selected || "");
+                setCurrentPage(1);
+              }}
+              classNames={{
+                trigger: "border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 min-h-[46px] px-3.5 py-3 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 text-sm font-normal text-gray-700 dark:text-gray-200",
+                label: "font-normal"
+              }}
+            >
+              {kecamatanList.map((kec: any) => (
+                <SelectItem key={kec.nama} textValue={kec.nama}>
+                  {kec.nama}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
 
-        {/* Commodity Select */}
-        <div className="w-full md:w-56">
-          <Select
-            label="Komoditas"
-            placeholder="Semua Komoditas"
-            variant="bordered"
-            selectedKeys={selectedCommodity ? [selectedCommodity] : []}
-            onSelectionChange={(keys: any) => {
-              const selected = Array.from(keys)[0] as string;
-              setSelectedCommodity(selected || "");
-              setCurrentPage(1);
-            }}
-            classNames={{
-              trigger: "border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 min-h-[46px] px-3.5 py-3 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 text-sm font-normal text-gray-700 dark:text-gray-200",
-              label: "font-normal"
-            }}
-          >
-            {allCommodityOptions.map((item) => (
-              <SelectItem key={item.value} textValue={item.label}>
-                {item.label}
+          {/* Jenis Tanaman Select */}
+          <div className="flex-1 w-full min-w-[160px]">
+            <Select
+              label="Jenis Tanaman"
+              placeholder="Semua Jenis"
+              variant="bordered"
+              selectedKeys={selectedCategory ? [selectedCategory] : []}
+              onSelectionChange={(keys: any) => {
+                const selected = Array.from(keys)[0] as string;
+                setSelectedCategory(selected || "");
+                setCurrentPage(1);
+              }}
+              classNames={{
+                trigger: "border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 min-h-[46px] px-3.5 py-3 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 text-sm font-normal text-gray-700 dark:text-gray-200",
+                label: "font-normal"
+              }}
+            >
+              <SelectItem key="pangan" textValue="Tanaman Pangan">
+                Tanaman Pangan
               </SelectItem>
-            ))}
-          </Select>
-        </div>
+              <SelectItem key="perkebunan" textValue="Perkebunan">
+                Perkebunan
+              </SelectItem>
+              <SelectItem key="sayur" textValue="Sayur">
+                Sayur
+              </SelectItem>
+              <SelectItem key="buah" textValue="Buah">
+                Buah
+              </SelectItem>
+            </Select>
+          </div>
 
-        {/* Harvest Range Month-Year Popover */}
-        <div className="w-full md:w-60 flex flex-col gap-1.5">
-          <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">Prakiraan Panen</span>
-          <Popover isOpen={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-            <PopoverTrigger>
-              <Button
-                className={`w-full justify-center md:justify-between px-3.5 py-3 rounded-xl min-h-[46px] text-sm hover:border-gray-400 dark:hover:border-gray-500 border border-gray-300 dark:border-gray-600 transition-colors !font-normal text-center md:text-left focus:border-green-500 focus:ring-1 focus:ring-green-500 ${prakiraanMin
-                  ? "!text-gray-700 dark:!text-gray-200"
-                  : "!text-gray-400 dark:!text-gray-500"
-                  }`}
-                color="default"
-                variant="bordered"
-                endContent={<FiCalendar className="text-gray-400 dark:text-gray-500 text-sm" />}
-              >
-                {getFilterLabel()}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent placement="bottom end" className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg w-72">
-              <div className="space-y-4 w-full">
-                {/* Year Header Navigator */}
-                <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="light"
-                    className="text-gray-600 dark:text-gray-400"
-                    onPress={() => setPickerYear((prev) => prev - 1)}
-                  >
-                    &larr;
-                  </Button>
-                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                    Tahun {pickerYear}
-                  </span>
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="light"
-                    className="text-gray-600 dark:text-gray-400"
-                    onPress={() => setPickerYear((prev) => prev + 1)}
-                  >
-                    &rarr;
-                  </Button>
-                </div>
+          {/* Commodity Select */}
+          <div className="flex-1 w-full min-w-[180px]">
+            <Select
+              label="Komoditas"
+              placeholder="Semua Komoditas"
+              variant="bordered"
+              selectedKeys={selectedCommodity ? [selectedCommodity] : []}
+              onSelectionChange={(keys: any) => {
+                const selected = Array.from(keys)[0] as string;
+                setSelectedCommodity(selected || "");
+                setCurrentPage(1);
+              }}
+              classNames={{
+                trigger: "border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 min-h-[46px] px-3.5 py-3 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 text-sm font-normal text-gray-700 dark:text-gray-200",
+                label: "font-normal"
+              }}
+            >
+              {allCommodityOptions.map((item) => (
+                <SelectItem key={item.value} textValue={item.label}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
 
-                {/* 3x4 Month Grid */}
-                <div className="grid grid-cols-3 gap-2">
-                  {["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"].map((shortMonth, idx) => {
-                    const monthValStr = String(idx + 1).padStart(2, "0");
-                    const targetVal = `${pickerYear}-${monthValStr}`;
-                    const isSelected = prakiraanMin === targetVal;
+          {/* Harvest Range Month-Year Popover */}
+          <div className="flex-1 w-full min-w-[190px] flex flex-col gap-1.5">
+            <span className="text-xs font-normal text-gray-600 dark:text-gray-400 pl-1">Prakiraan Panen</span>
+            <Popover isOpen={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger>
+                <Button
+                  className={`w-full justify-center md:justify-between px-3.5 py-3 rounded-xl min-h-[46px] text-sm hover:border-gray-400 dark:hover:border-gray-500 border border-gray-300 dark:border-gray-600 transition-colors !font-normal text-center md:text-left focus:border-green-500 focus:ring-1 focus:ring-green-500 ${prakiraanMin
+                    ? "!text-gray-700 dark:!text-gray-200"
+                    : "!text-gray-400 dark:!text-gray-500"
+                    }`}
+                  color="default"
+                  variant="bordered"
+                  endContent={<FiCalendar className="text-gray-400 dark:text-gray-500 text-sm" />}
+                >
+                  {getFilterLabel()}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent placement="bottom end" className="p-4 bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-xl shadow-lg w-72">
+                <div className="space-y-4 w-full">
+                  {/* Year Header Navigator */}
+                  <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="light"
+                      className="text-gray-600 dark:text-gray-400"
+                      onPress={() => setPickerYear((prev) => prev - 1)}
+                    >
+                      &larr;
+                    </Button>
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                      Tahun {pickerYear}
+                    </span>
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="light"
+                      className="text-gray-600 dark:text-gray-400"
+                      onPress={() => setPickerYear((prev) => prev + 1)}
+                    >
+                      &rarr;
+                    </Button>
+                  </div>
 
-                    return (
-                      <Button
-                        key={shortMonth}
-                        size="sm"
-                        className={`py-2 transition-all font-medium rounded-lg text-xs ${isSelected
+                  {/* 3x4 Month Grid */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"].map((shortMonth, idx) => {
+                      const monthValStr = String(idx + 1).padStart(2, "0");
+                      const targetVal = `${pickerYear}-${monthValStr}`;
+                      const isSelected = prakiraanMin === targetVal;
+
+                      return (
+                        <Button
+                          key={shortMonth}
+                          size="sm"
+                          className={`py-2 transition-all font-medium rounded-lg text-xs ${isSelected
                             ? "bg-green-600 text-white font-semibold hover:bg-green-700"
                             : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          }`}
+                            }`}
+                          onPress={() => {
+                            setPrakiraanMin(targetVal);
+                            setPrakiraanMax(targetVal);
+                            setCurrentPage(1);
+                            setIsPopoverOpen(false);
+                          }}
+                        >
+                          {shortMonth}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer Link to Reset Filter */}
+                  {prakiraanMin && (
+                    <div className="flex justify-center border-t border-gray-100 dark:border-gray-700 pt-2">
+                      <Button
+                        size="sm"
+                        variant="light"
+                        color="danger"
+                        className="text-xs h-7 font-normal"
                         onPress={() => {
-                          setPrakiraanMin(targetVal);
-                          setPrakiraanMax(targetVal);
+                          setPrakiraanMin("");
+                          setPrakiraanMax("");
                           setCurrentPage(1);
                           setIsPopoverOpen(false);
                         }}
                       >
-                        {shortMonth}
+                        Hapus Pilihan
                       </Button>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
+              </PopoverContent>
+            </Popover>
+          </div>
 
-                {/* Footer Link to Reset Filter */}
-                {prakiraanMin && (
-                  <div className="flex justify-center border-t border-gray-100 dark:border-gray-700 pt-2">
-                    <Button
-                      size="sm"
-                      variant="light"
-                      color="danger"
-                      className="text-xs h-7 font-normal"
-                      onPress={() => {
-                        setPrakiraanMin("");
-                        setPrakiraanMax("");
-                        setCurrentPage(1);
-                        setIsPopoverOpen(false);
-                      }}
-                    >
-                      Hapus Pilihan
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        {/* Actions: Reset & Download */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <button
-            type="button"
-            onClick={handleClearAllFilters}
-            className="w-full md:w-auto min-h-[46px] px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] dark:bg-red-950/50 dark:hover:bg-red-900/50 dark:text-red-300 transition-all cursor-pointer shadow-xs active:scale-95 flex items-center justify-center"
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadFiltered}
-            disabled={exportMutation.isPending}
-            className="w-full md:w-auto min-h-[46px] px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#15803D] dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-emerald-300 transition-all cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {exportMutation.isPending ? "Mengunduh..." : "Download"}
-          </button>
+          {/* Actions: Reset & Download */}
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+            <button
+              type="button"
+              onClick={handleClearAllFilters}
+              className="w-full md:w-auto min-h-[46px] px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] dark:bg-red-950/50 dark:hover:bg-red-900/50 dark:text-red-300 transition-all cursor-pointer shadow-xs active:scale-95 flex items-center justify-center"
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadFiltered}
+              disabled={exportMutation.isPending}
+              className="w-full md:w-auto min-h-[46px] px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#15803D] dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-emerald-300 transition-all cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exportMutation.isPending ? "Mengunduh..." : "Download"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1635,8 +1474,8 @@ export const DashboardStatistika = () => {
                       type="button"
                       onClick={() => setExportType("all")}
                       className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${exportType === "all"
-                          ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
-                          : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+                        ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
+                        : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
                         }`}
                     >
                       <TbTableExport className="w-5 h-5 mb-1.5" />
@@ -1646,8 +1485,8 @@ export const DashboardStatistika = () => {
                       type="button"
                       onClick={() => setExportType("year")}
                       className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${exportType === "year"
-                          ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
-                          : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+                        ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
+                        : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
                         }`}
                     >
                       <FiCalendar className="w-5 h-5 mb-1.5" />
@@ -1657,8 +1496,8 @@ export const DashboardStatistika = () => {
                       type="button"
                       onClick={() => setExportType("month_year")}
                       className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all focus:outline-none ${exportType === "month_year"
-                          ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
-                          : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+                        ? "border-green-500 bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-medium"
+                        : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
                         }`}
                     >
                       <FiCalendar className="w-5 h-5 mb-1.5" />
@@ -1723,8 +1562,8 @@ export const DashboardStatistika = () => {
                             key={shortMonth}
                             size="sm"
                             className={`py-2 transition-all font-medium rounded-lg text-xs ${isSelected
-                                ? "bg-green-600 text-white font-semibold hover:bg-green-700"
-                                : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70 border border-gray-250 dark:border-gray-700"
+                              ? "bg-green-600 text-white font-semibold hover:bg-green-700"
+                              : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70 border border-gray-250 dark:border-gray-700"
                               }`}
                             onPress={() => {
                               setSelectedExportMonth(monthValStr);
@@ -1791,18 +1630,16 @@ export const DashboardStatistika = () => {
                         setSelectedTemplateType("prakiraan");
                       }
                     }}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${
-                      selectedTemplateType === "prakiraan"
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${selectedTemplateType === "prakiraan"
                         ? "border-green-500 bg-green-50/60 dark:bg-green-950/30 ring-2 ring-green-500/20"
                         : "border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 hover:bg-gray-100/60 dark:hover:bg-gray-750"
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`p-2.5 rounded-lg shrink-0 transition-colors ${
-                        selectedTemplateType === "prakiraan"
+                      className={`p-2.5 rounded-lg shrink-0 transition-colors ${selectedTemplateType === "prakiraan"
                           ? "bg-green-500 text-white"
                           : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                      }`}
+                        }`}
                     >
                       <TbTablePlus className="w-5 h-5" />
                     </div>
@@ -1812,11 +1649,10 @@ export const DashboardStatistika = () => {
                           Template Upload Data Statistika
                         </h4>
                         <span
-                          className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                            selectedTemplateType === "prakiraan"
+                          className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${selectedTemplateType === "prakiraan"
                               ? "border-green-500 bg-green-500 text-white"
                               : "border-gray-300 dark:border-gray-600"
-                          }`}
+                            }`}
                         >
                           {selectedTemplateType === "prakiraan" && (
                             <span className="w-1.5 h-1.5 rounded-full bg-white" />
@@ -1839,18 +1675,16 @@ export const DashboardStatistika = () => {
                         setSelectedTemplateType("realisasi");
                       }
                     }}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${
-                      selectedTemplateType === "realisasi"
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${selectedTemplateType === "realisasi"
                         ? "border-green-500 bg-green-50/60 dark:bg-green-950/30 ring-2 ring-green-500/20"
                         : "border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 hover:bg-gray-100/60 dark:hover:bg-gray-750"
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`p-2.5 rounded-lg shrink-0 transition-colors ${
-                        selectedTemplateType === "realisasi"
+                      className={`p-2.5 rounded-lg shrink-0 transition-colors ${selectedTemplateType === "realisasi"
                           ? "bg-green-500 text-white"
                           : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                      }`}
+                        }`}
                     >
                       <IoIosCheckmarkCircleOutline className="w-5 h-5" />
                     </div>
@@ -1860,11 +1694,10 @@ export const DashboardStatistika = () => {
                           Template Realisasi Data Statistika
                         </h4>
                         <span
-                          className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                            selectedTemplateType === "realisasi"
+                          className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${selectedTemplateType === "realisasi"
                               ? "border-green-500 bg-green-500 text-white"
                               : "border-gray-300 dark:border-gray-600"
-                          }`}
+                            }`}
                         >
                           {selectedTemplateType === "realisasi" && (
                             <span className="w-1.5 h-1.5 rounded-full bg-white" />

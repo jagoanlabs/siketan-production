@@ -56,4 +56,5 @@ export interface TanamanQueryParams {
   komoditas?: string;
   prakiraanMin?: string;
   prakiraanMax?: string;
+  kecamatan?: string;
 }

@@ -191,6 +191,7 @@ export const useExportStatistika = () => {
       komoditas,
       prakiraanMin,
       prakiraanMax,
+      kecamatan,
     }: {
       poktanId?: string | number | null;
       tahun?: string | null;
@@ -198,6 +199,7 @@ export const useExportStatistika = () => {
       komoditas?: string | null;
       prakiraanMin?: string | null;
       prakiraanMax?: string | null;
+      kecamatan?: string | null;
     } = {}) => {
       const params = new URLSearchParams({
         isExport: "true",
@@ -229,6 +231,11 @@ export const useExportStatistika = () => {
       }
       if (prakiraanMax) {
         params.append("prakiraanMax", prakiraanMax);
+      }
+
+      // Tambahkan kecamatan jika ada filter
+      if (kecamatan) {
+        params.append("kecamatan", kecamatan);
       }
 
       const response = await axiosClient.get(

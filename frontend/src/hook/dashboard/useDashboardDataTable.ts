@@ -22,6 +22,7 @@ export const useTanamanData = (params: TanamanQueryParams = {}) => {
       komoditas: params.komoditas || "",
       prakiraanMin: params.prakiraanMin || "",
       prakiraanMax: params.prakiraanMax || "",
+      kecamatan: params.kecamatan || "",
     },
   ];
 
