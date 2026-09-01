@@ -219,7 +219,10 @@ function App() {
             <Route
               element={
                 <ProtectedRoute
-                  requiredPermissions={[PERMISSIONS.STATISTIC_REALISASI]}
+                  requiredPermissions={[
+                    PERMISSIONS.STATISTIC_REALISASI,
+                    PERMISSIONS.STATISTIC_EDIT,
+                  ]}
                 />
               }
             >

@@ -3,13 +3,18 @@ const ApiError = require('../../utils/ApiError');
 const monthOrder = require('../../utils/constants/months');
 const { Op } = require('sequelize');
 
+// Concurrency lock to prevent parallel requests from creating duplicate notifications
+const activeUserChecks = new Set();
+
 /**
  * Helper to auto-generate deadline reminder for penyuluh when approaching / within W1 (1st - 7th of the month)
  */
 const autoCheckDeadlineNotificationForUser = async (user) => {
-  try {
-    if (!user || user.peran !== 'penyuluh') return;
+  if (!user || user.peran !== 'penyuluh') return;
+  if (activeUserChecks.has(user.id)) return;
 
+  activeUserChecks.add(user.id);
+  try {
     const now = new Date();
     const currentDay = now.getDate();
     const currentMonthIdx = now.getMonth(); // 0-11
@@ -73,6 +78,26 @@ const autoCheckDeadlineNotificationForUser = async (user) => {
       }
     }
 
+    // Clean up any existing duplicate notifications for this user in current cycle
+    const duplicates = await notification.findAll({
+      where: {
+        user_id: user.id,
+        type: 'DEADLINE_WARNING',
+        category: 'data_tanaman',
+        createdAt: {
+          [Op.gte]: new Date(currentYear, currentMonthIdx, 1, 0, 0, 0)
+        }
+      },
+      order: [['id', 'ASC']]
+    });
+
+    if (duplicates.length > 1) {
+      const idsToDelete = duplicates.slice(1).map((d) => d.id);
+      await notification.destroy({
+        where: { id: { [Op.in]: idsToDelete } }
+      });
+    }
+
     // Auto-migrate legacy action_url if any exists
     await notification.update(
       { action_url: '/dashboard-admin/statistik-pertanian/create' },
@@ -85,6 +110,8 @@ const autoCheckDeadlineNotificationForUser = async (user) => {
     );
   } catch (err) {
     console.error('Error in autoCheckDeadlineNotificationForUser:', err);
+  } finally {
+    activeUserChecks.delete(user.id);
   }
 };
 

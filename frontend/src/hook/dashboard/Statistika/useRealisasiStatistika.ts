@@ -55,7 +55,9 @@ export const useUpdateRealisasiStatistika = () => {
         },
       };
 
-      const response = await axiosClient.put(`/statistik/${id}`, payload);
+      const response = await axiosClient.put(`/statistik/${id}`, payload, {
+        headers: { "X-Skip-Toast": "true" },
+      });
 
       return response.data;
     },

@@ -16,11 +16,20 @@ import PageBreadcrumb from "@/components/Breadcrumb";
 import PageMeta from "@/layouts/PageMeta";
 import { useStatistikaDetailComplete } from "@/hook/dashboard/Statistika/useDetailStatistika";
 import PermissionWrapper from "@/components/PermissionWrapper";
-import { PERMISSIONS } from "@/helpers/RoleHelper/roleHelpers";
+import { RoleHelper, PERMISSIONS } from "@/helpers/RoleHelper/roleHelpers";
+import { useAuth } from "@/hook/UseAuth";
 
 export const DetailStatistika = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const isPenyuluh =
+    user?.peran === "penyuluh" ||
+    RoleHelper.isPenyuluh(user) ||
+    (typeof (user as any)?.role === "string"
+      ? ((user as any).role as string).includes("penyuluh")
+      : Boolean((user as any)?.role?.name?.includes("penyuluh")));
 
   const { data: detailData, isLoading } = useStatistikaDetailComplete(id || "");
 
@@ -139,6 +148,35 @@ export const DetailStatistika = () => {
               </p>
             </div>
             <div className="flex gap-2">
+              <PermissionWrapper
+                permissions={[
+                  PERMISSIONS.STATISTIC_REALISASI,
+                  PERMISSIONS.STATISTIC_EDIT,
+                ]}
+              >
+                {!(
+                  isPenyuluh &&
+                  Boolean(
+                    statistika.realisasiLuasPanen ||
+                      statistika.realisasiHasilPanen ||
+                      statistika.realisasiBulanPanen,
+                  )
+                ) && (
+                  <Button
+                    as={Link}
+                    color="secondary"
+                    size="sm"
+                    to={`/dashboard-admin/statistik-pertanian/${statistika.id}/realisasi`}
+                    variant="flat"
+                  >
+                    {statistika.realisasiLuasPanen ||
+                    statistika.realisasiHasilPanen ||
+                    statistika.realisasiBulanPanen
+                      ? "Edit Realisasi"
+                      : "Input Realisasi"}
+                  </Button>
+                )}
+              </PermissionWrapper>
               <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_EDIT]}>
                 <Button
                   as={Link}
@@ -639,16 +677,48 @@ export const DetailStatistika = () => {
             </CardHeader>
             <CardBody>
               <div className="space-y-2">
-                <Button
-                  fullWidth
-                  as={Link}
-                  color="primary"
-                  size="sm"
-                  to={`/dashboard-admin/statistik-pertanian/${statistika.id}/edit`}
-                  variant="flat"
+                <PermissionWrapper
+                  permissions={[
+                    PERMISSIONS.STATISTIC_REALISASI,
+                    PERMISSIONS.STATISTIC_EDIT,
+                  ]}
                 >
-                  Edit Data Statistika
-                </Button>
+                  {!(
+                    isPenyuluh &&
+                    Boolean(
+                      statistika.realisasiLuasPanen ||
+                        statistika.realisasiHasilPanen ||
+                        statistika.realisasiBulanPanen,
+                    )
+                  ) && (
+                    <Button
+                      fullWidth
+                      as={Link}
+                      color="secondary"
+                      size="sm"
+                      to={`/dashboard-admin/statistik-pertanian/${statistika.id}/realisasi`}
+                      variant="flat"
+                    >
+                      {statistika.realisasiLuasPanen ||
+                      statistika.realisasiHasilPanen ||
+                      statistika.realisasiBulanPanen
+                        ? "Edit Realisasi Panen"
+                        : "Input Realisasi Panen"}
+                    </Button>
+                  )}
+                </PermissionWrapper>
+                <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_EDIT]}>
+                  <Button
+                    fullWidth
+                    as={Link}
+                    color="primary"
+                    size="sm"
+                    to={`/dashboard-admin/statistik-pertanian/${statistika.id}/edit`}
+                    variant="flat"
+                  >
+                    Edit Data Statistika
+                  </Button>
+                </PermissionWrapper>
                 <Button
                   fullWidth
                   size="sm"

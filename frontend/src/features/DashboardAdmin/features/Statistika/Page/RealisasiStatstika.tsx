@@ -31,10 +31,20 @@ import {
   RealisasiStatistikaFormData,
   RealisasiValidationErrors,
 } from "@/types/Statistika/realsiasiStatistika";
+import { useAuth } from "@/hook/UseAuth";
+import { RoleHelper } from "@/helpers/RoleHelper/roleHelpers";
 
 export const RealisasiStatistika = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const isPenyuluh =
+    user?.peran === "penyuluh" ||
+    RoleHelper.isPenyuluh(user) ||
+    (typeof (user as any)?.role === "string"
+      ? ((user as any).role as string).includes("penyuluh")
+      : Boolean((user as any)?.role?.name?.includes("penyuluh")));
 
   const [formData, setFormData] = useState<RealisasiStatistikaFormData>({
     realisasiLuasPanen: null,
@@ -121,12 +131,17 @@ export const RealisasiStatistika = () => {
 
       // Open Success Modal
       setIsSuccessModalOpen(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating realisasi:", error);
+
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Terjadi kesalahan. Silakan coba lagi.";
 
       toast.error("Gagal menyimpan data realisasi panen", {
         id: "save-realisasi",
-        description: "Terjadi kesalahan. Silakan coba lagi.",
+        description: errorMessage,
       });
     }
   };
@@ -429,15 +444,34 @@ export const RealisasiStatistika = () => {
         <div className="space-y-6">
           {/* Form Realisasi */}
           <Card className="p-5">
-            <CardHeader>
+            <CardHeader className="flex flex-col items-start gap-1 pb-2">
               <h3 className="text-lg font-semibold text-orange-600 dark:text-orange-400">
                 Input Realisasi Panen
               </h3>
+              {isPenyuluh && (
+                Boolean(
+                  statistika.realisasiLuasPanen !== null && statistika.realisasiLuasPanen !== undefined ||
+                  statistika.realisasiHasilPanen !== null && statistika.realisasiHasilPanen !== undefined ||
+                  (statistika.realisasiBulanPanen !== null && statistika.realisasiBulanPanen !== undefined && statistika.realisasiBulanPanen !== "")
+                )
+              ) && (
+                <div className="w-full mt-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs leading-relaxed">
+                  <span className="font-semibold">⚠️ Akses Terkunci:</span> Data realisasi untuk tanaman ini sudah pernah diinput. Akun Penyuluh hanya dapat menginput realisasi 1 kali. Jika terdapat kesalahan data, silakan hubungi Operator/Admin untuk memperbaikinya.
+                </div>
+              )}
             </CardHeader>
             <CardBody>
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <Input
                   isRequired
+                  isDisabled={
+                    isPenyuluh &&
+                    Boolean(
+                      statistika.realisasiLuasPanen !== null && statistika.realisasiLuasPanen !== undefined ||
+                      statistika.realisasiHasilPanen !== null && statistika.realisasiHasilPanen !== undefined ||
+                      (statistika.realisasiBulanPanen !== null && statistika.realisasiBulanPanen !== undefined && statistika.realisasiBulanPanen !== "")
+                    )
+                  }
                   errorMessage={errors.realisasiLuasPanen}
                   isInvalid={!!errors.realisasiLuasPanen}
                   label="Realisasi Luas Panen (HA)"
@@ -458,6 +492,14 @@ export const RealisasiStatistika = () => {
 
                 <Input
                   isRequired
+                  isDisabled={
+                    isPenyuluh &&
+                    Boolean(
+                      statistika.realisasiLuasPanen !== null && statistika.realisasiLuasPanen !== undefined ||
+                      statistika.realisasiHasilPanen !== null && statistika.realisasiHasilPanen !== undefined ||
+                      (statistika.realisasiBulanPanen !== null && statistika.realisasiBulanPanen !== undefined && statistika.realisasiBulanPanen !== "")
+                    )
+                  }
                   errorMessage={errors.realisasiHasilPanen}
                   isInvalid={!!errors.realisasiHasilPanen}
                   label="Realisasi Hasil Panen (TON)"
@@ -478,6 +520,14 @@ export const RealisasiStatistika = () => {
 
                 <Select
                   isRequired
+                  isDisabled={
+                    isPenyuluh &&
+                    Boolean(
+                      statistika.realisasiLuasPanen !== null && statistika.realisasiLuasPanen !== undefined ||
+                      statistika.realisasiHasilPanen !== null && statistika.realisasiHasilPanen !== undefined ||
+                      (statistika.realisasiBulanPanen !== null && statistika.realisasiBulanPanen !== undefined && statistika.realisasiBulanPanen !== "")
+                    )
+                  }
                   errorMessage={errors.realisasiBulanPanen}
                   isInvalid={!!errors.realisasiBulanPanen}
                   label="Bulan Realisasi Panen"
@@ -505,13 +555,28 @@ export const RealisasiStatistika = () => {
                 <Button
                   fullWidth
                   color="primary"
+                  isDisabled={
+                    isPenyuluh &&
+                    Boolean(
+                      statistika.realisasiLuasPanen !== null && statistika.realisasiLuasPanen !== undefined ||
+                      statistika.realisasiHasilPanen !== null && statistika.realisasiHasilPanen !== undefined ||
+                      (statistika.realisasiBulanPanen !== null && statistika.realisasiBulanPanen !== undefined && statistika.realisasiBulanPanen !== "")
+                    )
+                  }
                   isLoading={updateMutation.isPending}
                   size="lg"
                   type="submit"
                 >
-                  {updateMutation.isPending
-                    ? "Menyimpan..."
-                    : "Simpan Realisasi"}
+                  {isPenyuluh &&
+                  Boolean(
+                    statistika.realisasiLuasPanen !== null && statistika.realisasiLuasPanen !== undefined ||
+                    statistika.realisasiHasilPanen !== null && statistika.realisasiHasilPanen !== undefined ||
+                    (statistika.realisasiBulanPanen !== null && statistika.realisasiBulanPanen !== undefined && statistika.realisasiBulanPanen !== "")
+                  )
+                    ? "Realisasi Sudah Diinput (Terkunci)"
+                    : updateMutation.isPending
+                      ? "Menyimpan..."
+                      : "Simpan Realisasi"}
                 </Button>
               </form>
             </CardBody>

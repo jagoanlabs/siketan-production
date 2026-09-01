@@ -989,21 +989,38 @@ export const DashboardStatistika = () => {
             </Tooltip>
           </PermissionWrapper>
 
-          <PermissionWrapper permission={PERMISSIONS.STATISTIC_REALISASI}>
-            <Tooltip>
-              <Tooltip.Trigger>
-                <Button
-                  isIconOnly
-                  color="secondary"
-                  size="sm"
-                  variant="light"
-                  onPress={() => handleRealisasi(item)}
-                >
-                  <IoIosCheckmarkCircleOutline className="w-4 h-4" />
-                </Button>
-              </Tooltip.Trigger>
-              <Tooltip.Content>Realisasi</Tooltip.Content>
-            </Tooltip>
+          <PermissionWrapper permissions={[PERMISSIONS.STATISTIC_REALISASI, PERMISSIONS.STATISTIC_EDIT]}>
+            {(() => {
+              const hasRealisasi = Boolean(
+                (item.realisasiLuasPanen !== null && item.realisasiLuasPanen !== undefined) ||
+                (item.realisasiHasilPanen !== null && item.realisasiHasilPanen !== undefined) ||
+                (item.realisasiBulanPanen !== null && item.realisasiBulanPanen !== undefined && item.realisasiBulanPanen !== "")
+              );
+
+              // Jika role penyuluh dan data realisasi sudah selesai/diinput, hide tombol realisasi
+              if (isPenyuluh && hasRealisasi) {
+                return null;
+              }
+
+              return (
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <Button
+                      isIconOnly
+                      color="secondary"
+                      size="sm"
+                      variant="light"
+                      onPress={() => handleRealisasi(item)}
+                    >
+                      <IoIosCheckmarkCircleOutline className="w-4 h-4" />
+                    </Button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {hasRealisasi ? "Edit Realisasi" : "Input Realisasi"}
+                  </Tooltip.Content>
+                </Tooltip>
+              );
+            })()}
           </PermissionWrapper>
         </div>
       ),

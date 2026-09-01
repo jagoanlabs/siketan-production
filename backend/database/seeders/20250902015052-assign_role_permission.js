@@ -184,6 +184,7 @@ module.exports = {
       'statistic_create',
       'statistic_detail',
       'statistic_edit',
+      'statistic_realisasi',
 
       // Tanaman Petani -> create, view, edit + export
       'tanaman_petani_index',

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   StatistikaDetailResponse,
   KelompokTaniDetailResponse,
+  KelompokTaniDetailData,
   DetailStatistikaDisplayData,
   StatistikaMetrics,
 } from "@/types/Statistika/detailStatistika.d";
@@ -47,14 +48,19 @@ export const useStatistikaDetailComplete = (id: number | string) => {
   );
 
   return useQuery({
-    queryKey: ["statistika-detail-complete", id],
+    queryKey: ["statistika-detail-complete", id, statistikaQuery.data?.data?.updatedAt],
     queryFn: async (): Promise<DetailStatistikaDisplayData> => {
-      if (!statistikaQuery.data?.data || !kelompokQuery.data?.kelompokTani) {
+      const statistika = statistikaQuery.data?.data;
+      if (!statistika) {
         throw new Error("Missing required data");
       }
 
-      const statistika = statistikaQuery.data.data;
-      const kelompokTani = kelompokQuery.data.kelompokTani;
+      const kelompokTani: KelompokTaniDetailData =
+        kelompokQuery.data?.kelompokTani || (statistika.kelompok as unknown as KelompokTaniDetailData);
+
+      if (!kelompokTani) {
+        throw new Error("Missing required kelompok data");
+      }
 
       // Calculate metrics
       const metrics: StatistikaMetrics = {
@@ -111,7 +117,10 @@ export const useStatistikaDetailComplete = (id: number | string) => {
         },
       };
     },
-    enabled: !!(statistikaQuery.data?.data && kelompokQuery.data?.kelompokTani),
+    enabled: !!(
+      statistikaQuery.data?.data &&
+      (kelompokQuery.data?.kelompokTani || statistikaQuery.data?.data?.kelompok)
+    ),
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     // cacheTime: 10 * 60 * 1000   // Keep in cache for 10 minutes
   });

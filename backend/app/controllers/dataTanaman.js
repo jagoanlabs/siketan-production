@@ -5,7 +5,8 @@ const {
   dataOperator,
   kecamatan,
   desa,
-  tbl_akun
+  tbl_akun,
+  notification
 } = require('../models');
 
 const ApiError = require('../../utils/ApiError');
@@ -339,7 +340,20 @@ const getDetailedDataTanaman = async (req, res) => {
     const data = await dataTanaman.findOne({
       where: { id },
       include: [
-        { model: kelompok, as: 'kelompok' },
+        {
+          model: kelompok,
+          as: 'kelompok',
+          include: [
+            {
+              model: kecamatan,
+              as: 'kecamatanData'
+            },
+            {
+              model: desa,
+              as: 'desaData'
+            }
+          ]
+        },
         {
           model: tbl_akun,
           as: 'creator',
@@ -347,6 +361,20 @@ const getDetailedDataTanaman = async (req, res) => {
         }
       ]
     });
+
+    if (!data) {
+      throw new ApiError(404, 'Data tanaman tidak ditemukan.');
+    }
+
+    // Role check for penyuluh (ensure data belongs to their poktan binaan or created by them)
+    const isPenyuluh = isPenyuluhUser(req.user);
+    if (isPenyuluh) {
+      const penyuluhData = await getPenyuluhRecord(req.user);
+      const binaanIds = penyuluhData ? await getAssignedPoktanIds(penyuluhData.id) : [];
+      if (!binaanIds.includes(data.fk_kelompokId) && data.created_by !== req.user?.id) {
+        throw new ApiError(403, 'Anda tidak memiliki akses ke data kelompok tani ini.');
+      }
+    }
 
     res.status(200).json({ message: 'Data berhasil didapatkan.', data });
   } catch (error) {
@@ -460,6 +488,22 @@ const tambahDataTanaman = async (req, res) => {
 
     postActivity({ user_id: id, activity: 'CREATE', type: 'DATA TANAMAN', detail_id: data.id });
 
+    // Auto mark deadline warning notification as read if penyuluh submitted for this target month
+    try {
+      await notification.update(
+        { is_read: true },
+        {
+          where: {
+            user_id: id,
+            type: 'DEADLINE_WARNING',
+            title: { [Op.like]: `%(${periodeTanam})%` }
+          }
+        }
+      );
+    } catch (notifErr) {
+      console.error('Error updating deadline warning notification status:', notifErr);
+    }
+
     res.status(201).json({ message: 'Data berhasil ditambahkan.', data });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
@@ -468,40 +512,99 @@ const tambahDataTanaman = async (req, res) => {
 
 const editDataTanaman = async (req, res) => {
   const { id } = req.params;
-  const { peran, id: UserId } = req.user || {};
+  const { peran, id: UserId, role } = req.user || {};
 
   try {
-    if (peran === 'petani' || peran === 'penyuluh' || peran === 'operator poktan') {
+    if (peran === 'petani') {
       throw new ApiError(403, 'Anda tidak memiliki akses.');
     }
-    const {
-      kategori,
-      komoditas,
-      periodeTanam,
-      luasLahan,
-      prakiraanLuasPanen,
-      prakiraanHasilPanen,
-      prakiraanBulanPanen,
-      fk_kelompokId,
-      realisasiLuasPanen,
-      realisasiHasilPanen,
-      realisasiBulanPanen
-    } = req.body;
 
-    if (!kategori) throw new ApiError(400, 'Kategori tidak boleh kosong.');
-    if (!komoditas) throw new ApiError(400, 'Komoditas tidak boleh kosong.');
-    if (!periodeTanam) throw new ApiError(400, 'Periode tanam tidak boleh kosong.');
-    if (!luasLahan) throw new ApiError(400, 'Luas lahan tidak boleh kosong.');
-    if (!prakiraanLuasPanen) throw new ApiError(400, 'Prakiraan luas panen tidak boleh kosong.');
-    if (!prakiraanHasilPanen) throw new ApiError(400, 'Prakiraan hasil panen tidak boleh kosong.');
-    if (!prakiraanBulanPanen) throw new ApiError(400, 'Prakiraan bulan panen tidak boleh kosong.');
-    if (!fk_kelompokId) throw new ApiError(400, 'Kelompok tidak boleh kosong.');
+    const existingRecord = await dataTanaman.findByPk(id);
+    if (!existingRecord) {
+      throw new ApiError(404, 'Data tanaman tidak ditemukan.');
+    }
 
-    const kelompokTani = await kelompok.findOne({ where: { id: fk_kelompokId } });
-    if (!kelompokTani) throw new ApiError(400, 'Kelompok tidak ditemukan.');
+    const isPenyuluh = isPenyuluhUser(req.user);
+    const isSuperAdmin = (role && role.name === 'operator_super_admin') || peran === 'operator super admin';
+    const isAdmin = isSuperAdmin || (role && role.name === 'operator_admin') || peran === 'operator admin';
+    const canFullEdit = isAdmin || (req.user?.hasPermission && req.user.hasPermission('statistic_edit'));
 
-    await dataTanaman.update(
-      {
+    if (isPenyuluh) {
+      // 1. Authorization: Verify that the record belongs to the Penyuluh's assigned Poktan or was created by them
+      const penyuluhData = await getPenyuluhRecord(req.user);
+      const binaanIds = penyuluhData ? await getAssignedPoktanIds(penyuluhData.id) : [];
+      if (!binaanIds.includes(existingRecord.fk_kelompokId) && existingRecord.created_by !== UserId) {
+        throw new ApiError(403, 'Anda tidak memiliki akses untuk mengubah data pada kelompok tani ini.');
+      }
+
+      // 2. Prevent Penyuluh from updating realization if it has already been inputted
+      const hasExistingRealisasi =
+        (existingRecord.realisasiLuasPanen !== null && existingRecord.realisasiLuasPanen !== undefined) ||
+        (existingRecord.realisasiHasilPanen !== null && existingRecord.realisasiHasilPanen !== undefined) ||
+        (existingRecord.realisasiBulanPanen !== null && existingRecord.realisasiBulanPanen !== undefined && existingRecord.realisasiBulanPanen !== '');
+
+      if (hasExistingRealisasi) {
+        throw new ApiError(
+          400,
+          'Data realisasi untuk tanaman ini sudah pernah diinput. Penyuluh hanya dapat menginput realisasi 1 kali. Jika terdapat kesalahan data, silakan hubungi Operator/Admin untuk memperbaikinya.'
+        );
+      }
+
+      // 3. Data Sanitization: Only allow updating harvest realization fields
+      const { realisasiLuasPanen, realisasiHasilPanen, realisasiBulanPanen } = req.body;
+
+      const updateData = {};
+
+      if (realisasiLuasPanen !== undefined) {
+        if (realisasiLuasPanen === null || realisasiLuasPanen === '') {
+          updateData.realisasiLuasPanen = null;
+        } else {
+          const numLuas = parseFloat(realisasiLuasPanen);
+          if (isNaN(numLuas) || numLuas < 0) {
+            throw new ApiError(400, 'Realisasi luas panen harus berupa angka positif.');
+          }
+          updateData.realisasiLuasPanen = numLuas;
+        }
+      }
+
+      if (realisasiHasilPanen !== undefined) {
+        if (realisasiHasilPanen === null || realisasiHasilPanen === '') {
+          updateData.realisasiHasilPanen = null;
+        } else {
+          const numHasil = parseFloat(realisasiHasilPanen);
+          if (isNaN(numHasil) || numHasil < 0) {
+            throw new ApiError(400, 'Realisasi hasil panen harus berupa angka positif.');
+          }
+          updateData.realisasiHasilPanen = numHasil;
+        }
+      }
+
+      if (realisasiBulanPanen !== undefined) {
+        if (realisasiBulanPanen === null || realisasiBulanPanen === '') {
+          updateData.realisasiBulanPanen = null;
+        } else {
+          const bulanStr = String(realisasiBulanPanen).trim();
+          const titleBulan = toTitleCase(bulanStr);
+          if (!monthOrder.includes(titleBulan) && !monthOrder.includes(bulanStr)) {
+            throw new ApiError(400, 'Format bulan realisasi panen tidak valid.');
+          }
+          updateData.realisasiBulanPanen = monthOrder.includes(titleBulan) ? titleBulan : bulanStr;
+        }
+      }
+
+      await existingRecord.update(updateData);
+
+      postActivity({ user_id: UserId, activity: 'UPDATE_REALISASI', type: 'DATA TANAMAN', detail_id: id });
+
+      return res.status(200).json({
+        message: 'Data realisasi panen berhasil diperbarui.',
+        data: existingRecord
+      });
+    }
+
+    // Role-based logic for Admin / full editor
+    if (canFullEdit) {
+      const {
         kategori,
         komoditas,
         periodeTanam,
@@ -513,13 +616,83 @@ const editDataTanaman = async (req, res) => {
         realisasiLuasPanen,
         realisasiHasilPanen,
         realisasiBulanPanen
-      },
-      { where: { id } }
-    );
+      } = req.body;
 
-    postActivity({ user_id: UserId, activity: 'EDIT', type: 'DATA TANAMAN', detail_id: id });
+      if (!kategori) throw new ApiError(400, 'Kategori tidak boleh kosong.');
+      if (!komoditas) throw new ApiError(400, 'Komoditas tidak boleh kosong.');
+      if (!periodeTanam) throw new ApiError(400, 'Periode tanam tidak boleh kosong.');
+      if (!luasLahan) throw new ApiError(400, 'Luas lahan tidak boleh kosong.');
+      if (!prakiraanLuasPanen) throw new ApiError(400, 'Prakiraan luas panen tidak boleh kosong.');
+      if (!prakiraanHasilPanen) throw new ApiError(400, 'Prakiraan hasil panen tidak boleh kosong.');
+      if (!prakiraanBulanPanen) throw new ApiError(400, 'Prakiraan bulan panen tidak boleh kosong.');
+      if (!fk_kelompokId) throw new ApiError(400, 'Kelompok tidak boleh kosong.');
 
-    res.status(201).json({ message: 'Data berhasil diupdate.', data: req.body });
+      const kelompokTani = await kelompok.findOne({ where: { id: fk_kelompokId } });
+      if (!kelompokTani) throw new ApiError(400, 'Kelompok tidak ditemukan.');
+
+      await existingRecord.update({
+        kategori,
+        komoditas,
+        periodeTanam,
+        luasLahan,
+        prakiraanLuasPanen,
+        prakiraanHasilPanen,
+        prakiraanBulanPanen,
+        fk_kelompokId,
+        realisasiLuasPanen: realisasiLuasPanen !== undefined ? realisasiLuasPanen : existingRecord.realisasiLuasPanen,
+        realisasiHasilPanen: realisasiHasilPanen !== undefined ? realisasiHasilPanen : existingRecord.realisasiHasilPanen,
+        realisasiBulanPanen: realisasiBulanPanen !== undefined ? realisasiBulanPanen : existingRecord.realisasiBulanPanen
+      });
+
+      postActivity({ user_id: UserId, activity: 'EDIT', type: 'DATA TANAMAN', detail_id: id });
+
+      return res.status(200).json({ message: 'Data berhasil diupdate.', data: existingRecord });
+    }
+
+    // Role Operator Poktan or other roles with STATISTIC_REALISASI
+    const canRealisasi = req.user?.hasPermission && req.user.hasPermission('statistic_realisasi');
+    if (canRealisasi || peran === 'operator poktan') {
+      const { realisasiLuasPanen, realisasiHasilPanen, realisasiBulanPanen } = req.body;
+
+      const updateData = {};
+      if (realisasiLuasPanen !== undefined) {
+        const numLuas = realisasiLuasPanen !== null && realisasiLuasPanen !== '' ? parseFloat(realisasiLuasPanen) : null;
+        if (numLuas !== null && (isNaN(numLuas) || numLuas < 0)) {
+          throw new ApiError(400, 'Realisasi luas panen harus berupa angka positif.');
+        }
+        updateData.realisasiLuasPanen = numLuas;
+      }
+      if (realisasiHasilPanen !== undefined) {
+        const numHasil = realisasiHasilPanen !== null && realisasiHasilPanen !== '' ? parseFloat(realisasiHasilPanen) : null;
+        if (numHasil !== null && (isNaN(numHasil) || numHasil < 0)) {
+          throw new ApiError(400, 'Realisasi hasil panen harus berupa angka positif.');
+        }
+        updateData.realisasiHasilPanen = numHasil;
+      }
+      if (realisasiBulanPanen !== undefined) {
+        if (realisasiBulanPanen === null || realisasiBulanPanen === '') {
+          updateData.realisasiBulanPanen = null;
+        } else {
+          const bulanStr = String(realisasiBulanPanen).trim();
+          const titleBulan = toTitleCase(bulanStr);
+          if (!monthOrder.includes(titleBulan) && !monthOrder.includes(bulanStr)) {
+            throw new ApiError(400, 'Format bulan realisasi panen tidak valid.');
+          }
+          updateData.realisasiBulanPanen = monthOrder.includes(titleBulan) ? titleBulan : bulanStr;
+        }
+      }
+
+      await existingRecord.update(updateData);
+
+      postActivity({ user_id: UserId, activity: 'UPDATE_REALISASI', type: 'DATA TANAMAN', detail_id: id });
+
+      return res.status(200).json({
+        message: 'Data realisasi panen berhasil diperbarui.',
+        data: existingRecord
+      });
+    }
+
+    throw new ApiError(403, 'Anda tidak memiliki akses untuk mengubah data ini.');
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
   }

@@ -95,7 +95,9 @@ export const useCreateStatistika = () => {
         fk_kelompokId: data.fk_kelompokId,
       };
 
-      const response = await axiosClient.post("/statistik", payload);
+      const response = await axiosClient.post("/statistik", payload, {
+        headers: { "X-Skip-Toast": "true" },
+      });
 
       return response.data;
     },
@@ -123,7 +125,9 @@ export const useUpdateStatistika = () => {
       id: number;
       data: Partial<CreateStatistikaFormData>;
     }) => {
-      const response = await axiosClient.put(`/statistika/${id}`, data);
+      const response = await axiosClient.put(`/statistika/${id}`, data, {
+        headers: { "X-Skip-Toast": "true" },
+      });
 
       return response.data;
     },
@@ -145,7 +149,9 @@ export const useDeleteStatistika = (isBulkAction?: boolean) => {
 
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await axiosClient.delete(`/statistik/${id}`);
+      const response = await axiosClient.delete(`/statistik/${id}`, {
+        headers: { "X-Skip-Toast": "true" },
+      });
 
       return response.data;
     },

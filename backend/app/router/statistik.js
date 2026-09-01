@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { PERMISSIONS } = require('../../helpers/roleHelpers');
-const { auth, hasPermission } = require('../../midleware/auth');
+const { auth, hasPermission, hasAnyPermission } = require('../../midleware/auth');
 const upload = require('../../midleware/uploader');
 const {
   tambahDataTanaman,
@@ -19,7 +19,7 @@ router.post('/', auth, hasPermission(PERMISSIONS.STATISTIC_CREATE), tambahDataTa
 router.get('/', auth, hasPermission(PERMISSIONS.STATISTIC_INDEX), getAllDataTanaman);
 router.get('/years', auth, hasPermission(PERMISSIONS.STATISTIC_INDEX), getStatistikYears);
 router.get('/:id', auth, hasPermission(PERMISSIONS.STATISTIC_INDEX), getDetailedDataTanaman);
-router.put('/:id', auth, hasPermission(PERMISSIONS.STATISTIC_EDIT), editDataTanaman);
+router.put('/:id', auth, hasAnyPermission([PERMISSIONS.STATISTIC_EDIT, PERMISSIONS.STATISTIC_REALISASI]), editDataTanaman);
 router.delete('/:id', auth, hasPermission(PERMISSIONS.STATISTIC_DELETE), hapusDataTanaman);
 router.post(
   '/upload',

@@ -34,38 +34,64 @@ export class RoleHelper {
 
   // Check if user is any type of penyuluh
   static isPenyuluh(user: User | null): boolean {
-    if (!user || !user.role) return false;
+    if (!user) return false;
 
+    const roleName = user.role?.name;
+    const peran = user.peran?.toLowerCase();
     return (
-      user.role.name === ROLES.PENYULUH ||
-      user.role.name === ROLES.PENYULUH_SWADAYA
+      roleName === ROLES.PENYULUH ||
+      roleName === ROLES.PENYULUH_SWADAYA ||
+      roleName === "penyuluh" ||
+      roleName === "penyuluh_reguler" ||
+      roleName === "penyuluh_swadaya" ||
+      peran === "penyuluh" ||
+      peran === "penyuluh swadaya"
     );
   }
 
   // Check if user is reguler penyuluh
   static isPenyuluhReguler(user: User | null): boolean {
-    if (!user || !user.role) return false;
+    if (!user) return false;
 
-    return user.role.name === ROLES.PENYULUH;
+    const roleName = user.role?.name;
+    const peran = user.peran?.toLowerCase();
+    return roleName === ROLES.PENYULUH || roleName === "penyuluh_reguler" || peran === "penyuluh";
   }
 
   // Check if user is swadaya penyuluh
   static isPenyuluhSwadaya(user: User | null): boolean {
-    if (!user || !user.role) return false;
+    if (!user) return false;
 
-    return user.role.name === ROLES.PENYULUH_SWADAYA;
+    const roleName = user.role?.name;
+    const peran = user.peran?.toLowerCase();
+    return roleName === ROLES.PENYULUH_SWADAYA || roleName === "penyuluh_swadaya" || peran === "penyuluh swadaya";
   }
 
   // Check if user is petani
   static isPetani(user: User | null): boolean {
-    if (!user || !user.role) return false;
+    if (!user) return false;
 
-    return user.role.name === ROLES.PETANI;
+    const roleName = user.role?.name;
+    const peran = user.peran?.toLowerCase();
+    return roleName === ROLES.PETANI || peran === "petani";
   }
 
   // Check if user has specific permission
   static hasPermission(user: User | null, permissionName: string): boolean {
-    if (!user || !user.role || !user.role.permissions) return false;
+    if (!user) return false;
+
+    // Super Admin bypass
+    if (this.isSuperAdmin(user)) return true;
+
+    // Role-based permission fallback (ensure Penyuluh and Operator have STATISTIC_REALISASI)
+    if (
+      permissionName === PERMISSIONS.STATISTIC_REALISASI &&
+      (this.isPenyuluh(user) || this.isOperator(user))
+    ) {
+      return true;
+    }
+
+    if (!user.role || !user.role.permissions) return false;
 
     // Cek berdasarkan nama permission
     return user.role.permissions.some(

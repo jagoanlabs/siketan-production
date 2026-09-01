@@ -228,6 +228,37 @@ const hasPermission = (permission) => {
   };
 };
 
+// Multiple permissions checker (OR logic)
+const hasAnyPermission = (permissions) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User tidak terautentikasi'
+      });
+    }
+
+    // Super admin bypass
+    if (req.user.hasRole(ROLES.OPERATOR_SUPER_ADMIN)) {
+      return next();
+    }
+
+    // Check if user has any of the required permissions
+    const hasAccess = permissions.some((permission) => req.user.hasPermission(permission));
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        message: 'Anda tidak memiliki izin untuk mengakses resource ini',
+        required_permissions: permissions,
+        user_role: req.user.role?.name
+      });
+    }
+
+    next();
+  };
+};
+
 // Simple role checker
 const hasRole = (role) => {
   return (req, res, next) => {
@@ -394,6 +425,7 @@ module.exports = {
   auth,
   optionalAuth,
   hasPermission,
+  hasAnyPermission,
   hasRole,
   hasAnyRole,
   isOwner,
