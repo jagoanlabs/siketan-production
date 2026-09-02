@@ -57,6 +57,13 @@ export const validateEditBeritaForm = (data: EditBeritaFormData): string[] => {
 
   if (!data.tanggal) {
     errors.push("Tanggal tidak boleh kosong");
+  } else {
+    const selectedDate = new Date(data.tanggal);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    if (selectedDate > endOfToday) {
+      errors.push("Tanggal publikasi tidak boleh melebihi tanggal hari ini (masa depan)");
+    }
   }
 
   if (!data.kategori) {

@@ -16,20 +16,36 @@ export class RoleHelper {
 
   // Check if user is admin level
   static isAdmin(user: User | null): boolean {
-    if (!user || !user.role) return false;
+    if (!user) return false;
+    if (this.isSuperAdmin(user)) return true;
+    const roleName = user.role?.name;
+    const peran = user.peran?.toLowerCase();
 
     return (
-      user.role.name === ROLES.OPERATOR_SUPER_ADMIN ||
-      user.role.name === ROLES.OPERATOR_POKTAN ||
-      user.role.name === ROLES.OPERATOR_ADMIN
+      roleName === ROLES.OPERATOR_SUPER_ADMIN ||
+      roleName === ROLES.OPERATOR_POKTAN ||
+      roleName === ROLES.OPERATOR_ADMIN ||
+      peran === "operator_admin" ||
+      peran === "operator admin" ||
+      peran === "operator_poktan" ||
+      peran === "operator poktan" ||
+      peran === "operator"
     );
   }
 
   // Check if user is operator level
   static isOperator(user: User | null): boolean {
-    if (!user || !user.role) return false;
+    if (!user) return false;
+    const roleName = user.role?.name;
+    const peran = user.peran?.toLowerCase();
 
-    return this.isAdmin(user) || user.role.name === ROLES.OPERATOR_POKTAN;
+    return (
+      this.isAdmin(user) ||
+      roleName === ROLES.OPERATOR_POKTAN ||
+      peran === "operator_poktan" ||
+      peran === "operator poktan" ||
+      peran === "operator"
+    );
   }
 
   // Check if user is any type of penyuluh

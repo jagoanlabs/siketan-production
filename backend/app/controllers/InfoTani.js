@@ -60,7 +60,7 @@ const infoTaniById = async (req, res) => {
   }
 };
 const tambahInfoTani = async (req, res) => {
-  const { peran, id } = req.user;
+  const { peran, id, role } = req.user;
 
   try {
     if (peran === 'petani') {
@@ -68,9 +68,27 @@ const tambahInfoTani = async (req, res) => {
     } else {
       const { judul, tanggal, status, kategori, isi } = req.body;
       const { nama } = req.user;
-      // const{nam} = req
+
+      const isOperator =
+        (role && ['operator_super_admin', 'operator_admin', 'operator_poktan'].includes(role.name)) ||
+        peran === 'operator super admin' ||
+        peran === 'operator admin' ||
+        peran === 'operator poktan' ||
+        peran === 'operator';
+
+      const finalTanggal = isOperator && tanggal ? tanggal : tanggal || new Date();
+
       if (!judul) throw new ApiError(400, 'Judul tidak boleh kosong.');
-      if (!tanggal) throw new ApiError(400, 'tanggal tidak boleh kosong.');
+      if (!finalTanggal) throw new ApiError(400, 'tanggal tidak boleh kosong.');
+
+      // Validasi tanggal publikasi tidak boleh masa depan
+      const inputDate = new Date(finalTanggal);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+      if (inputDate > endOfToday) {
+        throw new ApiError(400, 'Tanggal publikasi tidak boleh melebihi tanggal hari ini.');
+      }
+
       if (!kategori) throw new ApiError(400, 'kategori tidak boleh kosong.');
       if (!isi) throw new ApiError(400, 'isi tidak boleh kosong.');
       const { file } = req;
@@ -99,7 +117,7 @@ const tambahInfoTani = async (req, res) => {
       }
       const infoTani = await beritaTani.create({
         judul,
-        tanggal,
+        tanggal: finalTanggal,
         status,
         kategori,
         fotoBerita: urlImg,
@@ -313,9 +331,9 @@ const deleteEventTani = async (req, res) => {
 };
 const updateInfoTani = async (req, res) => {
   try {
-    const { id } = req.user;
+    const { id, peran, role } = req.user;
 
-    const { judul, status, kategori, isi } = req.body;
+    const { judul, status, kategori, isi, tanggal } = req.body;
     const beritaId = req.params.id;
 
     const data = await beritaTani.findOne({
@@ -324,6 +342,31 @@ const updateInfoTani = async (req, res) => {
       }
     });
     if (!data) throw new ApiError(400, 'data tidak ditemukan.');
+
+    const isOperator =
+      (role && ['operator_super_admin', 'operator_admin', 'operator_poktan'].includes(role.name)) ||
+      peran === 'operator super admin' ||
+      peran === 'operator admin' ||
+      peran === 'operator poktan' ||
+      peran === 'operator';
+
+    const updatePayload = {
+      judul,
+      status,
+      kategori,
+      isi
+    };
+
+    if (isOperator && tanggal) {
+      const inputDate = new Date(tanggal);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+      if (inputDate > endOfToday) {
+        throw new ApiError(400, 'Tanggal publikasi tidak boleh melebihi tanggal hari ini.');
+      }
+      updatePayload.tanggal = tanggal;
+    }
+
     const { file } = req;
     if (file) {
       const validFormat =
@@ -345,16 +388,9 @@ const updateInfoTani = async (req, res) => {
         file: file.buffer,
         fileName: `IMG-${Date.now()}.${ext}`
       });
-      await beritaTani.update(
-        {
-          judul,
-          status,
-          kategori,
-          fotoBerita: img.url,
-          isi
-        },
-        { where: { id: beritaId } }
-      );
+      updatePayload.fotoBerita = img.url;
+
+      await beritaTani.update(updatePayload, { where: { id: beritaId } });
 
       postActivity({
         user_id: id,
@@ -367,15 +403,8 @@ const updateInfoTani = async (req, res) => {
         message: 'Berita Tani Berhasil Di ubah'
       });
     }
-    await beritaTani.update(
-      {
-        judul,
-        status,
-        kategori,
-        isi
-      },
-      { where: { id: beritaId } }
-    );
+
+    await beritaTani.update(updatePayload, { where: { id: beritaId } });
 
     postActivity({
       user_id: id,
@@ -389,7 +418,7 @@ const updateInfoTani = async (req, res) => {
     });
   } catch (error) {
     res.status(error.statusCode || 500).json({
-      message: `gagal menghapus data, ${error.message}`
+      message: `gagal mengubah data, ${error.message}`
     });
   }
 };

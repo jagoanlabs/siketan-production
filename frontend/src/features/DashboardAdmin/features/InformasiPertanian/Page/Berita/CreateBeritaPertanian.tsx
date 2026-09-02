@@ -1,6 +1,7 @@
 import { Chip } from "../../../../../../components/Form/HeroChip";
 import { Avatar } from "../../../../../../components/Form/HeroAvatar";
 import { Card, CardBody, CardHeader } from "../../../../../../components/Form/HeroCard";
+import { DatePicker } from "../../../../../../components/Form/HeroDatePicker";
 import { Input } from "../../../../../../components/Form/HeroInput";
 import { Button } from "../../../../../../components/Form/HeroButton";
 import { Select, SelectItem } from "../../../../../../components/Form/HeroSelect";
@@ -9,6 +10,7 @@ import { Select, SelectItem } from "../../../../../../components/Form/HeroSelect
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { CalendarDate } from "@internationalized/date";
 
 // Import hooks and types
 
@@ -24,11 +26,12 @@ import { useCreateBerita } from "@/hook/dashboard/infoPertanian/useCreateBerita"
 import PageMeta from "@/layouts/PageMeta";
 import PageBreadcrumb from "@/components/Breadcrumb";
 import { useAuth } from "@/hook/UseAuth";
-// Mock user data - replace with actual user context
+import { RoleHelper } from "@/helpers/RoleHelper/roleHelpers";
 
 export const CreateBeritaPertanian = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isOperator = RoleHelper.isOperator(user);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createBeritaMutation = useCreateBerita();
 
@@ -40,10 +43,45 @@ export const CreateBeritaPertanian = () => {
     isi: "",
   });
 
+  const [selectedDate, setSelectedDate] = useState<CalendarDate | null>(() => {
+    const now = new Date();
+    return new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  });
+
+  const maxCalendarDate = (() => {
+    const now = new Date();
+    return new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  })();
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Helper to format CalendarDate to backend string (YYYY-MM-DD)
+  const formatDateForBackend = (calendarDate: CalendarDate | null) => {
+    if (!calendarDate) return "";
+    const day = calendarDate.day.toString().padStart(2, "0");
+    const month = calendarDate.month.toString().padStart(2, "0");
+    const year = calendarDate.year.toString();
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDateChange = (date: any) => {
+    if (date) {
+      const now = new Date();
+      now.setHours(23, 59, 59, 999);
+      const pickedDate = new Date(date.year, date.month - 1, date.day);
+      if (pickedDate > now) {
+        toast.error("Tanggal publikasi tidak boleh melebihi tanggal hari ini");
+        return;
+      }
+    }
+    setSelectedDate(date);
+    const dateStr = date ? formatDateForBackend(date) : "";
+    handleInputChange("tanggal", dateStr);
+  };
 
   // Handle form input changes
   const handleInputChange = (
@@ -231,19 +269,37 @@ export const CreateBeritaPertanian = () => {
 
                   {/* Date and Category Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input
-                      isRequired
-                      classNames={{
-                        label: "text-gray-700 font-medium",
-                      }}
-                      label="Tanggal Publikasi"
-                      type="date"
-                      value={formData.tanggal}
-                      variant="bordered"
-                      onValueChange={(value: any) =>
-                        handleInputChange("tanggal", value)
-                      }
-                    />
+                    {isOperator ? (
+                      <DatePicker
+                        isRequired
+                        classNames={{
+                          label: "text-gray-700 font-medium",
+                        }}
+                        variant="bordered"
+                        label="Tanggal Publikasi"
+                        maxValue={maxCalendarDate}
+                        value={selectedDate}
+                        onChange={handleDateChange}
+                      />
+                    ) : (
+                      <div className="flex flex-col justify-center rounded-xl border border-gray-200 bg-gray-50/80 px-3.5 py-2.5">
+                        <span className="text-xs font-medium text-gray-500">
+                          Tanggal Publikasi
+                        </span>
+                        <p className="text-sm font-semibold text-gray-800 mt-1">
+                          {formData.tanggal
+                            ? new Date(formData.tanggal).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })
+                            : "-"}
+                        </p>
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                          *Hanya operator yang dapat mengubah tanggal publikasi
+                        </p>
+                      </div>
+                    )}
 
                     <Select
                       isRequired
@@ -262,9 +318,6 @@ export const CreateBeritaPertanian = () => {
                         <SelectItem key={option.value} textValue={option.value}>
                           <div className="flex flex-col">
                             <span className="font-medium">{option.label}</span>
-                            <span className="text-xs text-gray-500">
-                              {option.description}
-                            </span>
                           </div>
                         </SelectItem>
                       ))}
@@ -446,13 +499,6 @@ export const CreateBeritaPertanian = () => {
                           )?.label
                         }
                       </Chip>
-                      <p className="text-sm text-gray-600">
-                        {
-                          KATEGORI_BERITA_OPTIONS.find(
-                            (k) => k.value === formData.kategori,
-                          )?.description
-                        }
-                      </p>
                     </div>
                   </CardBody>
                 </Card>

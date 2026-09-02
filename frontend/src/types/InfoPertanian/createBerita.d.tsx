@@ -29,28 +29,24 @@ export interface CreateBeritaResponse {
 export const KATEGORI_BERITA_OPTIONS: {
   value: "berita" | "artikel" | "tips";
   label: string;
-  description: string;
   color: string;
 }[] = [
-  {
-    value: "berita",
-    label: "Berita",
-    description: "Informasi terkini seputar dunia pertanian",
-    color: "primary",
-  },
-  {
-    value: "artikel",
-    label: "Artikel",
-    description: "Tulisan mendalam tentang topik pertanian",
-    color: "secondary",
-  },
-  {
-    value: "tips",
-    label: "Tips",
-    description: "Kiat dan saran praktis untuk petani",
-    color: "success",
-  },
-];
+    {
+      value: "berita",
+      label: "Berita",
+      color: "primary",
+    },
+    {
+      value: "artikel",
+      label: "Artikel",
+      color: "secondary",
+    },
+    {
+      value: "tips",
+      label: "Tips",
+      color: "success",
+    },
+  ];
 
 // Validation helpers
 export const validateCreateBeritaForm = (
@@ -68,6 +64,13 @@ export const validateCreateBeritaForm = (
 
   if (!data.tanggal) {
     errors.push("Tanggal tidak boleh kosong");
+  } else {
+    const selectedDate = new Date(data.tanggal);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    if (selectedDate > endOfToday) {
+      errors.push("Tanggal publikasi tidak boleh melebihi tanggal hari ini (masa depan)");
+    }
   }
 
   if (!data.kategori) {
@@ -108,3 +111,4 @@ export const validateImageFile = (file: File): string | null => {
 
   return null;
 };
+

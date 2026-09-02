@@ -76,8 +76,8 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
     <div className={`flex items-center gap-1.5 ${className}`}>
       <DateRangePicker
         className="w-auto"
-        value={value}
-        onChange={handleRangeChange}
+        value={value as any}
+        onChange={handleRangeChange as any}
         aria-label="Filter Tanggal Daftar"
       >
         <DateField.Group

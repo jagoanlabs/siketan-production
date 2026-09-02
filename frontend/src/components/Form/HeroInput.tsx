@@ -52,6 +52,7 @@ export const Input = React.forwardRef<HTMLInputElement, any>((props, ref) => {
     errorMessage,
     value,
     onChange,
+    onValueChange,
     className,
     type,
     isDisabled,
@@ -63,14 +64,13 @@ export const Input = React.forwardRef<HTMLInputElement, any>((props, ref) => {
 
   const [isFocused, setIsFocused] = useState(false);
 
-  // Bridge standard onChange event
+  // Bridge standard onChange event and onValueChange
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
-      onChange({
-        target: {
-          value: e.target.value,
-        }
-      } as any);
+      onChange(e);
+    }
+    if (onValueChange) {
+      onValueChange(e.target.value);
     }
   };
 
@@ -121,6 +121,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, any>((props, ref) 
     errorMessage,
     value,
     onChange,
+    onValueChange,
     className,
     isDisabled,
     isRequired,
@@ -133,11 +134,10 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, any>((props, ref) 
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (onChange) {
-      onChange({
-        target: {
-          value: e.target.value,
-        }
-      } as any);
+      onChange(e);
+    }
+    if (onValueChange) {
+      onValueChange(e.target.value);
     }
   };
 
