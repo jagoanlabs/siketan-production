@@ -70,7 +70,12 @@ export const validateEditBeritaForm = (data: EditBeritaFormData): string[] => {
     errors.push("Kategori harus dipilih");
   }
 
-  if (!data.isi.trim()) {
+  const isIsiEmpty =
+    !data.isi.trim() ||
+    data.isi === "<p><br></p>" ||
+    data.isi.replace(/<[^>]*>/g, "").trim().length === 0;
+
+  if (isIsiEmpty) {
     errors.push("Isi konten tidak boleh kosong");
   } else if (data.isi.length < 50) {
     errors.push("Isi konten minimal 50 karakter");

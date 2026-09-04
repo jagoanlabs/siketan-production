@@ -14,6 +14,7 @@ import { CalendarDate } from "@internationalized/date";
 // Import hooks and types
 
 import { RichTextEditor } from "@/components/RichText/RichTextComponents";
+import { normalizeRichTextContent } from "@/utils/contentParser";
 import {
   KATEGORI_BERITA_OPTIONS,
   validateImageFile,
@@ -57,6 +58,8 @@ export const EditBeritaPertanian = () => {
     isi: "",
     fotoBerita: "",
   });
+
+  const [isFormInitialized, setIsFormInitialized] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState<CalendarDate | null>(null);
 
@@ -111,18 +114,43 @@ export const EditBeritaPertanian = () => {
     handleInputChange("tanggal", dateStr);
   };
 
+  // Helper to safely extract berita data from any response shape
+  const extractBeritaData = (response: any) => {
+    if (!response) return null;
+    if (response.infotani && typeof response.infotani === "object") {
+      return response.infotani;
+    }
+    if (response.infoTani && typeof response.infoTani === "object") {
+      return response.infoTani;
+    }
+    if (response.data) {
+      if (response.data.infotani) return response.data.infotani;
+      if (response.data.infoTani) return response.data.infoTani;
+      if (
+        typeof response.data === "object" &&
+        !Array.isArray(response.data) &&
+        (response.data.id || response.data.judul)
+      ) {
+        return response.data;
+      }
+    }
+    if (response.id || response.judul) {
+      return response;
+    }
+    return null;
+  };
+
   // Initialize form data when berita detail is loaded
   useEffect(() => {
-    console.log(beritaDetail); //ini works
-    console.log(beritaDetail?.infotani); // ini tidak
-    if (beritaDetail?.infotani) {
-      const data = beritaDetail.infotani; // ini tidak
+    const data = extractBeritaData(beritaDetail);
+    if (data) {
+      const normalizedIsi = normalizeRichTextContent(data.isi);
 
       setFormData({
         judul: data.judul || "",
         tanggal: formatDateForInput(data.tanggal),
         kategori: (data.kategori as "berita" | "artikel" | "tips") || "berita",
-        isi: data.isi || "",
+        isi: normalizedIsi,
         fotoBerita: data.fotoBerita || "",
         status: data.status || undefined,
       });
@@ -132,6 +160,8 @@ export const EditBeritaPertanian = () => {
       if (data.fotoBerita) {
         setImagePreview(data.fotoBerita);
       }
+
+      setIsFormInitialized(true);
     }
   }, [beritaDetail]);
 
@@ -236,10 +266,11 @@ export const EditBeritaPertanian = () => {
 
   // Handle cancel/back
   const handleCancel = () => {
+    const currentBerita = extractBeritaData(beritaDetail);
     const hasChanges =
-      beritaDetail?.infotani &&
-      (formData.judul !== beritaDetail.infotani.judul ||
-        formData.isi !== beritaDetail.infotani.isi ||
+      currentBerita &&
+      (formData.judul !== (currentBerita.judul || "") ||
+        formData.isi !== normalizeRichTextContent(currentBerita.isi || "") ||
         selectedFile !== null);
 
     if (hasChanges) {
@@ -254,8 +285,10 @@ export const EditBeritaPertanian = () => {
 
   const isLoading = isSubmitting || updateBeritaMutation.isPending;
 
-  // Loading state
-  if (isLoadingDetail) {
+  const currentBerita = extractBeritaData(beritaDetail);
+
+  // Loading state - wait until data is loaded AND form is initialized
+  if (isLoadingDetail || (!isFormInitialized && !detailError)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6">
         <PageMeta
@@ -383,9 +416,9 @@ export const EditBeritaPertanian = () => {
               <h1 className="text-3xl font-bold text-gray-900">Edit Berita</h1>
               <p className="text-gray-600">
                 Perbarui berita, artikel, atau tips pertanian
-                {beritaDetail?.infotani?.judul && (
+                {currentBerita?.judul && (
                   <span className="block text-sm font-medium text-gray-700 mt-1">
-                    &quot;{beritaDetail.infotani.judul}&quot;
+                    &quot;{currentBerita.judul}&quot;
                   </span>
                 )}
               </p>
@@ -415,7 +448,7 @@ export const EditBeritaPertanian = () => {
                       }}
                       label="Judul Berita"
                       placeholder="Masukkan judul berita yang menarik..."
-                      value={formData.judul ?? "kosong"}
+                      value={formData.judul}
                       variant="bordered"
                       onValueChange={(value: any) =>
                         handleInputChange("judul", value)
@@ -498,6 +531,7 @@ export const EditBeritaPertanian = () => {
                       Isi Konten <span className="text-red-500">*</span>
                     </p>
                     <RichTextEditor
+                      key={`berita-editor-${beritaId}`}
                       className="min-h-[300px]"
                       disabled={isLoading}
                       placeholder="Mulai menulis konten berita Anda di sini..."

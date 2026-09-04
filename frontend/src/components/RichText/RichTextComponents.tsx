@@ -2,6 +2,7 @@
 import React, { useMemo } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
+import { normalizeRichTextContent } from "@/utils/contentParser";
 
 interface RichTextEditorProps {
   value: string;
@@ -11,6 +12,30 @@ interface RichTextEditorProps {
   className?: string;
 }
 
+// Fixed formats array to prevent recreation on re-renders
+const QUILL_FORMATS = [
+  "header",
+  "font",
+  "size",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "blockquote",
+  "color",
+  "background",
+  "list",
+  "bullet",
+  "indent",
+  "align",
+  "link",
+  "image",
+  "video",
+  "code",
+  "code-block",
+  "script",
+];
+
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
   onChange,
@@ -18,6 +43,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   disabled = false,
   className = "",
 }) => {
+  // Ensure value is properly formatted HTML so Quill can parse it cleanly
+  const normalizedValue = useMemo(
+    () => normalizeRichTextContent(value),
+    [value],
+  );
+
   // Quill modules configuration
   const modules = useMemo(
     () => ({
@@ -38,33 +69,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         ["clean"],
       ],
       clipboard: {
-        // toggle to add extra line breaks when pasting HTML:
         matchVisual: false,
       },
     }),
     [],
   );
-
-  // Quill formats
-  const formats = [
-    "header",
-    "font",
-    "size",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "blockquote",
-    "color",
-    "background",
-    "list",
-    "bullet",
-    "indent",
-    "align",
-    "link",
-    "image",
-    "video",
-  ];
 
   return (
     <div className={`bg-white rounded-lg border border-gray-200 ${className}`}>
@@ -78,7 +87,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           [&_.ql-container]:border-t-0
           [&_.ql-container]:font-sans
         `}
-        formats={formats}
+        formats={QUILL_FORMATS}
         modules={modules}
         placeholder={placeholder}
         readOnly={disabled}
@@ -86,7 +95,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           fontSize: "14px",
         }}
         theme="snow"
-        value={value}
+        value={normalizedValue}
         onChange={onChange}
       />
     </div>

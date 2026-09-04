@@ -12,7 +12,31 @@ import {
 const fetchBeritaDetail = async (id: number): Promise<BeritaDetailResponse> => {
   const { data } = await axiosClient.get(`/info-tani/${id}`);
 
-  return data;
+  // Safely extract the berita data object regardless of response wrapper
+  let detail: any = null;
+  if (data?.infotani) {
+    detail = data.infotani;
+  } else if (data?.infoTani) {
+    detail = data.infoTani;
+  } else if (data?.data?.infotani) {
+    detail = data.data.infotani;
+  } else if (data?.data?.infoTani) {
+    detail = data.data.infoTani;
+  } else if (
+    data?.data &&
+    typeof data.data === "object" &&
+    !Array.isArray(data.data)
+  ) {
+    detail = data.data;
+  } else if (data?.id) {
+    detail = data;
+  }
+
+  return {
+    ...data,
+    infotani: detail,
+    infoTani: detail,
+  };
 };
 
 // Update berita
