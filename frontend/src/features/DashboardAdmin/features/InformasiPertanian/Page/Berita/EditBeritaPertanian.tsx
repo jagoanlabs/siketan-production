@@ -140,8 +140,10 @@ export const EditBeritaPertanian = () => {
     return null;
   };
 
-  // Initialize form data when berita detail is loaded
+  // Initialize form data when berita detail is loaded (only once,
+  // so background refetch / window-focus does not wipe operator edits)
   useEffect(() => {
+    if (isFormInitialized) return;
     const data = extractBeritaData(beritaDetail);
     if (data) {
       const normalizedIsi = normalizeRichTextContent(data.isi);
@@ -163,7 +165,7 @@ export const EditBeritaPertanian = () => {
 
       setIsFormInitialized(true);
     }
-  }, [beritaDetail]);
+  }, [beritaDetail, isFormInitialized]);
 
   // Handle form input changes
   const handleInputChange = (
@@ -531,7 +533,7 @@ export const EditBeritaPertanian = () => {
                       Isi Konten <span className="text-red-500">*</span>
                     </p>
                     <RichTextEditor
-                      key={`berita-editor-${beritaId}`}
+                      key={`berita-editor-${beritaId}-${isFormInitialized ? "ready" : "loading"}`}
                       className="min-h-[300px]"
                       disabled={isLoading}
                       placeholder="Mulai menulis konten berita Anda di sini..."

@@ -350,12 +350,22 @@ const updateInfoTani = async (req, res) => {
       peran === 'operator poktan' ||
       peran === 'operator';
 
-    const updatePayload = {
-      judul,
-      status,
-      kategori,
-      isi
-    };
+    const updatePayload = {};
+
+    // Only include fields that are actually provided, so an empty/missing
+    // `isi` from the client never wipes the existing article content.
+    if (judul !== undefined) updatePayload.judul = judul;
+    if (status !== undefined) updatePayload.status = status;
+    if (kategori !== undefined) updatePayload.kategori = kategori;
+    if (isi !== undefined && isi !== null) {
+      const isiStr = String(isi);
+      const stripped = isiStr.replace(/<[^>]*>/g, '').trim();
+      // Preserve existing content when the incoming isi is effectively empty
+      // (e.g. editor reset to "<p><br></p>"). Real deletes should use delete API.
+      if (stripped.length > 0) {
+        updatePayload.isi = isi;
+      }
+    }
 
     if (isOperator && tanggal) {
       const inputDate = new Date(tanggal);
@@ -368,6 +378,12 @@ const updateInfoTani = async (req, res) => {
     }
 
     const { file } = req;
+    if (Object.keys(updatePayload).length === 0 && !file) {
+      return res.status(200).json({
+        message: 'Tidak ada perubahan data (konten kosong diabaikan agar isi berita tidak hilang)'
+      });
+    }
+
     if (file) {
       const validFormat =
         file.mimetype === 'image/png' ||
