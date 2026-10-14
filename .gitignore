@@ -7,3 +7,5 @@ nginx/ssl/*
 *.jks
 *.ca-bundle
 .env
+backend/extracted_images/
+seaweedfs/data/
