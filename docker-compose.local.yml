@@ -7,6 +7,11 @@ services:
     ports:
       - "3000:80"
 
+  seaweedfs:
+    ports:
+      - "8333:8333"
+      - "8888:8888"
+
   nginx:
     ports:
       - "8089:80"

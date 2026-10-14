@@ -19,6 +19,17 @@ services:
     networks:
       - siketan-network
 
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: siketan_seaweedfs
+    restart: unless-stopped
+    command: "server -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -dir=/data"
+    volumes:
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+      - seaweedfs_data:/data
+    networks:
+      - siketan-network
+
   nginx:
     image: nginx:alpine
     container_name: nginx_siketan
@@ -26,9 +37,12 @@ services:
     depends_on:
       - backend
       - frontend
+      - seaweedfs
     networks:
       - siketan-network
 
+volumes:
+  seaweedfs_data:
 
 networks:
   siketan-network:

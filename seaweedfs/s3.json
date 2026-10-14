@@ -1,0 +1,27 @@
+{
+  "identities": [
+    {
+      "name": "siketan_admin",
+      "credentials": [
+        {
+          "accessKey": "siketan_s3_key",
+          "secretKey": "siketan_s3_secret"
+        }
+      ],
+      "actions": [
+        "Admin",
+        "Read",
+        "Write",
+        "List",
+        "Tagging"
+      ]
+    },
+    {
+      "name": "anonymous",
+      "actions": [
+        "Read",
+        "List"
+      ]
+    }
+  ]
+}
