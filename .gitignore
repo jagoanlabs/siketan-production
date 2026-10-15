@@ -8,4 +8,7 @@ nginx/ssl/*
 *.ca-bundle
 .env
 backend/extracted_images/
+backend/extracted_images.tar.gz
+*.tar.gz
 seaweedfs/data/
+.DS_Store

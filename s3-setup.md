@@ -1,6 +1,6 @@
 # Panduan Setup SeaweedFS (Local S3 Storage) & Migrasi Gambar di Server
 
-Dokumen ini berisi panduan langkah demi langkah (*runbook*) untuk menginstalasi, mengonfigurasi, dan memigrasikan aset gambar dari **ImageKit** ke **SeaweedFS S3 Storage** di server produksi/staging platform **SIKETAN**.
+Dokumen ini berisi panduan lengkap langkah demi langkah (*runbook*) untuk menginstalasi, mengonfigurasi, memigrasikan aset dari **ImageKit** ke **SeaweedFS S3 Storage**, serta **cara memantau & memverifikasi file** di server produksi/staging platform **SIKETAN**.
 
 ---
 
@@ -10,11 +10,17 @@ Dokumen ini berisi panduan langkah demi langkah (*runbook*) untuk menginstalasi,
 3. [Langkah 1: Setup SeaweedFS Storage Container](#langkah-1-setup-seaweedfs-storage-container)
 4. [Langkah 2: Konfigurasi Nginx Reverse Proxy](#langkah-2-konfigurasi-nginx-reverse-proxy)
 5. [Langkah 3: Konfigurasi Environment Backend (.env)](#langkah-3-konfigurasi-environment-backend-env)
-6. [Langkah 4: Ekstraksi & Migrasi Gambar (ImageKit -> SeaweedFS)](#langkah-4-ekstraksi--migrasi-gambar-imagekit---seaweedfs)
-   - [4.1 Ekstraksi dari ImageKit](#41-ekstraksi-dari-imagekit)
-   - [4.2 Upload ke Bucket S3 SeaweedFS](#42-upload-ke-bucket-s3-seaweedfs)
-   - [4.3 Update URL di Database MySQL](#43-update-url-di-database-mysql)
-7. [Langkah 5: Pengujian & Verifikasi](#langkah-5-pengujian--verifikasi)
+6. [Langkah 4: Alur Ekstraksi & Migrasi Gambar](#langkah-4-alur-ekstraksi--migrasi-gambar)
+   - [Opsi A: Ekstraksi di Lokal (PC/Mac) lalu Transfer ke Server (Direkomendasikan jika server belum ada file)](#opsi-a-ekstraksi-di-lokal-pcmac-lalu-transfer-ke-server-direkomendasikan)
+   - [Opsi B: Trik Singkat (Direct Volume Transfer)](#opsi-b-trik-singkat-direct-volume-transfer-paling-cepat)
+   - [Opsi C: Ekstraksi Langsung di Server](#opsi-c-ekstraksi-langsung-di-server)
+   - [Update URL di Database MySQL](#tahap-akhir-update-url-di-database-mysql)
+7. [Langkah 5: Cara Memantau & Memonitoring File di SeaweedFS](#langkah-5-cara-memantau--memonitoring-file-di-seaweedfs)
+   - [Metode 1: Skrip Monitoring Otomatis (npm run check:s3)](#metode-1-skrip-monitoring-otomatis-npm-run-checks3)
+   - [Metode 2: Web Filer GUI (Browser - Paling Mudah & Visual)](#metode-2-web-filer-gui-browser---paling-mudah--visual)
+   - [Metode 3: Master Dashboard & Volume Stats](#metode-3-master-dashboard--volume-stats)
+   - [Metode 4: Menggunakan Desktop S3 Client (Cyberduck / FileZilla)](#metode-4-menggunakan-desktop-s3-client-cyberduck--filezilla)
+   - [Metode 5: Menggunakan AWS CLI](#metode-5-menggunakan-aws-cli)
 8. [Panduan Operasional & Backup](#panduan-operasional--backup)
 
 ---
@@ -27,11 +33,13 @@ flowchart LR
     Nginx -->|Internal proxy_pass| S3Server["SeaweedFS S3 Server\n(Port 8333)"]
     Backend["Backend Express API"] -->|S3 SDK PutObject\n(Port 8333)| S3Server
     S3Server --> DataVolume["Volume Persisten\n(seaweedfs_data / ./seaweedfs/data)"]
+    Admin["Developer / Admin"] -->|Port 8888\nWeb Filer GUI| Filer["SeaweedFS Filer\n(Monitoring File)"]
 ```
 
 ### Pemetaan Port:
 * **Port 8333**: S3 API Endpoint (internal docker & upload backend).
-* **Port 8888**: Filer HTTP (Web Explorer file internal).
+* **Port 8888**: Filer HTTP Web GUI (antarmuka browser untuk memantau/melihat file).
+* **Port 9333**: SeaweedFS Master Status (dashboard performa cluster/disk).
 * **Port 80 / 443**: Akses publik gambar melalui Nginx path `/storage/`.
 
 ---
@@ -83,19 +91,19 @@ Pastikan file konfigurasi akun S3 [seaweedfs/s3.json](file:///Users/user/Data/si
 }
 ```
 
-### Opsi A: Menjalankan via Docker Compose (Direkomendasikan)
-SeaweedFS sudah terdaftar di `docker-compose.yml`. Cukup build/start service:
+### Menjalankan Container:
+
+#### Opsi A: Menggunakan Docker Compose (Direkomendasikan)
+Service SeaweedFS sudah terdaftar di `docker-compose.yml`. Cukup jalankan:
 ```bash
 docker-compose up -d seaweedfs
 ```
 
-### Opsi B: Menjalankan via Podman CLI Mandiri
+#### Opsi B: Menggunakan Podman CLI Mandiri
 Jika server menggunakan Podman standalone:
 ```bash
-# Buat folder data lokal jika belum ada
 mkdir -p seaweedfs/data
 
-# Jalankan container
 podman run -d \
   --name siketan_seaweedfs \
   --restart unless-stopped \
@@ -107,7 +115,7 @@ podman run -d \
   server -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -dir=/data
 ```
 
-Verifikasi container berjalan:
+Verifikasi container sudah berjalan:
 ```bash
 podman ps --filter "name=siketan_seaweedfs"
 # atau
@@ -118,7 +126,7 @@ docker ps | grep seaweedfs
 
 ## 4. Langkah 2: Konfigurasi Nginx Reverse Proxy
 
-Tambahkan blok routing `/storage/` pada konfigurasi Nginx server agar gambar dapat dibuka oleh publik:
+Tambahkan blok routing `/storage/` pada konfigurasi Nginx server agar gambar dapat dibuka oleh publik tanpa perlu domain baru:
 
 * Untuk local/staging ([nginx/conf.d/default.conf](file:///Users/user/Data/siketan-production/nginx/conf.d/default.conf)):
 * Untuk domain produksi SSL ([nginx/conf.d/siketan.conf](file:///Users/user/Data/siketan-production/nginx/conf.d/siketan.conf)):
@@ -138,7 +146,7 @@ location /storage/ {
 Reload Nginx:
 ```bash
 docker-compose exec nginx nginx -s reload
-# atau jika Nginx di host:
+# atau jika Nginx jalan di host server:
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
@@ -163,13 +171,13 @@ S3_ACCESS_KEY=siketan_s3_key
 S3_SECRET_KEY=siketan_s3_secret
 S3_BUCKET_NAME=siketan
 
-# Public URL untuk akses browser (sesuaikan dengan domain/IP server):
-# Contoh lokal/staging:
-S3_PUBLIC_URL=http://localhost:8089/storage
-# Contoh produksi domain:
-# S3_PUBLIC_URL=https://siketan.ngawikab.go.id/storage
+# Public URL untuk akses browser:
+# Contoh jika menggunakan Nginx reverse proxy di domain server:
+S3_PUBLIC_URL=https://siketan.ngawikab.go.id/storage
+# Atau jika staging lokal port 8089:
+# S3_PUBLIC_URL=http://localhost:8089/storage
 
-# Fallback legacy ImageKit (biarkan sebagai cadangan)
+# Fallback legacy ImageKit (cadangan)
 IMAGEKIT_PUBLIC_KEY=public_d3bMQiQDK8VII3jDBgsRLCrZr3o=
 IMAGEKIT_PRIVATE_KEY=private_go+D1FTg009zi9acYPcBURQPCKQ=
 IMAGEKIT_URL=https://ik.imagekit.io/hw6fintvt1
@@ -183,129 +191,223 @@ npm install
 
 ---
 
-## 6. Langkah 4: Ekstraksi & Migrasi Gambar (ImageKit -> SeaweedFS)
+## 6. Langkah 4: Alur Ekstraksi & Migrasi Gambar
 
-Proses migrasi terbagi menjadi 3 langkah berurutan:
+Karena folder `extracted_images` di-ignore dari Git agar tidak membebani repository, pilih salah satu alur di bawah ini sesuai kenyamanan Anda:
 
-```
-[4.1 Extract ImageKit] -> [4.2 Upload ke S3] -> [4.3 Update URL di DB]
-```
+---
 
-### 4.1 Ekstraksi dari ImageKit
-*(Langkah ini mengunduh seluruh file lama dari ImageKit ke folder lokal `backend/extracted_images/`)*
+### Opsi A: Ekstraksi di Lokal (PC/Mac) lalu Transfer ke Server (Direkomendasikan)
+*Gunakan opsi ini jika koneksi internet di laptop Anda lebih stabil atau Anda sudah memiliki folder `backend/extracted_images/` di lokal.*
 
-Pastikan kredensial ImageKit di `.env` valid, lalu jalankan:
+#### 1. Jalankan ekstraksi di laptop/PC lokal:
 ```bash
 cd backend
 node extract-images.js
 ```
-* **Hasil**: Seluruh file foto tersimpan di `backend/extracted_images/` dan dibuat file metadata `files_manifest.json`.
-* **Fitur Resume**: Jika terputus di tengah jalan, Anda bisa menjalankan ulang perintah di atas tanpa mendownload file yang sudah ada.
+*(Menghasilkan folder `backend/extracted_images/` berisi 1.213 file foto dan `files_manifest.json`)*.
 
----
-
-### 4.2 Upload ke Bucket S3 SeaweedFS
-*(Langkah ini mengunggah seluruh file yang ada di `extracted_images/` ke SeaweedFS S3 storage)*
-
-Jalankan perintah:
+#### 2. Kompres folder hasil ekstraksi di laptop:
 ```bash
 cd backend
-npm run migrate:s3
-# atau:
-node helpers/migrate-imagekit-to-s3.js
+tar -czvf extracted_images.tar.gz extracted_images/
 ```
 
-Contoh output yang diharapkan:
+#### 3. Kirim file arsip ke server menggunakan `scp` atau `rsync`:
+```bash
+scp extracted_images.tar.gz user@ip-server:/path/to/siketan-production/backend/
 ```
-========================================================
-🎉 Migration to S3 Summary:
-- Uploaded : 1213
-- Skipped (already in S3) : 0
-- Missing on disk : 0
-- Failed   : 0
-========================================================
+
+#### 4. Di server: Buka ekstrak file arsip:
+```bash
+cd /path/to/siketan-production/backend/
+tar -xzvf extracted_images.tar.gz
+rm extracted_images.tar.gz
+```
+
+#### 5. Di server: Unggah ke SeaweedFS S3:
+```bash
+npm run migrate:s3
+```
+*Skrip akan otomatis membaca `extracted_images/files_manifest.json` dan mengunggah seluruh foto ke bucket SeaweedFS.*
+
+---
+
+### Opsi B: Trik Singkat (Direct Volume Transfer - Paling Cepat!)
+*Jika Anda sudah menjalankan SeaweedFS di lokal laptop dan 1.213 file sudah masuk ke storage:*
+
+Data fisik SeaweedFS tersimpan di folder `./seaweedfs/data`. Anda cukup meng-copy folder data tersebut ke server:
+```bash
+# 1. Di laptop, arsipkan folder data:
+tar -czvf seaweedfs-data.tar.gz seaweedfs/data/
+
+# 2. Kirim ke server:
+scp seaweedfs-data.tar.gz user@ip-server:/path/to/siketan-production/
+
+# 3. Di server:
+tar -xzvf seaweedfs-data.tar.gz
+# Lalu jalankan container SeaweedFS. File langsung 100% terbaca tanpa perlu upload ulang!
 ```
 
 ---
 
-### 4.3 Update URL di Database MySQL
-*(Langkah ini memperbarui prefix URL di kolom database dari ImageKit ke S3 lokal)*
+### Opsi C: Ekstraksi Langsung di Server
+*Gunakan opsi ini jika server Anda memiliki koneksi internet langsung ke ImageKit:*
 
-Pastikan database MySQL server aktif, lalu jalankan:
+Cukup jalankan dua perintah ini berurutan di server:
+```bash
+cd backend
+
+# 1. Unduh dari ImageKit ke disk server:
+node extract-images.js
+
+# 2. Upload dari disk server ke SeaweedFS S3:
+npm run migrate:s3
+```
+
+---
+
+### Tahap Akhir: Update URL di Database MySQL
+Setelah file berhasil masuk ke SeaweedFS, perbarui URL di database:
 ```bash
 cd backend
 node helpers/update-db-image-urls.js
 ```
-Tabel-tabel yang otomatis diperbarui:
-- `beritatanis` (`fotoBerita`)
-- `eventtanis` (`fotoKegiatan`)
-- `datapetanis` (`foto`)
-- `datapenyuluhs` (`foto`)
-- `tbl_akuns` (`foto`)
-- `penjuals` (`foto`)
-- `footers` (`value`)
-- `jurnalharians` (`gambar`)
+Skrip ini akan mencari semua URL lama `https://ik.imagekit.io/hw6fintvt1/...` pada tabel `beritatanis`, `datapetanis`, `tbl_akuns`, `penjuals`, dll., lalu menggantinya ke URL S3 baru.
 
 ---
 
-## 7. Langkah 5: Pengujian & Verifikasi
+## 7. Langkah 5: Cara Memantau & Memonitoring File di SeaweedFS
 
-### 1. Uji Endpoint S3 SeaweedFS:
-```bash
-curl -I http://localhost:8333/
-# Output: HTTP/1.1 405 Method Not Allowed (Artinya S3 aktif merespons)
-```
+Untuk memastikan file-file benar-benar sudah tersimpan di SeaweedFS dan dapat diakses dengan baik, Anda dapat menggunakan beberapa metode monitoring berikut:
 
-### 2. Uji Ambil Salah Satu Gambar Langsung dari S3:
-```bash
-curl -I http://localhost:8333/siketan/default-image.jpg
-# Output yang diharapkan: HTTP/1.1 200 OK, Content-Type: image/jpeg
-```
+---
 
-### 3. Uji Ambil Gambar melalui Reverse Proxy Nginx:
-```bash
-curl -I http://localhost:8089/storage/siketan/default-image.jpg
-# atau via domain:
-curl -I https://siketan.ngawikab.go.id/storage/siketan/default-image.jpg
-# Output yang diharapkan: HTTP/1.1 200 OK
-```
+### Metode 1: Skrip Monitoring Otomatis (`npm run check:s3`) ⭐ *(Paling Cepat)*
+Kami telah menyediakan skrip pemeriksa storage otomatis di [backend/helpers/check-s3-stats.js](file:///Users/user/Data/siketan-production/backend/helpers/check-s3-stats.js).
 
-### 4. Uji Upload Baru dari Backend:
-Jalankan skrip tes cepat upload file baru:
+Jalankan di terminal server:
 ```bash
 cd backend
-node -e "
-const storage = require('./midleware/imageKit');
-storage.upload({
-  file: Buffer.from('Test upload server S3'),
-  fileName: 'test-server.txt'
-}).then(console.log).catch(console.error);
-"
+npm run check:s3
+```
+
+**Output yang Dihasilkan:**
+```text
+========================================================
+📊 SeaweedFS S3 Storage Monitor & File Inspector
+Endpoint   : http://127.0.0.1:8333
+Bucket     : siketan
+Public URL : http://127.0.0.1:8333
+========================================================
+
+🔍 Memindai seluruh file di bucket..... selesai!
+
+📦 Status Penyimpanan S3:
+- Total Objek/File : 1.216 file
+- Total Kapasitas  : 362.46 MB
+--------------------------------------------------------
+
+🔎 Sampel 5 File Teratas & Uji Akses Publik:
+[1] IMG-1686081260856_CeeYMBqUZ.jpg
+    Ukuran : 24.96 KB
+    URL    : http://127.0.0.1:8333/siketan/IMG-1686081260856_CeeYMBqUZ.jpg
+    Status : HTTP 200 OK
+
+[2] IMG-1686110085187_Ik7LxLqsC.jpg
+    Ukuran : 24.96 KB
+    URL    : http://127.0.0.1:8333/siketan/IMG-1686110085187_Ik7LxLqsC.jpg
+    Status : HTTP 200 OK
+...
+========================================================
+✅ Semua verifikasi selesai. Penyimpanan berjalan normal!
+========================================================
+```
+
+---
+
+### Metode 2: Web Filer GUI (Browser - Paling Mudah & Visual) 🌐
+SeaweedFS memiliki web explorer bawaan yang sangat ringan dan mudah digunakan.
+
+1. Buka browser dan akses port Filer (Port 8888):
+   ```
+   http://<IP-SERVER-ANDA>:8888/
+   ```
+2. Atau langsung buka direktori bucket `siketan`:
+   ```
+   http://<IP-SERVER-ANDA>:8888/buckets/siketan/
+   ```
+3. **Fitur di Web GUI**:
+   - Menampilkan daftar seluruh file foto secara alfabetis.
+   - Menampilkan ukuran file (*File Size*) dan waktu unggah.
+   - Anda bisa **mengklik nama file foto** untuk langsung melihat pratinjau (*preview*) foto di browser.
+
+*(Tips: Jika port 8888 ditutup firewall, Anda bisa menggunakan SSH Tunneling dari laptop: `ssh -L 8888:localhost:8888 user@ip-server`, lalu buka `http://localhost:8888/buckets/siketan/` di browser laptop).*
+
+---
+
+### Metode 3: Master Dashboard & Volume Stats
+Untuk memantau performa disk, free space, dan jumlah volume storage:
+
+Buka di browser:
+```
+http://<IP-SERVER-ANDA>:9333/
+```
+Dashboard ini menampilkan:
+* **Topology**: Data center & rack storage.
+* **Volume Servers**: Status kapasitas harddisk yang terpakai vs kapasitas bebas.
+* **Total File Count**: Jumlah total file yang tersimpan.
+
+---
+
+### Metode 4: Menggunakan Desktop S3 Client (Cyberduck / FileZilla)
+Anda bisa menggunakan aplikasi GUI S3 client populer seperti **Cyberduck** atau **FileZilla**:
+
+1. Buka **Cyberduck** $\rightarrow$ Klik **Open Connection**.
+2. Pilih protokol: **Amazon S3**.
+3. Masukkan konfigurasi:
+   - **Server**: `<IP-SERVER-ANDA>`
+   - **Port**: `8333`
+   - **Access Key ID**: `siketan_s3_key`
+   - **Secret Access Key**: `siketan_s3_secret`
+4. Anda akan melihat bucket `siketan` seperti membuka Google Drive / Explorer, lengkap dengan fitur drag-and-drop, delete, dan download file.
+
+---
+
+### Metode 5: Menggunakan AWS CLI
+Jika di server terpasang AWS CLI:
+```bash
+# Menampilkan 20 file pertama di bucket siketan
+aws s3 ls s3://siketan/ --endpoint-url http://localhost:8333 | head -n 20
+
+# Menghitung total file di dalam bucket
+aws s3 ls s3://siketan/ --endpoint-url http://localhost:8333 | wc -l
 ```
 
 ---
 
 ## 8. Panduan Operasional & Backup
 
-### Lokasi Data Persisten:
-Semua file objek, metadata filer, dan bucket S3 tersimpan secara persisten di:
+### Lokasi Data Fisik Persisten:
+Semua file foto tersimpan secara persisten di:
 - Path host: `./seaweedfs/data/`
 - Docker volume: `seaweedfs_data`
 
-### Cara Backup Storage SeaweedFS:
-Untuk melakukan backup seluruh data foto/dokumen:
+### Cara Backup Rutin Storage SeaweedFS:
+Lakukan backup file `.dat` dan `.idx` secara berkala:
 ```bash
-# Backup direktori data SeaweedFS
+# Backup seluruh data foto ke file arsip terkompresi
 tar -czvf seaweedfs-backup-$(date +%F).tar.gz ./seaweedfs/data
 ```
 
-### Cara Restart / Maintenance Container:
+### Cara Memulihkan (*Restore*) dari Backup:
 ```bash
-# Menggunakan Podman:
-podman restart siketan_seaweedfs
-podman logs -f siketan_seaweedfs
+# 1. Stop container
+docker-compose stop seaweedfs
 
-# Menggunakan Docker Compose:
-docker-compose restart seaweedfs
-docker-compose logs -f seaweedfs
+# 2. Ekstrak data backup
+tar -xzvf seaweedfs-backup-YYYY-MM-DD.tar.gz
+
+# 3. Nyalakan kembali container
+docker-compose start seaweedfs
 ```

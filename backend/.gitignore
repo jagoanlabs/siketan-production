@@ -1,3 +1,5 @@
 /node_modules
 .env
 extracted_images/
+extracted_images.tar.gz
+*.tar.gz

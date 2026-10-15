@@ -9,7 +9,8 @@
     "start": "node index",
     "lint:fix": "eslint --cache --fix \"**/*.{js,jsx}\"",
     "swagger": "node ./swagger.js",
-    "migrate:s3": "node ./helpers/migrate-imagekit-to-s3.js"
+    "migrate:s3": "node ./helpers/migrate-imagekit-to-s3.js",
+    "check:s3": "node ./helpers/check-s3-stats.js"
   },
   "author": "",
   "license": "ISC",
