@@ -33,25 +33,37 @@ async function updateDbImageUrls() {
     process.exit(1);
   }
 
-  for (const { table, column } of TARGET_COLUMNS) {
-    try {
-      const sql = `
-        UPDATE \`${table}\`
-        SET \`${column}\` = REPLACE(\`${column}\`, :oldPrefix, :newPrefix)
-        WHERE \`${column}\` LIKE :searchPattern
-      `;
+  const oldPrefixesToReplace = [
+    OLD_URL_PREFIX,
+    'http://127.0.0.1:8333/siketan',
+    'http://localhost:8333/siketan',
+    'http://127.0.0.1:8333',
+  ].filter(p => p && p !== NEW_URL_PREFIX);
 
-      const [result] = await db.sequelize.query(sql, {
-        replacements: {
-          oldPrefix: OLD_URL_PREFIX,
-          newPrefix: NEW_URL_PREFIX,
-          searchPattern: `%${OLD_URL_PREFIX}%`
+  for (const oldPrefix of oldPrefixesToReplace) {
+    console.log(`\nReplacing prefix "${oldPrefix}" -> "${NEW_URL_PREFIX}":`);
+    for (const { table, column } of TARGET_COLUMNS) {
+      try {
+        const sql = `
+          UPDATE \`${table}\`
+          SET \`${column}\` = REPLACE(\`${column}\`, :oldPrefix, :newPrefix)
+          WHERE \`${column}\` LIKE :searchPattern
+        `;
+
+        const [result] = await db.sequelize.query(sql, {
+          replacements: {
+            oldPrefix: oldPrefix,
+            newPrefix: NEW_URL_PREFIX,
+            searchPattern: `%${oldPrefix}%`
+          }
+        });
+
+        if (result.affectedRows > 0) {
+          console.log(`✔ Table "${table}" (${column}): ${result.affectedRows} rows updated.`);
         }
-      });
-
-      console.log(`✔ Table "${table}" (${column}): ${result.affectedRows || 0} rows updated.`);
-    } catch (err) {
-      console.warn(`⚠️ Skipped "${table}.${column}": ${err.message}`);
+      } catch (err) {
+        // Table or column might not exist, ignore safely
+      }
     }
   }
 
