@@ -31,8 +31,9 @@ async function ensureBucketExists() {
     try {
       await s3Client.send(new CreateBucketCommand({ Bucket: S3_BUCKET_NAME }));
       bucketEnsured = true;
+      console.log(`[SeaweedFS S3] Bucket "${S3_BUCKET_NAME}" created successfully.`);
     } catch (createErr) {
-      console.warn(`[S3 Storage] Note on ensure bucket "${S3_BUCKET_NAME}":`, createErr.message);
+      console.warn(`[SeaweedFS S3] Note on ensure bucket "${S3_BUCKET_NAME}":`, createErr.message);
     }
   }
 }
@@ -72,6 +73,8 @@ async function upload({ file, fileName }) {
   const cleanFileName = fileName.replace(/[/\\?%*:|"<>]/g, '_');
   const contentType = getMimeType(cleanFileName);
 
+  console.log(`[SeaweedFS S3] 📤 Mengunggah "${cleanFileName}" (${contentType})...`);
+
   await s3Client.send(new PutObjectCommand({
     Bucket: S3_BUCKET_NAME,
     Key: cleanFileName,
@@ -80,6 +83,8 @@ async function upload({ file, fileName }) {
   }));
 
   const publicUrl = `${S3_PUBLIC_URL}/${S3_BUCKET_NAME}/${cleanFileName}`;
+
+  console.log(`[SeaweedFS S3] ✅ Berhasil diunggah: ${publicUrl}`);
 
   return {
     url: publicUrl,
@@ -95,13 +100,14 @@ async function upload({ file, fileName }) {
  */
 async function deleteFile(fileId) {
   try {
+    console.log(`[SeaweedFS S3] 🗑️ Menghapus "${fileId}" dari bucket "${S3_BUCKET_NAME}"...`);
     await s3Client.send(new DeleteObjectCommand({
       Bucket: S3_BUCKET_NAME,
       Key: fileId,
     }));
     return { success: true };
   } catch (err) {
-    console.error(`[S3 Storage] Error deleting file ${fileId}:`, err);
+    console.error(`[SeaweedFS S3] ❌ Gagal menghapus ${fileId}:`, err);
     throw err;
   }
 }

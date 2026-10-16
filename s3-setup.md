@@ -200,10 +200,10 @@ Karena folder `extracted_images` di-ignore dari Git agar tidak membebani reposit
 ### Opsi A: Ekstraksi di Lokal (PC/Mac) lalu Transfer ke Server (Direkomendasikan)
 *Gunakan opsi ini jika koneksi internet di laptop Anda lebih stabil atau Anda sudah memiliki folder `backend/extracted_images/` di lokal.*
 
-#### 1. Jalankan ekstraksi di laptop/PC lokal:
+#### 1. Jalankan ekstraksi di laptop/PC lokal (jika belum ada):
 ```bash
 cd backend
-node extract-images.js
+npm run extract:images   # atau: bun run extract:images
 ```
 *(Menghasilkan folder `backend/extracted_images/` berisi 1.213 file foto dan `files_manifest.json`)*.
 
@@ -259,7 +259,7 @@ Cukup jalankan dua perintah ini berurutan di server:
 cd backend
 
 # 1. Unduh dari ImageKit ke disk server:
-node extract-images.js
+npm run extract:images
 
 # 2. Upload dari disk server ke SeaweedFS S3:
 npm run migrate:s3
@@ -271,9 +271,9 @@ npm run migrate:s3
 Setelah file berhasil masuk ke SeaweedFS, perbarui URL di database:
 ```bash
 cd backend
-node helpers/update-db-image-urls.js
+npm run update:urls   # atau: bun run update:urls
 ```
-Skrip ini akan mencari semua URL lama `https://ik.imagekit.io/hw6fintvt1/...` pada tabel `beritatanis`, `datapetanis`, `tbl_akuns`, `penjuals`, dll., lalu menggantinya ke URL S3 baru.
+Skrip ini akan mencari semua URL lama `https://ik.imagekit.io/hw6fintvt1/...` pada tabel `beritatanis`, `datapetanis`, `eventtanis`, `datapenyuluhs`, dll., lalu menggantinya ke URL S3 baru.
 
 ---
 

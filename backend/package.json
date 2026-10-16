@@ -9,8 +9,10 @@
     "start": "node index",
     "lint:fix": "eslint --cache --fix \"**/*.{js,jsx}\"",
     "swagger": "node ./swagger.js",
+    "extract:images": "node ./helpers/extract-imagekit.js",
     "migrate:s3": "node ./helpers/migrate-imagekit-to-s3.js",
-    "check:s3": "node ./helpers/check-s3-stats.js"
+    "check:s3": "node ./helpers/check-s3-stats.js",
+    "update:urls": "node ./helpers/update-db-image-urls.js"
   },
   "author": "",
   "license": "ISC",
