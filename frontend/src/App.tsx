@@ -15,6 +15,7 @@ import { DashboardAdminIndex } from "./features/DashboardAdmin/Index/DashboardAd
 import DashboardAdminLayout from "./layouts/dashboard/AppLayout";
 import { DashboardStatistika } from "./features/DashboardAdmin/features/Statistika/Page/DashboardStatistika";
 import { ProfileDashboard } from "./features/DashboardAdmin/features/Profile/Page/ProfileDashboard";
+import { EditProfileDashboard } from "./features/DashboardAdmin/features/Profile/Page/EditProfileDashboard";
 import { AktivitasUserPage } from "./features/DashboardAdmin/features/LogAktivitas/Page/AktivitasUserPage";
 import { DataSampahPage } from "./features/DashboardAdmin/features/LogAktivitas/Page/DataSampahPage";
 import { KelompokTani } from "./features/DashboardAdmin/features/KelompokTani/Page/KelompokTani";
@@ -236,6 +237,10 @@ function App() {
             <Route
               element={<ProfileDashboard />}
               path="/dashboard-admin/profile"
+            />
+            <Route
+              element={<EditProfileDashboard />}
+              path="/dashboard-admin/profile/edit"
             />
 
             <Route

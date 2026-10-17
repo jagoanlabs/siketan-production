@@ -3,6 +3,7 @@ export interface User {
   email: string;
   no_wa: string;
   nama: string;
+  alamat?: string;
   password: string;
   pekerjaan: string;
   peran: string;

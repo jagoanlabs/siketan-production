@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   login: (user: User, token: string) => void;
   logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
   isAuthenticated: boolean;
   isLoading: boolean;
 
@@ -73,6 +74,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...userData };
+      localStorage.setItem("user", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const isAuthenticated = useMemo(() => {
     const hasUser = !!user;
     const hasToken = !!localStorage.getItem("token");
@@ -134,6 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       login,
       logout,
+      updateUser,
       isAuthenticated,
       isLoading,
 

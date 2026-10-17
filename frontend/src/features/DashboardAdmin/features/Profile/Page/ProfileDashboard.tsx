@@ -1,6 +1,6 @@
 import { Divider } from "../../../../../components/Form/HeroDivider";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../../../../../components/Form/HeroButton";
 import { Avatar } from "../../../../../components/Form/HeroAvatar";
 import { Card, CardBody, CardHeader } from "../../../../../components/Form/HeroCard";
@@ -89,7 +89,24 @@ const ShieldIcon = () => (
   </svg>
 );
 
+const EditIcon = () => (
+  <svg
+    className="h-5 w-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      d="M15.232 5.232l3.536 3.536M9 11l6.232-6.232a2.5 2.5 0 013.536 3.536L12.536 14.5 9 15l.5-3.5zM5 19h14"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+    />
+  </svg>
+);
+
 export const ProfileDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth(); // Assuming useAuth has refetchUser method
   const [editedUser, setEditedUser] = useState({ ...user });
   const [passwordData, setPasswordData] = useState({
@@ -271,15 +288,15 @@ export const ProfileDashboard = () => {
                     </Chip>
                   </div>
 
-                  {/* Edit Button
+                  {/* Edit Button */}
                   <Button
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium"
+                    className="w-full bg-green-600 text-white font-medium hover:bg-green-700"
                     size="lg"
                     startContent={<EditIcon />}
-                    onPress={onOpen}
+                    onPress={() => navigate("/dashboard-admin/profile/edit")}
                   >
                     Edit Profil
-                  </Button> */}
+                  </Button>
 
                   <Divider className="my-6" />
 

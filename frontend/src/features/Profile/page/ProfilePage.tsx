@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { FiEdit3, FiLock, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+
 import { assets } from "@/assets/assets";
 import { NavbarStaticItem } from "@/components/NavBarStaticItem";
 import { Footer } from "@/features/Home/components/Footer";
@@ -5,15 +8,25 @@ import { useAuth } from "@/hook/UseAuth";
 import HomeLayout from "@/layouts/HomeLayout";
 import { SectionInfoPertanianCard } from "@/components/SectionInfoPertanianCard";
 import { useProfile } from "@/hook/useProfile";
+import { Button } from "@/components/Form/HeroButton";
 import {
   OperatorProfile,
   PenyuluhProfile,
   PetaniProfile,
 } from "@/types/profile";
+import { EditProfileModal } from "../components/EditProfileModal";
 
 export const ProfilePage = () => {
   const { user } = useAuth();
   const { data: profileResponse, isLoading, error } = useProfile();
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<"profile" | "password">("profile");
+
+  const openEditModal = (tab: "profile" | "password" = "profile") => {
+    setModalTab(tab);
+    setIsEditModalOpen(true);
+  };
 
   // Get profile data based on user role
   const profileData = profileResponse?.data;
@@ -79,6 +92,7 @@ export const ProfilePage = () => {
     return (
       (accountData as any)?.foto ||
       (accountData as any)?.tbl_akun?.foto ||
+      user?.foto ||
       assets.defaultPicture
     );
   };
@@ -92,6 +106,7 @@ export const ProfilePage = () => {
     return (
       (accountData as any)?.nama ||
       (accountData as any)?.tbl_akun?.nama ||
+      user?.nama ||
       "Nama Pengguna"
     );
   };
@@ -102,7 +117,7 @@ export const ProfilePage = () => {
       return user?.isVerified;
     }
 
-    return (accountData as any)?.tbl_akun?.isVerified;
+    return (accountData as any)?.tbl_akun?.isVerified ?? user?.isVerified;
   };
 
   // Get contact info
@@ -117,12 +132,10 @@ export const ProfilePage = () => {
 
     const tblAkun = (accountData as any)?.tbl_akun;
 
-    console.log("tblAkun", tblAkun);
-
     return {
-      phone: (accountData as any)?.noTelp || tblAkun?.no_wa || "-",
-      email: (accountData as any)?.email || tblAkun?.email || "-",
-      pekerjaan: tblAkun?.peran || "-",
+      phone: (accountData as any)?.noTelp || tblAkun?.no_wa || user?.no_wa || "-",
+      email: (accountData as any)?.email || tblAkun?.email || user?.email || "-",
+      pekerjaan: tblAkun?.peran || user?.peran || "-",
     };
   };
 
@@ -144,11 +157,13 @@ export const ProfilePage = () => {
       const kecamatan = data.kecamatanData?.nama || data.kecamatan;
       const desa = data.desaData?.nama || data.desa;
 
-      return `Desa ${desa}, Kecamatan ${kecamatan}, Kab. Ngawi`;
+      return desa && kecamatan
+        ? `Desa ${desa}, Kecamatan ${kecamatan}, Kab. Ngawi`
+        : (data as any)?.alamat || "-";
     }
 
-    // For Operator
-    return (data as OperatorProfile).alamat || "-";
+    // For Petani / Operator
+    return (data as any).alamat || "-";
   };
 
   // Get role-specific information
@@ -167,21 +182,24 @@ export const ProfilePage = () => {
       const penyuluhData = data as PenyuluhProfile;
       const desaBinaan =
         penyuluhData?.desaBinaanData
-          ?.map((item) => item.desa.nama)
+          ?.map((item) => item.desa?.nama)
+          .filter(Boolean)
           .join(", ") || "-";
       const kecamatanBinaan =
         penyuluhData?.kecamatanBinaanData
-          ?.map((item) => item.kecamatan.nama)
+          ?.map((item) => item.kecamatan?.nama)
+          .filter(Boolean)
           .join(", ") || "-";
 
       return {
         joinDate: formatDate(penyuluhData?.createdAt || ""),
         experience: calculateExperience(),
         specialInfo: [
+          { label: "NIP / NIK", value: penyuluhData?.nik || "-" },
           { label: "Tipe Penyuluh", value: penyuluhData?.tipe || "-" },
           { label: "Desa Binaan", value: desaBinaan },
           { label: "Kecamatan Binaan", value: kecamatanBinaan },
-          { label: "Nama Product", value: penyuluhData?.namaProduct || "-" },
+          { label: "Nama Produk Binaan", value: penyuluhData?.namaProduct || "-" },
         ],
       };
     }
@@ -198,11 +216,11 @@ export const ProfilePage = () => {
           {
             label: "Kelompok Tani",
             value:
-              petaniData?.kelompoks?.[0].namaKelompok || "Tidak ada kelompok",
+              petaniData?.kelompoks?.[0]?.namaKelompok || "Tidak ada kelompok",
           },
           {
             label: "Gapoktan",
-            value: petaniData?.kelompoks?.[0].gapoktan || "-",
+            value: petaniData?.kelompoks?.[0]?.gapoktan || "-",
           },
           { label: "Penyuluh", value: petaniData?.dataPenyuluh?.nama || "-" },
         ],
@@ -213,18 +231,33 @@ export const ProfilePage = () => {
     return {
       joinDate: formatDate((data as OperatorProfile)?.createdAt || ""),
       experience: calculateExperience(),
-      specialInfo: [],
+      specialInfo: [
+        { label: "NIK", value: (data as any)?.nik || "-" },
+      ],
     };
   };
 
   const contactInfo = getContactInfo();
   const roleInfo = getRoleSpecificInfo();
 
+  // Prepare initial data for modal
+  const modalInitialData = {
+    nama: getUserName(),
+    email: contactInfo.email !== "-" ? contactInfo.email : user?.email || "",
+    no_wa: contactInfo.phone !== "-" ? contactInfo.phone : user?.no_wa || "",
+    alamat: (accountData as any)?.alamat || "",
+    nik: (accountData as any)?.nik || (accountData as any)?.NIK || "",
+    nokk: (accountData as any)?.nkk || (accountData as any)?.nokk || "",
+    namaProduct: (accountData as any)?.namaProduct || "",
+    foto: getProfilePhoto(),
+    peran: user?.peran || (accountData as any)?.tbl_akun?.peran || "",
+  };
+
   if (isLoading) {
     return (
       <HomeLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
           <span className="ml-3 text-gray-600">Memuat data profil...</span>
         </div>
       </HomeLayout>
@@ -262,87 +295,169 @@ export const ProfilePage = () => {
           title="Profile"
         />
 
-        <div className="flex flex-col w-10/12 mx-auto space-x-6 mb-10">
-          {/* Profile Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 overflow-hidden border-2 border-gray-300 rounded-full">
-                <img
-                  alt="Profile"
-                  className="object-cover w-full h-full"
-                  src={getProfilePhoto()}
-                />
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-xl font-semibold">{getUserName()}</h1>
-                <p className="text-gray-600">{getRoleDisplayName()}</p>
-                <p
-                  className={
-                    getVerificationStatus()
-                      ? "text-green-600 text-sm"
-                      : "text-yellow-600 text-sm"
-                  }
+        <div className="flex flex-col w-11/12 lg:w-9/12 mx-auto mb-14">
+          {/* Profile Header Card */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-emerald-500/30 shadow-md bg-gray-50 flex-shrink-0">
+                  <img
+                    alt="Profile"
+                    className="object-cover w-full h-full"
+                    src={getProfilePhoto()}
+                  />
+                </div>
+                <button
+                  aria-label="Ubah Foto"
+                  className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                  title="Klik untuk ubah profil"
+                  type="button"
+                  onClick={() => openEditModal("profile")}
                 >
-                  {getVerificationStatus()
-                    ? "✓ Terverifikasi"
-                    : "Belum Terverifikasi"}
+                  <FiEdit3 className="text-xl" />
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold text-gray-900">{getUserName()}</h1>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    {getRoleDisplayName()}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 font-mono">{contactInfo.email}</p>
+                <div className="pt-1 flex items-center gap-1.5">
+                  {getVerificationStatus() ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      <FiCheckCircle className="text-sm" /> Terverifikasi
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
+                      <FiAlertCircle className="text-sm" /> Belum Terverifikasi
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions Header */}
+            <div className="flex flex-wrap items-center gap-3 self-start md:self-center">
+              <Button
+                color="success"
+                className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold px-4 sm:px-5 h-11 rounded-xl flex items-center gap-2 shadow-md shadow-emerald-600/25 transition-all hover:scale-[1.02] active:scale-[0.98] border-0"
+                style={{ backgroundColor: "#059669", color: "#ffffff" }}
+                size="md"
+                onPress={() => openEditModal("profile")}
+              >
+                <FiEdit3 className="text-lg text-white" />
+                <span className="text-white font-semibold">Edit Profil</span>
+              </Button>
+              <Button
+                color="secondary"
+                className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold px-4 sm:px-5 h-11 rounded-xl flex items-center gap-2 shadow-md shadow-blue-600/25 transition-all hover:scale-[1.02] active:scale-[0.98] border-0"
+                style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
+                size="md"
+                onPress={() => openEditModal("password")}
+              >
+                <FiLock className="text-lg text-white" />
+                <span className="text-white font-semibold">Ganti Password</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Profile Details Information Card */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm mt-6">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Informasi Akun & Data Diri
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Data diri yang tersimpan dan terhubung dengan akun Anda
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* Profile Information */}
-          <div className="grid grid-cols-1 gap-4 mt-10 text-sm sm:grid-cols-3">
-            {/* Informasi Kontak */}
-            <div className="text-gray-500 font-medium">Nomor Telepon</div>
-            <div className="break-all">{contactInfo.phone}</div>
-            <div className="text-blue-600 cursor-pointer hover:underline" />
-
-            <div className="text-gray-500 font-medium">Email</div>
-            <div className="break-all">{contactInfo.email}</div>
-            <div className="text-blue-600 cursor-pointer hover:underline" />
-
-            <div className="text-gray-500 font-medium">Pekerjaan</div>
-            <div>{contactInfo.pekerjaan}</div>
-            <div className="text-blue-600 cursor-pointer hover:underline" />
-
-            <div className="text-gray-500 font-medium">Alamat Domisili</div>
-            <div>{getAddress()}</div>
-            <div className="text-blue-600 cursor-pointer hover:underline" />
-
-            {/* Divider */}
-            <div className="col-span-1 sm:col-span-3">
-              <hr className="my-4 border-gray-300" />
+              <button
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/80 transition-all cursor-pointer"
+                type="button"
+                onClick={() => openEditModal("profile")}
+              >
+                <FiEdit3 className="text-sm text-emerald-600" />
+                <span>Ubah Data</span>
+              </button>
             </div>
 
-            <div className="text-gray-500 font-medium">Bergabung Sejak</div>
-            <div>{roleInfo.joinDate}</div>
-            <div />
-
-            {/* Role-specific information */}
-            {roleInfo.specialInfo.map((info, index) => (
-              <>
-                <div
-                  key={`label-${index}`}
-                  className="text-gray-500 font-medium"
-                >
-                  {info.label}
-                </div>
-                <div key={`value-${index}`}>{info.value}</div>
-                <div key={`action-${index}`} />
-              </>
-            ))}
-
-            {/* Divider */}
-            {roleInfo.specialInfo.length > 0 && (
-              <div className="col-span-1 sm:col-span-3">
-                <hr className="my-4 border-gray-300" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-4 gap-x-6 text-sm">
+              {/* Nomor Telepon */}
+              <div className="text-gray-500 font-medium flex items-center">
+                Nomor WhatsApp / Telepon
               </div>
-            )}
+              <div className="break-all font-medium text-gray-800">
+                {contactInfo.phone}
+              
+              </div>
+
+              {/* Email */}
+              <div className="text-gray-500 font-medium flex items-center">
+                Email
+              </div>
+              <div className="break-all font-medium text-gray-800">
+                {contactInfo.email}
+              </div>
+              
+
+              {/* Pekerjaan */}
+              <div className="text-gray-500 font-medium">Peran / Pekerjaan</div>
+              <div className="font-medium text-gray-800 capitalize">
+                {contactInfo.pekerjaan}
+              </div>
+              <div />
+
+              {/* Alamat */}
+              <div className="text-gray-500 font-medium flex items-center">
+                Alamat Domisili
+              </div>
+              <div className="font-medium text-gray-800">
+                {getAddress()}
+              </div>
+              
+              
+              {/* Divider */}
+              <div className="col-span-1 sm:col-span-3">
+                <hr className="my-2 border-gray-100" />
+              </div>
+
+              {/* Bergabung Sejak */}
+              <div className="text-gray-500 font-medium">Bergabung Sejak</div>
+              <div className="font-medium text-gray-800">{roleInfo.joinDate}</div>
+              <div />
+
+              {/* Masa Aktif */}
+              <div className="text-gray-500 font-medium">Masa Pengalaman</div>
+              <div className="font-medium text-gray-800">{roleInfo.experience}</div>
+              <div />
+
+              {/* Role-specific information */}
+              {roleInfo.specialInfo.map((info, index) => (
+                <div key={`info-row-${index}`} className="contents">
+                  <div className="text-gray-500 font-medium">{info.label}</div>
+                  <div className="font-medium text-gray-800">{info.value}</div>
+                  <div />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+        {/* Edit Profile & Password Modal */}
+        <EditProfileModal
+          initialData={modalInitialData}
+          initialTab={modalTab}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+        />
       </HomeLayout>
       <Footer />
     </>
   );
 };
+export default ProfilePage;

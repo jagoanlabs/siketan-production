@@ -46,59 +46,62 @@ const getButtonClasses = (
     }
   }
 
+  const hasCustomBg = /(?:^|\s)(?:!)?bg-/.test(className);
+  const hasCustomText = /(?:^|\s)(?:!)?text-/.test(className);
+
   // Colors & Variants
   let variantClass = "";
   if (isPrimary || isSuccess) {
     if (variant === "flat") {
-      variantClass = "bg-green-50 hover:bg-green-100 text-green-700";
+      variantClass = `${hasCustomBg ? "" : "bg-green-50 hover:bg-green-100"} ${hasCustomText ? "" : "text-green-700"}`;
     } else if (variant === "bordered") {
-      variantClass = "border border-green-600 text-green-600 hover:bg-green-50";
+      variantClass = `border border-green-600 ${hasCustomBg ? "" : "hover:bg-green-50"} ${hasCustomText ? "" : "text-green-600"}`;
     } else if (variant === "light") {
-      variantClass = "text-green-600 hover:bg-green-50/50";
+      variantClass = `${hasCustomBg ? "" : "hover:bg-green-50/50"} ${hasCustomText ? "" : "text-green-600"}`;
     } else if (variant === "ghost") {
-      variantClass = "border border-green-600 text-green-600 hover:bg-green-600 hover:text-white";
+      variantClass = `border border-green-600 ${hasCustomText ? "" : "text-green-600"} hover:bg-green-600 hover:text-white`;
     } else { // solid
-      variantClass = "bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow";
+      variantClass = `${hasCustomBg ? "" : "bg-green-600 hover:bg-green-700"} ${hasCustomText ? "" : "text-white"} shadow-sm hover:shadow`;
     }
   } else if (isSecondary) {
     if (variant === "flat") {
-      variantClass = "bg-blue-50 hover:bg-blue-100 text-blue-700";
+      variantClass = `${hasCustomBg ? "" : "bg-blue-50 hover:bg-blue-100"} ${hasCustomText ? "" : "text-blue-700"}`;
     } else if (variant === "bordered") {
-      variantClass = "border border-blue-600 text-blue-600 hover:bg-blue-50";
+      variantClass = `border border-blue-600 ${hasCustomBg ? "" : "hover:bg-blue-50"} ${hasCustomText ? "" : "text-blue-600"}`;
     } else if (variant === "light") {
-      variantClass = "text-blue-600 hover:bg-blue-50/50";
+      variantClass = `${hasCustomBg ? "" : "hover:bg-blue-50/50"} ${hasCustomText ? "" : "text-blue-600"}`;
     } else if (variant === "ghost") {
-      variantClass = "border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white";
+      variantClass = `border border-blue-600 ${hasCustomText ? "" : "text-blue-600"} hover:bg-blue-600 hover:text-white`;
     } else { // solid
-      variantClass = "bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow";
+      variantClass = `${hasCustomBg ? "" : "bg-blue-600 hover:bg-blue-700"} ${hasCustomText ? "" : "text-white"} shadow-sm hover:shadow`;
     }
   } else if (isDanger) {
     if (variant === "flat") {
-      variantClass = "bg-red-50 hover:bg-red-100 text-red-700";
+      variantClass = `${hasCustomBg ? "" : "bg-red-50 hover:bg-red-100"} ${hasCustomText ? "" : "text-red-700"}`;
     } else if (variant === "bordered") {
-      variantClass = "border border-red-600 text-red-600 hover:bg-red-50";
+      variantClass = `border border-red-600 ${hasCustomBg ? "" : "hover:bg-red-50"} ${hasCustomText ? "" : "text-red-600"}`;
     } else if (variant === "light") {
-      variantClass = "text-red-600 hover:bg-red-50/50";
+      variantClass = `${hasCustomBg ? "" : "hover:bg-red-50/50"} ${hasCustomText ? "" : "text-red-600"}`;
     } else if (variant === "ghost") {
-      variantClass = "border border-red-600 text-red-600 hover:bg-red-600 hover:text-white";
+      variantClass = `border border-red-600 ${hasCustomText ? "" : "text-red-600"} hover:bg-red-600 hover:text-white`;
     } else { // solid
-      variantClass = "bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow";
+      variantClass = `${hasCustomBg ? "" : "bg-red-600 hover:bg-red-700"} ${hasCustomText ? "" : "text-white"} shadow-sm hover:shadow`;
     }
   } else if (isWarning) {
     if (variant === "flat") {
-      variantClass = "bg-amber-50 hover:bg-amber-100 text-amber-700";
+      variantClass = `${hasCustomBg ? "" : "bg-amber-50 hover:bg-amber-100"} ${hasCustomText ? "" : "text-amber-700"}`;
     } else if (variant === "bordered") {
-      variantClass = "border border-amber-600 text-amber-600 hover:bg-amber-50";
+      variantClass = `border border-amber-600 ${hasCustomBg ? "" : "hover:bg-amber-50"} ${hasCustomText ? "" : "text-amber-600"}`;
     } else if (variant === "light") {
-      variantClass = "text-amber-600 hover:bg-amber-50/50";
+      variantClass = `${hasCustomBg ? "" : "hover:bg-amber-50/50"} ${hasCustomText ? "" : "text-amber-600"}`;
     } else if (variant === "ghost") {
-      variantClass = "border border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white";
+      variantClass = `border border-amber-600 ${hasCustomText ? "" : "text-amber-600"} hover:bg-amber-600 hover:text-white`;
     } else { // solid
-      variantClass = "bg-amber-600 hover:bg-amber-700 text-white shadow-sm hover:shadow";
+      variantClass = `${hasCustomBg ? "" : "bg-amber-600 hover:bg-amber-700"} ${hasCustomText ? "" : "text-white"} shadow-sm hover:shadow`;
     }
   } else { // default (gray)
     if (variant === "flat") {
-      variantClass = "bg-gray-100 hover:bg-gray-200 text-gray-700";
+      variantClass = hasCustomBg ? "" : "bg-gray-100 hover:bg-gray-200 text-gray-700";
     } else if (variant === "bordered") {
       variantClass = "border border-gray-300 hover:bg-gray-50 text-gray-700";
     } else if (variant === "light") {
@@ -106,11 +109,13 @@ const getButtonClasses = (
     } else if (variant === "ghost") {
       variantClass = "border border-gray-300 text-gray-700 hover:bg-gray-700 hover:text-white";
     } else { // solid
-      variantClass = "bg-gray-200 hover:bg-gray-300 text-gray-800";
+      const bgPart = hasCustomBg ? "" : "bg-gray-200 hover:bg-gray-300";
+      const textPart = hasCustomText ? "" : "text-gray-800";
+      variantClass = `${bgPart} ${textPart}`.trim();
     }
   }
 
-  return `${baseClass} ${sizeClass} ${variantClass} ${className}`;
+  return `${baseClass} ${sizeClass} ${variantClass} ${className}`.trim();
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {

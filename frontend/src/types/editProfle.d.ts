@@ -1,17 +1,21 @@
 // types/profile.ts
 
 export interface BaseProfileData {
-  nik: string;
-  email: string;
-  whatsapp: string;
-  alamat: string;
-  desa: string;
+  nik?: string;
+  email?: string;
+  whatsapp?: string;
+  no_wa?: string;
+  noTelp?: string;
+  alamat?: string;
+  desa?: string;
   desaId?: number;
-  nama: string;
-  kecamatan: string;
+  nama?: string;
+  kecamatan?: string;
   kecamatanId?: number;
   password?: string;
+  currentPassword?: string;
   passwordBaru?: string;
+  newPassword?: string;
   foto?: File | null;
 }
 

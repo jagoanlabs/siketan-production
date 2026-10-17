@@ -4,9 +4,7 @@ import { toast } from "sonner";
 
 import { axiosClient } from "@/service/app-service";
 import {
-  OperatorPoktanProfileData,
-  PenyuluhProfileData,
-  PetaniProfileData,
+  BaseProfileData,
   ProfileDetail,
 } from "@/types/editProfle";
 import { ProfileResponse } from "@/types/profile";
@@ -23,9 +21,8 @@ const getDetailProfile = async (): Promise<ProfileDetail> => {
   return response.data.data;
 };
 
-// Update profile based on role
 const updateProfile = async (
-  data: PenyuluhProfileData | PetaniProfileData | OperatorPoktanProfileData,
+  data: BaseProfileData | any,
 ): Promise<ProfileResponse> => {
   const formData = new FormData();
 
@@ -63,13 +60,11 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (
-      data: PenyuluhProfileData | PetaniProfileData | OperatorPoktanProfileData,
-    ) => updateProfile(data),
+    mutationFn: (data: BaseProfileData | any) => updateProfile(data),
     onSuccess: (data) => {
       toast.success(data.message || "Profile berhasil diupdate");
-      // Invalidate and refetch profile data
-      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
+      // Invalidate and refetch all profile data
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       // Also invalidate auth user data if needed
       queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
     },
