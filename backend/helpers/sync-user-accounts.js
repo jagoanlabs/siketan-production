@@ -39,159 +39,23 @@ function cleanPhone(val) {
   return cleaned || null;
 }
 
-async function mergePenyuluh(sourceAccountID, targetAccountID, transaction) {
-  const [srcRows] = await db.sequelize.query(
-    'SELECT * FROM `dataPenyuluhs` WHERE `accountID` = :sourceAccountID',
-    { replacements: { sourceAccountID }, transaction }
-  );
-  if (!srcRows.length) return;
-
-  const [tgtRows] = await db.sequelize.query(
-    'SELECT * FROM `dataPenyuluhs` WHERE `accountID` = :targetAccountID',
-    { replacements: { targetAccountID }, transaction }
-  );
-
-  if (tgtRows.length > 0) {
-    const srcId = srcRows[0].id;
-    const tgtId = tgtRows[0].id;
-
-    // 1. Transfer Jurnal Harian
-    await db.sequelize.query(
-      'UPDATE `jurnalHarians` SET `fk_penyuluhId` = :tgtId WHERE `fk_penyuluhId` = :srcId',
-      { replacements: { tgtId, srcId }, transaction }
-    );
-
-    // 2. Transfer Petani Binaan
-    await db.sequelize.query(
-      'UPDATE `dataPetanis` SET `fk_penyuluhId` = :tgtId WHERE `fk_penyuluhId` = :srcId',
-      { replacements: { tgtId, srcId }, transaction }
-    );
-
-    // 3. Transfer Desa Binaan (remove duplicates first)
-    await db.sequelize.query(
-      `DELETE FROM \`desaBinaans\` 
-       WHERE \`penyuluhId\` = :srcId 
-         AND \`desaId\` IN (SELECT \`desaId\` FROM (SELECT \`desaId\` FROM \`desaBinaans\` WHERE \`penyuluhId\` = :tgtId) AS tmp)`,
-      { replacements: { srcId, tgtId }, transaction }
-    );
-    await db.sequelize.query(
-      'UPDATE `desaBinaans` SET `penyuluhId` = :tgtId WHERE `penyuluhId` = :srcId',
-      { replacements: { tgtId, srcId }, transaction }
-    );
-
-    // 4. Transfer Kecamatan Binaan (remove duplicates first)
-    await db.sequelize.query(
-      `DELETE FROM \`kecamatanBinaans\` 
-       WHERE \`penyuluhId\` = :srcId 
-         AND \`kecamatanId\` IN (SELECT \`kecamatanId\` FROM (SELECT \`kecamatanId\` FROM \`kecamatanBinaans\` WHERE \`penyuluhId\` = :tgtId) AS tmp)`,
-      { replacements: { srcId, tgtId }, transaction }
-    );
-    await db.sequelize.query(
-      'UPDATE `kecamatanBinaans` SET `penyuluhId` = :tgtId WHERE `penyuluhId` = :srcId',
-      { replacements: { tgtId, srcId }, transaction }
-    );
-
-    // 5. Update NIK/Alamat if target has short/placeholder NIK
-    const srcNik = srcRows[0].nik;
-    const tgtNik = tgtRows[0].nik;
-    if (srcNik && srcNik.length >= 8 && (!tgtNik || tgtNik.length < 8)) {
-      await db.sequelize.query(
-        'UPDATE `dataPenyuluhs` SET `nik` = :srcNik WHERE `id` = :tgtId',
-        { replacements: { srcNik, tgtId }, transaction }
-      );
-    }
-
-    // 6. Delete duplicate source row
-    await db.sequelize.query(
-      'DELETE FROM `dataPenyuluhs` WHERE `id` = :srcId',
-      { replacements: { srcId }, transaction }
-    );
-  } else {
-    // Target does not exist in dataPenyuluhs, safe to reassign
-    await db.sequelize.query(
-      'UPDATE `dataPenyuluhs` SET `accountID` = :targetAccountID WHERE `accountID` = :sourceAccountID',
-      { replacements: { targetAccountID, sourceAccountID }, transaction }
-    );
-  }
-}
-
-async function mergeOperator(sourceAccountID, targetAccountID, transaction) {
-  const [srcRows] = await db.sequelize.query(
-    'SELECT * FROM `dataOperators` WHERE `accountID` = :sourceAccountID',
-    { replacements: { sourceAccountID }, transaction }
-  );
-  if (!srcRows.length) return;
-
-  const [tgtRows] = await db.sequelize.query(
-    'SELECT * FROM `dataOperators` WHERE `accountID` = :targetAccountID',
-    { replacements: { targetAccountID }, transaction }
-  );
-
-  if (tgtRows.length > 0) {
-    // Both exist in dataOperators, delete source row
-    await db.sequelize.query(
-      'DELETE FROM `dataOperators` WHERE `id` = :srcId',
-      { replacements: { srcId: srcRows[0].id }, transaction }
-    );
-  } else {
-    await db.sequelize.query(
-      'UPDATE `dataOperators` SET `accountID` = :targetAccountID WHERE `accountID` = :sourceAccountID',
-      { replacements: { targetAccountID, sourceAccountID }, transaction }
-    );
-  }
-}
-
-async function mergePetani(sourceAccountID, targetAccountID, transaction) {
-  const [srcRows] = await db.sequelize.query(
-    'SELECT * FROM `dataPetanis` WHERE `accountID` = :sourceAccountID',
-    { replacements: { sourceAccountID }, transaction }
-  );
-  if (!srcRows.length) return;
-
-  const [tgtRows] = await db.sequelize.query(
-    'SELECT * FROM `dataPetanis` WHERE `accountID` = :targetAccountID',
-    { replacements: { targetAccountID }, transaction }
-  );
-
-  if (tgtRows.length > 0) {
-    // Transfer tanamanPetanis
-    await db.sequelize.query(
-      'UPDATE `tanamanPetanis` SET `fk_petaniId` = :tgtId WHERE `fk_petaniId` = :srcId',
-      { replacements: { tgtId: tgtRows[0].id, srcId: srcRows[0].id }, transaction }
-    );
-    await db.sequelize.query(
-      'DELETE FROM `dataPetanis` WHERE `id` = :srcId',
-      { replacements: { srcId: srcRows[0].id }, transaction }
-    );
-  } else {
-    await db.sequelize.query(
-      'UPDATE `dataPetanis` SET `accountID` = :targetAccountID WHERE `accountID` = :sourceAccountID',
-      { replacements: { targetAccountID, sourceAccountID }, transaction }
-    );
-  }
-}
-
-async function mergePenjual(sourceAccountID, targetAccountID, transaction) {
-  await db.sequelize.query(
-    'UPDATE `penjuals` SET `accountID` = :targetAccountID WHERE `accountID` = :sourceAccountID',
-    { replacements: { targetAccountID, sourceAccountID }, transaction }
-  );
-}
-
 async function runSync() {
   const args = process.argv.slice(2);
   const isHelp = args.includes('--help') || args.includes('-h');
   const isExecute = args.includes('--execute');
   const isDryRun = !isExecute;
-  const isAlterUsers = args.includes('--alter-users') || args.includes('--update-only');
-  const isSkipDelete = isAlterUsers || args.includes('--skip-delete');
-  const preservePasswords = !args.includes('--overwrite-passwords'); // Always true by default
-  const defaultPassword = process.env.DEFAULT_NEW_USER_PASSWORD || 'Siketan2026!';
+  const isSkipDelete = args.includes('--skip-delete');
+  
+  let defaultPassword = process.env.DEFAULT_NEW_USER_PASSWORD || 'Siketan2026!';
+  const pwdIdx = args.indexOf('--default-password');
+  if (pwdIdx !== -1 && args[pwdIdx + 1]) {
+    defaultPassword = args[pwdIdx + 1];
+  }
 
   if (isHelp) {
     console.log(`
 ================================================================
-📖 SIKETAN User Synchronization CLI Helper
+📖 SIKETAN Comprehensive User Synchronization CLI Helper
 ================================================================
 
 Usage:
@@ -199,30 +63,26 @@ Usage:
   bun run sync:users [options]
 
 Options:
-  --alter-users       : Alter/update user data (nama, email, no_wa, isVerified, peran, NIK, alamat)
-                        ONLY. Skips deleting accounts and strictly preserves existing passwords.
-  --update-only       : Alias for --alter-users.
-  --skip-delete       : Update accounts but skip deleting accounts in 'Akun yang Dihapus'.
-  --preserve-passwords: (Default: true) Guarantees existing user passwords are never changed.
-  --execute           : Commit changes to database. Without this flag, script runs in DRY-RUN mode.
+  --execute           : Commit changes to database. Without this flag, runs in DRY-RUN mode.
+  --skip-delete       : Skip deleting accounts listed in sheet 'Akun yang Dihapus'.
+  --default-password  : Set temporary password for newly created accounts (default: 'Siketan2026!').
   --help, -h          : Show this help menu.
 
-Available npm/bun shortcuts:
-  bun run sync:users:alter     -> Alter users directly to DB (passwords preserved)
-  bun run sync:users:alter:dry -> Dry-run simulation of alter users
-  bun run sync:users           -> Full synchronization (update, reassign, and delete)
-  bun run sync:users:dry       -> Full synchronization preview
+Available shortcuts:
+  bun run sync:users         -> Live Execution (Delete audit accounts, Update existing, Create new)
+  bun run sync:users:dry     -> Dry-run simulation (Preview only, no DB changes)
 ================================================================
 `);
     process.exit(0);
   }
 
   console.log('================================================================');
-  console.log('🔄 SIKETAN: User Account Reset & Smart Synchronization');
+  console.log('🔄 SIKETAN: Comprehensive User Synchronization & Audit Purge');
   console.log(`Branch            : main`);
-  console.log(`Mode              : ${isExecute ? '⚡ LIVE EXECUTION (Writing to DB)' : '🔍 DRY-RUN PREVIEW (No Changes)'}`);
-  console.log(`Alter Users Only  : ${isAlterUsers ? 'YES (--alter-users active, no deletions)' : 'NO (Full sync)'}`);
-  console.log(`Password Security : 🔒 STRICT PRESERVATION (Existing passwords will NOT be touched)`);
+  console.log(`Mode              : ${isExecute ? '⚡ LIVE EXECUTION (Writing to DB)' : '🔍 DRY-RUN PREVIEW (No DB Changes)'}`);
+  console.log(`Delete Audit List : ${isSkipDelete ? 'NO (--skip-delete active)' : 'YES (Accounts in "Akun yang Dihapus" will be deleted)'}`);
+  console.log(`Password Security : 🔒 STRICT PRESERVATION (Existing user passwords will NOT be touched)`);
+  console.log(`New User Password : '${defaultPassword}'`);
   console.log(`Excel File        : ${EXCEL_PATH}`);
   console.log('================================================================\n');
 
@@ -246,7 +106,7 @@ Available npm/bun shortcuts:
   await wb.xlsx.readFile(EXCEL_PATH);
 
   // 3. Parse "Akun yang Dihapus"
-  console.log('Parsing "Akun yang Dihapus"...');
+  console.log('Parsing sheet "Akun yang Dihapus"...');
   const wsDihapus = wb.getWorksheet('Akun yang Dihapus');
   const deleteList = [];
   const deleteAccountIds = new Set();
@@ -268,20 +128,25 @@ Available npm/bun shortcuts:
       }
     });
   }
-  console.log(`Found ${deleteList.length} accounts marked for deletion.\n`);
+  console.log(`Found ${deleteList.length} accounts to delete from audit sheet.\n`);
 
-  // 4. Parse "Data Master"
-  console.log('Parsing "Data Master"...');
+  // 4. Parse "Data Master" (skipping accounts marked for deletion)
+  console.log('Parsing sheet "Data Master"...');
   const wsMaster = wb.getWorksheet('Data Master');
-  const masterAccounts = [];
-  const masterByAccountID = new Map();
-  const masterByNik = new Map();
-  const masterByNama = new Map();
+  const consolidated = new Map();
+  let masterSkipped = 0;
 
   if (wsMaster) {
     wsMaster.eachRow((row, rowNumber) => {
       if (rowNumber > 1) {
         const accountID = cleanString(row.getCell(1).value);
+        if (!accountID) return;
+
+        if (deleteAccountIds.has(accountID)) {
+          masterSkipped++;
+          return;
+        }
+
         const peran = cleanString(row.getCell(2).value) || 'petani';
         const nama = cleanString(row.getCell(3).value);
         const email = cleanString(row.getCell(4).value);
@@ -291,112 +156,240 @@ Available npm/bun shortcuts:
         const nik = cleanString(row.getCell(10).value);
         const nkk = cleanString(row.getCell(11).value);
         const alamat = cleanString(row.getCell(12).value);
-
         const role_id = ROLE_MAPPING[peran.toLowerCase()] || 6;
 
-        if (accountID) {
-          const item = { accountID, peran, role_id, nama, email, no_wa, isVerified, nik, nkk, alamat };
-          masterAccounts.push(item);
-          masterByAccountID.set(accountID, item);
-          if (nik) masterByNik.set(nik, item);
-          if (nama) masterByNama.set(nama.toLowerCase(), item);
+        consolidated.set(accountID, {
+          source: 'Data Master',
+          accountID,
+          peran,
+          role_id,
+          nama,
+          email,
+          no_wa,
+          isVerified,
+          nik,
+          nkk,
+          alamat,
+        });
+      }
+    });
+  }
+  console.log(`Loaded ${consolidated.size} accounts from Data Master (skipped ${masterSkipped} deleted accounts).\n`);
+
+  // 5. Parse "Akun Operator Fix" (19 Official Operator Admin BPP)
+  console.log('Parsing sheet "Akun Operator Fix"...');
+  const wsOp = wb.getWorksheet('Akun Operator Fix');
+  let opAdded = 0;
+  let opEnriched = 0;
+
+  if (wsOp) {
+    wsOp.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        const peran = 'operator admin';
+        const role_id = 4;
+        const nik = cleanString(row.getCell(2).value);
+        const nama = cleanString(row.getCell(3).value);
+        const email = cleanString(row.getCell(4).value);
+        const no_wa = cleanPhone(row.getCell(5).value);
+        const kec = cleanString(row.getCell(6).value);
+        const alamat = cleanString(row.getCell(7).value);
+
+        if (!nama && !email) return;
+
+        // Check if already in consolidated by email or NIK
+        let existingKey = null;
+        for (const [k, v] of consolidated) {
+          if (email && v.email && v.email.toLowerCase() === email.toLowerCase()) {
+            existingKey = k;
+            break;
+          }
+          if (nik && v.nik && v.nik === nik && v.peran === 'operator admin') {
+            existingKey = k;
+            break;
+          }
+        }
+
+        if (existingKey) {
+          const item = consolidated.get(existingKey);
+          item.nama = nama || item.nama;
+          item.email = email || item.email;
+          item.no_wa = no_wa || item.no_wa;
+          item.nik = nik || item.nik;
+          item.alamat = alamat || item.alamat;
+          item.kecamatan = kec;
+          item.peran = 'operator admin';
+          item.role_id = 4;
+          item.isVerified = 1;
+          opEnriched++;
+        } else {
+          const newAccId = crypto.randomUUID();
+          consolidated.set(newAccId, {
+            source: 'Akun Operator Fix',
+            accountID: newAccId,
+            peran,
+            role_id,
+            nama,
+            email,
+            no_wa,
+            isVerified: 1,
+            nik,
+            nkk: null,
+            alamat,
+            kecamatan: kec,
+          });
+          opAdded++;
         }
       }
     });
   }
-  console.log(`Found ${masterAccounts.length} accounts in Data Master.\n`);
+  console.log(`Akun Operator Fix: Enriched ${opEnriched}, Added New ${opAdded}.\n`);
 
-  // 5. Build Re-assignment Plan for Deleted / Merged Accounts
-  console.log('Analyzing Re-assignment for Double Roles...');
-  const reassignments = [];
-  const orphanCleanups = [];
+  // 6. Parse "Akun Penyuluh Fix" (130 Official Penyuluh)
+  console.log('Parsing sheet "Akun Penyuluh Fix"...');
+  const wsPen = wb.getWorksheet('Akun Penyuluh Fix');
+  let penAdded = 0;
+  let penEnriched = 0;
 
-  for (const del of deleteList) {
-    // Check if there is a primary counterpart in Master (by NIK or Nama)
-    let primary = null;
-    if (del.nik && masterByNik.has(del.nik)) {
-      const match = masterByNik.get(del.nik);
-      if (match.accountID !== del.accountID) primary = match;
-    }
-    if (!primary && del.nama && masterByNama.has(del.nama.toLowerCase())) {
-      const match = masterByNama.get(del.nama.toLowerCase());
-      if (match.accountID !== del.accountID) primary = match;
-    }
+  if (wsPen) {
+    wsPen.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        const peran = 'penyuluh';
+        const role_id = 3;
+        const nik = cleanString(row.getCell(2).value);
+        const nama = cleanString(row.getCell(3).value);
+        const email = cleanString(row.getCell(4).value);
+        const no_wa = cleanPhone(row.getCell(5).value);
+        const kecBinaan = cleanString(row.getCell(6).value);
+        const desaBinaan = cleanString(row.getCell(7).value);
 
-    if (primary) {
-      reassignments.push({
-        sourceAccountID: del.accountID,
-        sourceNama: del.nama,
-        sourcePeran: del.peran,
-        targetAccountID: primary.accountID,
-        targetNama: primary.nama,
-        targetPeran: primary.peran,
-        masalah: del.masalah,
-      });
-    } else {
-      orphanCleanups.push(del);
-    }
+        if (!nama && !email) return;
+
+        let existingKey = null;
+        for (const [k, v] of consolidated) {
+          if (email && v.email && v.email.toLowerCase() === email.toLowerCase()) {
+            existingKey = k;
+            break;
+          }
+          if (nik && v.nik && v.nik === nik && v.peran === 'penyuluh') {
+            existingKey = k;
+            break;
+          }
+          if (nama && v.nama && v.nama.toLowerCase() === nama.toLowerCase() && v.peran === 'penyuluh') {
+            existingKey = k;
+            break;
+          }
+        }
+
+        if (existingKey) {
+          const item = consolidated.get(existingKey);
+          if (email) item.email = email;
+          if (no_wa) item.no_wa = no_wa;
+          if (nik) item.nik = nik;
+          item.kecamatanBinaan = kecBinaan;
+          item.desaBinaan = desaBinaan;
+          item.isVerified = 1;
+          penEnriched++;
+        } else {
+          const newAccId = crypto.randomUUID();
+          consolidated.set(newAccId, {
+            source: 'Akun Penyuluh Fix',
+            accountID: newAccId,
+            peran,
+            role_id,
+            nama,
+            email,
+            no_wa,
+            isVerified: 1,
+            nik,
+            nkk: null,
+            alamat: null,
+            kecamatanBinaan: kecBinaan,
+            desaBinaan: desaBinaan,
+          });
+          penAdded++;
+        }
+      }
+    });
   }
+  console.log(`Akun Penyuluh Fix: Enriched ${penEnriched}, Added New ${penAdded}.\n`);
+  console.log(`Total Master Accounts Consolidated: ${consolidated.size}\n`);
 
-  console.log(`- Accounts to reassign (Double Role merge): ${reassignments.length}`);
-  console.log(`- Accounts to clean up directly (Test / Dummy): ${orphanCleanups.length}\n`);
+  // 7. Fetch Existing Accounts from Database
+  console.log('Comparing with database records...');
+  const [dbUsers] = await db.sequelize.query('SELECT id, accountID, email, no_wa, nama, peran, role_id, isVerified FROM tbl_akun');
+  
+  // Exclude accounts scheduled for deletion from DB map
+  const survivingDbUsers = isSkipDelete ? dbUsers : dbUsers.filter(u => !deleteAccountIds.has(u.accountID));
+  const accountsToDeleteFromDb = dbUsers.filter(u => deleteAccountIds.has(u.accountID));
 
-  // 6. Fetch Existing Accounts from Database
-  const [existingAkun] = await db.sequelize.query('SELECT id, accountID, email, no_wa, nama, peran, role_id, isVerified FROM tbl_akun');
-  const dbAkunMap = new Map(existingAkun.map(a => [a.accountID, a]));
+  const dbById = new Map(survivingDbUsers.map(u => [u.accountID, u]));
+  const dbByEmail = new Map();
+  for (const u of survivingDbUsers) {
+    if (u.email) dbByEmail.set(u.email.toLowerCase().trim(), u);
+  }
 
   const accountsToUpdate = [];
   const accountsToInsert = [];
+  const processedDbAccountIDs = new Set();
 
-  for (const m of masterAccounts) {
-    // If account was marked for deletion and has a primary, skip updating it as standalone
-    if (deleteAccountIds.has(m.accountID)) continue;
+  for (const [accId, item] of consolidated) {
+    let matchedDbUser = null;
+    if (dbById.has(item.accountID)) {
+      matchedDbUser = dbById.get(item.accountID);
+    } else if (item.email && dbByEmail.has(item.email.toLowerCase())) {
+      matchedDbUser = dbByEmail.get(item.email.toLowerCase());
+      item.accountID = matchedDbUser.accountID;
+    }
 
-    if (dbAkunMap.has(m.accountID)) {
-      accountsToUpdate.push(m);
+    if (matchedDbUser) {
+      accountsToUpdate.push(item);
+      processedDbAccountIDs.add(matchedDbUser.accountID);
     } else {
-      accountsToInsert.push(m);
+      accountsToInsert.push(item);
     }
   }
 
-  console.log('Database Change Summary:');
-  console.log(`✔ Accounts to UPDATE in tbl_akun : ${accountsToUpdate.length}`);
-  console.log(`✔ Accounts to INSERT in tbl_akun : ${accountsToInsert.length}`);
-  console.log(`✔ Profiles to REASSIGN          : ${reassignments.length}`);
-  console.log(`✔ Accounts to DELETE from tbl_akun: ${deleteList.length}\n`);
+  // Deactivate surviving DB accounts not in master list
+  const accountsToDeactivate = survivingDbUsers.filter(u => !processedDbAccountIDs.has(u.accountID) && u.isVerified !== 0);
 
-  // 7. Save Preview JSON
+  console.log('----------------------------------------------------------------');
+  console.log('📊 DATABASE CHANGE SUMMARY:');
+  console.log(`🗑️ Accounts to DELETE from DB         : ${accountsToDeleteFromDb.length} (From "Akun yang Dihapus")`);
+  console.log(`✔ Accounts to UPDATE in tbl_akun     : ${accountsToUpdate.length} (Passwords strictly preserved)`);
+  console.log(`✔ Accounts to INSERT into tbl_akun   : ${accountsToInsert.length} (New accounts with default password)`);
+  console.log(`✔ Accounts to DEACTIVATE (isVerified=0): ${accountsToDeactivate.length} (Unlisted test/spam accounts)`);
+  console.log('----------------------------------------------------------------\n');
+
+  // 8. Save Preview JSON
   if (!fs.existsSync(PREVIEW_DIR)) fs.mkdirSync(PREVIEW_DIR, { recursive: true });
   const previewData = {
     generatedAt: new Date().toISOString(),
     isExecute,
     summary: {
-      totalMaster: masterAccounts.length,
+      totalConsolidated: consolidated.size,
+      accountsToDelete: accountsToDeleteFromDb.length,
       accountsToUpdate: accountsToUpdate.length,
       accountsToInsert: accountsToInsert.length,
-      accountsToDelete: deleteList.length,
-      reassignmentsCount: reassignments.length,
-      cleanupsCount: orphanCleanups.length,
+      accountsToDeactivate: accountsToDeactivate.length,
     },
+    sampleDeletes: accountsToDeleteFromDb.slice(0, 5),
     sampleUpdates: accountsToUpdate.slice(0, 5),
     sampleInserts: accountsToInsert.slice(0, 5),
-    reassignments,
-    cleanups: orphanCleanups,
   };
   fs.writeFileSync(PREVIEW_FILE, JSON.stringify(previewData, null, 2));
   console.log(`📄 Detailed preview JSON saved to: ${PREVIEW_FILE}\n`);
 
-  // 8. If DRY-RUN mode, stop here and prompt user
+  // 9. If DRY-RUN mode, stop here
   if (isDryRun) {
     console.log('================================================================');
     console.log('🔍 DRY-RUN COMPLETE: No changes were made to the database.');
-    console.log('To execute the real synchronization, run:');
+    console.log('To execute the live synchronization and apply changes to DB, run:');
     console.log('👉 bun run sync:users');
     console.log('================================================================\n');
     process.exit(0);
   }
 
-  // 9. LIVE EXECUTION
+  // 10. LIVE EXECUTION
   console.log('================================================================');
   console.log('⚡ STARTING LIVE DATABASE SYNCHRONIZATION...');
   console.log('================================================================\n');
@@ -404,49 +397,24 @@ Available npm/bun shortcuts:
   const transaction = await db.sequelize.transaction();
 
   try {
-    // STEP 1 & 2: Re-assignment & Deletion (Skipped if --alter-users or --skip-delete is active)
-    if (!isSkipDelete) {
-      console.log('Step 1: Reassigning ownership for double-role profiles...');
-      for (const r of reassignments) {
-        await mergeOperator(r.sourceAccountID, r.targetAccountID, transaction);
-        await mergePenyuluh(r.sourceAccountID, r.targetAccountID, transaction);
-        await mergePetani(r.sourceAccountID, r.targetAccountID, transaction);
-        await mergePenjual(r.sourceAccountID, r.targetAccountID, transaction);
-      }
-      console.log(`✔ Completed ${reassignments.length} ownership reassignments.\n`);
+    // STEP 1: Delete Audit List Accounts
+    if (!isSkipDelete && accountsToDeleteFromDb.length > 0) {
+      console.log(`Step 1: Deleting ${accountsToDeleteFromDb.length} audit list accounts from database...`);
+      const delIds = accountsToDeleteFromDb.map(d => d.accountID);
 
-      console.log('Step 2: Removing retired & duplicate accounts from tbl_akun and cleaning profiles...');
-      const delIds = deleteList.map(d => d.accountID);
-      if (delIds.length > 0) {
-        const [srcPen] = await db.sequelize.query(
-          'SELECT id FROM `dataPenyuluhs` WHERE `accountID` IN (:delIds)',
-          { replacements: { delIds }, transaction }
-        );
-        if (srcPen.length > 0) {
-          const penIds = srcPen.map(p => p.id);
-          await db.sequelize.query('DELETE FROM `jurnalHarians` WHERE `fk_penyuluhId` IN (:penIds)', { replacements: { penIds }, transaction });
-          await db.sequelize.query('DELETE FROM `desaBinaans` WHERE `penyuluhId` IN (:penIds)', { replacements: { penIds }, transaction });
-          await db.sequelize.query('DELETE FROM `kecamatanBinaans` WHERE `penyuluhId` IN (:penIds)', { replacements: { penIds }, transaction });
-          await db.sequelize.query('DELETE FROM `dataPenyuluhs` WHERE `id` IN (:penIds)', { replacements: { penIds }, transaction });
-        }
-
-        await db.sequelize.query('DELETE FROM `dataOperators` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
-        await db.sequelize.query('DELETE FROM `dataPetanis` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
-        await db.sequelize.query('DELETE FROM `penjuals` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
-
-        const [delResult] = await db.sequelize.query(
-          'DELETE FROM `tbl_akun` WHERE `accountID` IN (:delIds)',
-          { replacements: { delIds }, transaction }
-        );
-        console.log(`✔ Deleted ${delResult?.affectedRows || delIds.length} accounts from tbl_akun.\n`);
-      }
+      await db.sequelize.query('DELETE FROM `dataPenyuluhs` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
+      await db.sequelize.query('DELETE FROM `dataOperators` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
+      await db.sequelize.query('DELETE FROM `dataPetanis` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
+      await db.sequelize.query('DELETE FROM `penjuals` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
+      
+      const [delRes] = await db.sequelize.query('DELETE FROM `tbl_akun` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
+      console.log(`✔ Successfully deleted ${delRes?.affectedRows || delIds.length} accounts from tbl_akun and profiles.\n`);
     } else {
-      console.log('ℹ️  Step 1 & Step 2 SKIPPED (--alter-users active). No accounts will be deleted.\n');
+      console.log('ℹ️  Step 1 SKIPPED: No accounts deleted.\n');
     }
 
-    // STEP 3: Update/Alter Valid Accounts in tbl_akun (Preserving existing password)
-    console.log('Step 3: Altering/Updating valid accounts in tbl_akun...');
-    console.log('🔒 Password Security: Existing user passwords are 100% PRESERVED (NOT modified).\n');
+    // STEP 2: Update Existing Valid Accounts in tbl_akun (Preserving existing password)
+    console.log('Step 2: Updating existing accounts in tbl_akun...');
     let updatedCount = 0;
     for (const acc of accountsToUpdate) {
       await db.sequelize.query(
@@ -474,41 +442,99 @@ Available npm/bun shortcuts:
       );
       updatedCount++;
 
-      // Also update NIK/NKK/Alamat in profile tables if exists
-      if (acc.nik || acc.alamat) {
-        if (acc.peran.includes('penyuluh')) {
-          await db.sequelize.query(
-            'UPDATE `dataPenyuluhs` SET `nik` = COALESCE(:nik, `nik`), `alamat` = COALESCE(:alamat, `alamat`) WHERE `accountID` = :accountID',
-            { replacements: { nik: acc.nik, alamat: acc.alamat, accountID: acc.accountID }, transaction }
-          );
-        } else if (acc.peran.includes('operator')) {
-          await db.sequelize.query(
-            'UPDATE `dataOperators` SET `nik` = COALESCE(:nik, `nik`), `alamat` = COALESCE(:alamat, `alamat`) WHERE `accountID` = :accountID',
-            { replacements: { nik: acc.nik, alamat: acc.alamat, accountID: acc.accountID }, transaction }
-          );
-        } else if (acc.peran.includes('petani')) {
-          await db.sequelize.query(
-            'UPDATE `dataPetanis` SET `nik` = COALESCE(:nik, `nik`), `nkk` = COALESCE(:nkk, `nkk`), `alamat` = COALESCE(:alamat, `alamat`) WHERE `accountID` = :accountID',
-            { replacements: { nik: acc.nik, nkk: acc.nkk, alamat: acc.alamat, accountID: acc.accountID }, transaction }
-          );
-        }
+      // Update Profile tables
+      if (acc.peran.includes('penyuluh')) {
+        await db.sequelize.query(
+          `UPDATE \`dataPenyuluhs\`
+           SET \`nama\` = COALESCE(:nama, \`nama\`),
+               \`email\` = COALESCE(:email, \`email\`),
+               \`noTelp\` = COALESCE(:no_wa, \`noTelp\`),
+               \`nik\` = COALESCE(:nik, \`nik\`),
+               \`alamat\` = COALESCE(:alamat, \`alamat\`),
+               \`kecamatanBinaan\` = COALESCE(:kecamatanBinaan, \`kecamatanBinaan\`),
+               \`desaBinaan\` = COALESCE(:desaBinaan, \`desaBinaan\`),
+               \`updatedAt\` = NOW()
+           WHERE \`accountID\` = :accountID`,
+          {
+            replacements: {
+              nama: acc.nama,
+              email: acc.email,
+              no_wa: acc.no_wa,
+              nik: acc.nik,
+              alamat: acc.alamat,
+              kecamatanBinaan: acc.kecamatanBinaan || null,
+              desaBinaan: acc.desaBinaan || null,
+              accountID: acc.accountID,
+            },
+            transaction,
+          }
+        );
+      } else if (acc.peran.includes('operator')) {
+        await db.sequelize.query(
+          `UPDATE \`dataOperators\`
+           SET \`nama\` = COALESCE(:nama, \`nama\`),
+               \`email\` = COALESCE(:email, \`email\`),
+               \`noTelp\` = COALESCE(:no_wa, \`noTelp\`),
+               \`nik\` = COALESCE(:nik, \`nik\`),
+               \`alamat\` = COALESCE(:alamat, \`alamat\`),
+               \`updatedAt\` = NOW()
+           WHERE \`accountID\` = :accountID`,
+          {
+            replacements: {
+              nama: acc.nama,
+              email: acc.email,
+              no_wa: acc.no_wa,
+              nik: acc.nik,
+              alamat: acc.alamat,
+              accountID: acc.accountID,
+            },
+            transaction,
+          }
+        );
+      } else if (acc.peran.includes('petani')) {
+        await db.sequelize.query(
+          `UPDATE \`dataPetanis\`
+           SET \`nama\` = COALESCE(:nama, \`nama\`),
+               \`email\` = COALESCE(:email, \`email\`),
+               \`noTelp\` = COALESCE(:no_wa, \`noTelp\`),
+               \`nik\` = COALESCE(:nik, \`nik\`),
+               \`nkk\` = COALESCE(:nkk, \`nkk\`),
+               \`alamat\` = COALESCE(:alamat, \`alamat\`),
+               \`updatedAt\` = NOW()
+           WHERE \`accountID\` = :accountID`,
+          {
+            replacements: {
+              nama: acc.nama,
+              email: acc.email,
+              no_wa: acc.no_wa,
+              nik: acc.nik,
+              nkk: acc.nkk,
+              alamat: acc.alamat,
+              accountID: acc.accountID,
+            },
+            transaction,
+          }
+        );
       }
     }
-    console.log(`✔ Updated ${updatedCount} existing accounts in tbl_akun and profiles.\n`);
+    console.log(`✔ Updated ${updatedCount} existing accounts in tbl_akun and profile tables.\n`);
 
-    // STEP 4: Insert New Accounts (if any)
+    // STEP 3: Insert Brand New Accounts into tbl_akun & Create Profiles
     if (accountsToInsert.length > 0) {
-      console.log(`Step 4: Inserting ${accountsToInsert.length} new accounts with default password...`);
+      console.log(`Step 3: Creating ${accountsToInsert.length} brand new accounts with default password...`);
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(defaultPassword, salt);
+      let insertedCount = 0;
 
       for (const acc of accountsToInsert) {
+        const accId = acc.accountID || crypto.randomUUID();
+
         await db.sequelize.query(
           `INSERT INTO \`tbl_akun\` (\`accountID\`, \`nama\`, \`email\`, \`no_wa\`, \`password\`, \`peran\`, \`role_id\`, \`isVerified\`, \`createdAt\`, \`updatedAt\`)
            VALUES (:accountID, :nama, :email, :no_wa, :password, :peran, :role_id, :isVerified, NOW(), NOW())`,
           {
             replacements: {
-              accountID: acc.accountID || crypto.randomUUID(),
+              accountID: accId,
               nama: acc.nama,
               email: acc.email,
               no_wa: acc.no_wa,
@@ -520,12 +546,99 @@ Available npm/bun shortcuts:
             transaction,
           }
         );
+        insertedCount++;
+
+        // Ensure profile record is also created
+        if (acc.peran.includes('operator')) {
+          const [existingOp] = await db.sequelize.query(
+            'SELECT id FROM `dataOperators` WHERE `accountID` = :accountID',
+            { replacements: { accountID: accId }, transaction }
+          );
+          if (existingOp.length === 0) {
+            await db.sequelize.query(
+              `INSERT INTO \`dataOperators\` (\`accountID\`, \`nik\`, \`nama\`, \`email\`, \`noTelp\`, \`alamat\`, \`password\`, \`createdAt\`, \`updatedAt\`)
+               VALUES (:accountID, :nik, :nama, :email, :noTelp, :alamat, :password, NOW(), NOW())`,
+              {
+                replacements: {
+                  accountID: accId,
+                  nik: acc.nik || null,
+                  nama: acc.nama,
+                  email: acc.email || null,
+                  noTelp: acc.no_wa || null,
+                  alamat: acc.alamat || null,
+                  password: hashedPassword,
+                },
+                transaction,
+              }
+            );
+          }
+        } else if (acc.peran.includes('penyuluh')) {
+          const [existingPen] = await db.sequelize.query(
+            'SELECT id FROM `dataPenyuluhs` WHERE `accountID` = :accountID',
+            { replacements: { accountID: accId }, transaction }
+          );
+          if (existingPen.length === 0) {
+            await db.sequelize.query(
+              `INSERT INTO \`dataPenyuluhs\` (\`accountID\`, \`nik\`, \`nama\`, \`email\`, \`noTelp\`, \`alamat\`, \`kecamatanBinaan\`, \`desaBinaan\`, \`tipe\`, \`password\`, \`createdAt\`, \`updatedAt\`)
+               VALUES (:accountID, :nik, :nama, :email, :noTelp, :alamat, :kecamatanBinaan, :desaBinaan, 'reguler', :password, NOW(), NOW())`,
+              {
+                replacements: {
+                  accountID: accId,
+                  nik: acc.nik || null,
+                  nama: acc.nama,
+                  email: acc.email || null,
+                  noTelp: acc.no_wa || null,
+                  alamat: acc.alamat || null,
+                  kecamatanBinaan: acc.kecamatanBinaan || null,
+                  desaBinaan: acc.desaBinaan || null,
+                  password: hashedPassword,
+                },
+                transaction,
+              }
+            );
+          }
+        } else if (acc.peran.includes('petani')) {
+          const [existingPet] = await db.sequelize.query(
+            'SELECT id FROM `dataPetanis` WHERE `accountID` = :accountID',
+            { replacements: { accountID: accId }, transaction }
+          );
+          if (existingPet.length === 0) {
+            await db.sequelize.query(
+              `INSERT INTO \`dataPetanis\` (\`accountID\`, \`nik\`, \`nkk\`, \`nama\`, \`email\`, \`noTelp\`, \`alamat\`, \`password\`, \`createdAt\`, \`updatedAt\`)
+               VALUES (:accountID, :nik, :nkk, :nama, :email, :noTelp, :alamat, :password, NOW(), NOW())`,
+              {
+                replacements: {
+                  accountID: accId,
+                  nik: acc.nik || null,
+                  nkk: acc.nkk || null,
+                  nama: acc.nama,
+                  email: acc.email || null,
+                  noTelp: acc.no_wa || null,
+                  alamat: acc.alamat || null,
+                  password: hashedPassword,
+                },
+                transaction,
+              }
+            );
+          }
+        }
       }
-      console.log(`✔ Inserted ${accountsToInsert.length} new accounts.\n`);
+      console.log(`✔ Inserted ${insertedCount} new accounts into tbl_akun and created corresponding profiles.\n`);
     }
 
-    // STEP 5: Audit & Integrity Verification
-    console.log('Step 5: Verifying database integrity & orphan counts...');
+    // STEP 4: Deactivate Unlisted Accounts (Set isVerified = 0)
+    if (accountsToDeactivate.length > 0) {
+      console.log(`Step 4: Deactivating ${accountsToDeactivate.length} unlisted accounts (setting isVerified = 0)...`);
+      const deactIds = accountsToDeactivate.map(a => a.accountID);
+      await db.sequelize.query(
+        'UPDATE `tbl_akun` SET `isVerified` = 0, `updatedAt` = NOW() WHERE `accountID` IN (:deactIds)',
+        { replacements: { deactIds }, transaction }
+      );
+      console.log(`✔ Deactivated ${accountsToDeactivate.length} unlisted accounts.\n`);
+    }
+
+    // STEP 5: Auditing Database Integrity
+    console.log('Step 5: Auditing database relational integrity...');
     const [orphanPen] = await db.sequelize.query(
       'SELECT count(*) as c FROM `dataPenyuluhs` WHERE `accountID` IS NOT NULL AND `accountID` NOT IN (SELECT `accountID` FROM `tbl_akun`)',
       { transaction }
@@ -547,7 +660,7 @@ Available npm/bun shortcuts:
     // Commit Transaction
     await transaction.commit();
     console.log('================================================================');
-    console.log('🎉 LIVE SYNCHRONIZATION COMPLETED SUCCESSFULLY & COMMITTED TO DATABASE!');
+    console.log('🎉 COMPREHENSIVE SYNCHRONIZATION & AUDIT PURGE COMMITTED TO DB!');
     console.log('================================================================\n');
     process.exit(0);
   } catch (err) {
