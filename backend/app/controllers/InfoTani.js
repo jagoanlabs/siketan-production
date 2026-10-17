@@ -445,7 +445,7 @@ const updateEventTani = async (req, res) => {
       throw new ApiError(403, 'Anda tidak memiliki akses.');
     }
     const { eventId } = req.params;
-    const { namaKegiatan, tanggalAcara, waktuAcara, tempat, peserta, createdBy, isi } = req.body;
+    let { namaKegiatan, tanggalAcara, waktuAcara, tempat, peserta, createdBy, isi } = req.body;
     const { file } = req;
 
     const data = await EventTani.findOne({
