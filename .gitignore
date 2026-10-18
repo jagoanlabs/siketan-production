@@ -10,6 +10,9 @@ nginx/ssl/*
 backend/extracted_images/
 backend/data_preview/
 backend/extracted_images.tar.gz
+backend/extracted_images.zip
 *.tar.gz
+*.zip
 seaweedfs/data/
 .DS_Store
+

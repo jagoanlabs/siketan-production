@@ -118,8 +118,31 @@ export default function TawkToWrapper() {
     return <></>;
   }
 
+  const defaultTawkHandlers = {
+    onStatusChange: () => {},
+    onBeforeLoad: () => {},
+    onChatMaximized: () => {},
+    onChatMinimized: () => {},
+    onChatHidden: () => {},
+    onChatStarted: () => {},
+    onChatEnded: () => {},
+    onPrechatSubmit: () => {},
+    onOfflineSubmit: () => {},
+    onChatMessageVisitor: () => {},
+    onChatMessageAgent: () => {},
+    onChatMessageSystem: () => {},
+    onAgentJoinChat: () => {},
+    onAgentLeaveChat: () => {},
+    onChatSatisfaction: () => {},
+    onVisitorNameChanged: () => {},
+    onFileUpload: () => {},
+    onTagsUpdated: () => {},
+    onUnreadCountChanged: () => {},
+  };
+
   return (
     <TawkMessengerReact
+      {...defaultTawkHandlers}
       propertyId={import.meta.env.VITE_TAWK_PROPERTY_ID ?? ""}
       widgetId={import.meta.env.VITE_TAWK_WIDGET_ID ?? ""}
       onLoad={() => setTawkReady(true)}

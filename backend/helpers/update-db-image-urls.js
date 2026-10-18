@@ -6,16 +6,21 @@ const S3_PUBLIC_URL = (process.env.S3_PUBLIC_URL || 'http://127.0.0.1:8333').rep
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME || 'siketan';
 const NEW_URL_PREFIX = `${S3_PUBLIC_URL}/${S3_BUCKET_NAME}`;
 
-// Target tables and their photo/image columns
+// Target tables and their photo/image columns (supporting multiple casing aliases for Linux/macOS)
 const TARGET_COLUMNS = [
-  { table: 'beritatanis', column: 'fotoBerita' },
-  { table: 'eventtanis', column: 'fotoKegiatan' },
-  { table: 'datapetanis', column: 'foto' },
-  { table: 'datapenyuluhs', column: 'foto' },
-  { table: 'tbl_akuns', column: 'foto' },
-  { table: 'penjuals', column: 'foto' },
-  { table: 'footers', column: 'value' },
-  { table: 'jurnalharians', column: 'gambar' },
+  { tableAliases: ['penjuals'], column: 'fotoTanaman' }, // Product data image
+  { tableAliases: ['tbl_akun'], column: 'foto' }, // User account avatar
+  { tableAliases: ['beritaTanis', 'beritatanis'], column: 'fotoBerita' },
+  { tableAliases: ['eventTanis', 'eventtanis'], column: 'fotoKegiatan' },
+  { tableAliases: ['dataPetanis', 'datapetanis'], column: 'foto' },
+  { tableAliases: ['dataPenyuluhs', 'datapenyuluhs'], column: 'foto' },
+  { tableAliases: ['dataOperators', 'dataoperators'], column: 'foto' },
+  { tableAliases: ['dataPeople', 'datapeople'], column: 'foto' },
+  { tableAliases: ['laporanTanams', 'laporantanams'], column: 'fotoTanaman' },
+  { tableAliases: ['presesiKehadirans', 'presesikehadirans'], column: 'FotoKegiatan' },
+  { tableAliases: ['footers'], column: 'value' },
+  { tableAliases: ['jurnalHarians', 'jurnalharians'], column: 'gambar' },
+  { tableAliases: ['attachments'], column: 'link' },
 ];
 
 async function updateDbImageUrls() {
@@ -33,10 +38,20 @@ async function updateDbImageUrls() {
     process.exit(1);
   }
 
-  for (const { table, column } of TARGET_COLUMNS) {
+  // Fetch all existing tables in database
+  const [dbTablesRaw] = await db.sequelize.query('SHOW TABLES');
+  const existingTables = new Set(dbTablesRaw.map(r => Object.values(r)[0]));
+
+  for (const { tableAliases, column } of TARGET_COLUMNS) {
+    const matchedTable = tableAliases.find(alias => existingTables.has(alias));
+    if (!matchedTable) {
+      console.warn(`⚠️ Skipped: None of tables [${tableAliases.join(', ')}] exist in database.`);
+      continue;
+    }
+
     try {
       const sql = `
-        UPDATE \`${table}\`
+        UPDATE \`${matchedTable}\`
         SET \`${column}\` = REPLACE(\`${column}\`, :oldPrefix, :newPrefix)
         WHERE \`${column}\` LIKE :searchPattern
       `;
@@ -49,9 +64,9 @@ async function updateDbImageUrls() {
         }
       });
 
-      console.log(`✔ Table "${table}" (${column}): ${result.affectedRows || 0} rows updated.`);
+      console.log(`✔ Table "${matchedTable}" (${column}): ${result.affectedRows || 0} rows updated.`);
     } catch (err) {
-      console.warn(`⚠️ Skipped "${table}.${column}": ${err.message}`);
+      console.warn(`⚠️ Error on "${matchedTable}.${column}": ${err.message}`);
     }
   }
 

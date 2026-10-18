@@ -44,7 +44,7 @@ async function runSync() {
   const isHelp = args.includes('--help') || args.includes('-h');
   const isExecute = args.includes('--execute');
   const isDryRun = !isExecute;
-  const isSkipDelete = args.includes('--skip-delete');
+  const isSkipDelete = args.includes('--skip-delete') || args.includes('--alter-users');
   
   let defaultPassword = process.env.DEFAULT_NEW_USER_PASSWORD || 'Siketan2026!';
   const pwdIdx = args.indexOf('--default-password');
@@ -375,6 +375,7 @@ Available shortcuts:
     sampleDeletes: accountsToDeleteFromDb.slice(0, 5),
     sampleUpdates: accountsToUpdate.slice(0, 5),
     sampleInserts: accountsToInsert.slice(0, 5),
+    allInserts: accountsToInsert,
   };
   fs.writeFileSync(PREVIEW_FILE, JSON.stringify(previewData, null, 2));
   console.log(`📄 Detailed preview JSON saved to: ${PREVIEW_FILE}\n`);
