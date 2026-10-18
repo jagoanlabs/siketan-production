@@ -158,8 +158,8 @@ export const SectionTokoPertanian = () => {
         <Button
           as={Link}
           className="text-red-500 bg-red-200 rounded-full hover:bg-red-300 hover:text-red-600"
-          to="/home/toko"
-          onPress={() =>
+          to={`/home/toko?tab=${selectedTab}`}
+          onClick={() =>
             window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
           }
         >

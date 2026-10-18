@@ -230,6 +230,13 @@ export const SectionDataPertanian = () => {
                   );
                 })}
               </select>
+              <Link
+                className="text-red-500 bg-red-200 rounded-full hover:bg-red-300 hover:text-red-600 px-3.5 py-1 text-xs sm:text-sm font-semibold transition-colors inline-flex items-center"
+                to="/home/data"
+                onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "smooth" })}
+              >
+                Selengkapnya
+              </Link>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-start gap-2 sm:gap-3 lg:gap-4 mb-4">
@@ -283,6 +290,16 @@ export const SectionDataPertanian = () => {
             </div>
           </div>
         </div>
+        <Link
+          className="flex items-center justify-center h-10 sm:h-12 bg-green-100 hover:bg-green-200 transition-colors cursor-pointer border-t border-gray-100 select-none"
+          to="/home/data"
+          onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "smooth" })}
+        >
+          <p className="text-green-600 text-sm font-semibold sm:text-base flex items-center gap-1.5">
+            <span>Lihat Selengkapnya Data Pertanian</span>
+            <FaArrowRight className="w-3.5 h-3.5" />
+          </p>
+        </Link>
       </div>
       <div className="mt-10">
         <KomoditasTertinggi />

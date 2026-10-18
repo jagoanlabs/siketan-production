@@ -363,13 +363,22 @@ export const HomeDataPage = () => {
                 </div> */}
               </div>
 
-              <div className="flex items-center justify-center h-10 sm:h-12 bg-green-100 hover:bg-green-200 transition-colors cursor-pointer">
-                <p className="text-green-600 text-sm font-semibold sm:text-base ">
-                  Lihat Selengkapnya
+              <div
+                className="flex items-center justify-center h-10 sm:h-12 bg-green-100 hover:bg-green-200 transition-colors cursor-pointer select-none"
+                onClick={() => {
+                  const target = document.getElementById("tabel-komoditas-tertinggi");
+                  if (target) {
+                    target.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+              >
+                <p className="text-green-600 text-sm font-semibold sm:text-base flex items-center gap-1.5">
+                  <span>Lihat Selengkapnya</span>
+                  <span>↓</span>
                 </p>
               </div>
             </div>
-            <div className="mt-10">
+            <div className="mt-10" id="tabel-komoditas-tertinggi">
               <KomoditasTertinggi />
             </div>
           </div>

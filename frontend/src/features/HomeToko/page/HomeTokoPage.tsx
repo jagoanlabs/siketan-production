@@ -2,6 +2,7 @@ import { Pagination } from "../../../components/Form/HeroPagination";
 import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 import { axiosClient } from "@/service/app-service";
@@ -55,7 +56,23 @@ interface Product {
 // }
 
 export const HomeTokoPage: React.FC = () => {
-  const [selectedTab, setSelectedTab] = useState<"produk" | "toko">("produk");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [selectedTab, setSelectedTab] = useState<"produk" | "toko">(
+    tabParam === "toko" ? "toko" : "produk",
+  );
+
+  useEffect(() => {
+    if (tabParam === "toko" || tabParam === "produk") {
+      setSelectedTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tab: "produk" | "toko") => {
+    setSelectedTab(tab);
+    setSearchParams({ tab });
+  };
+
   const [productPage, setProductPage] = useState(1);
   const [storePage, setStorePage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -166,7 +183,7 @@ export const HomeTokoPage: React.FC = () => {
               <button
                 className="relative flex flex-col items-center bg-transparent border-none cursor-pointer"
                 onClick={() => {
-                  setSelectedTab("produk");
+                  handleTabChange("produk");
                   setProductPage(1);
                 }}
               >
@@ -186,7 +203,7 @@ export const HomeTokoPage: React.FC = () => {
               <button
                 className="relative flex flex-col items-center bg-transparent border-none cursor-pointer"
                 onClick={() => {
-                  setSelectedTab("toko");
+                  handleTabChange("toko");
                   setStorePage(1);
                 }}
               >

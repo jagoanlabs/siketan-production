@@ -92,7 +92,10 @@ export const SectionInfoPertanian: React.FC = () => {
         <Button
           as={Link}
           className="text-red-500 bg-red-200 rounded-full hover:bg-red-300 hover:text-red-600"
-          to="/home/information"
+          to="/home/information?tab=acara"
+          onClick={() =>
+            window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
+          }
         >
           Selengkapnya
         </Button>
@@ -147,8 +150,8 @@ export const SectionInfoPertanian: React.FC = () => {
         <Button
           as={Link}
           className="text-red-500 bg-red-200 rounded-full hover:bg-red-300 hover:text-red-600"
-          to="/home/information"
-          onPress={() =>
+          to="/home/information?tab=berita"
+          onClick={() =>
             window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
           }
         >

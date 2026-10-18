@@ -2,6 +2,7 @@ import { Pagination } from "../../../components/Form/HeroPagination";
 import { BreadcrumbsItem, Breadcrumbs } from "../../../components/Form/HeroBreadcrumbs";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { ActivityCardSkeleton } from "../components/SkeletonComponent";
 
@@ -28,7 +29,23 @@ interface activity {
 
 export const HomeInformasiPage = () => {
   // --- STATE MANAGEMENT ---
-  const [selectedTab, setSelectedTab] = useState<"acara" | "berita">("acara");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [selectedTab, setSelectedTab] = useState<"acara" | "berita">(
+    tabParam === "berita" ? "berita" : "acara",
+  );
+
+  useEffect(() => {
+    if (tabParam === "berita" || tabParam === "acara") {
+      setSelectedTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tab: "acara" | "berita") => {
+    setSelectedTab(tab);
+    setSearchParams({ tab });
+  };
+
   const [activityPage, setActivityPage] = useState(1);
   const [newsPage, setNewsPage] = useState(1); // State yang hilang ditambahkan
 
@@ -185,7 +202,7 @@ export const HomeInformasiPage = () => {
                     ? "bg-white text-black shadow-sm"
                     : "text-gray-500",
                 )}
-                onClick={() => setSelectedTab("acara")}
+                onClick={() => handleTabChange("acara")}
               >
                 Acara
               </button>
@@ -196,7 +213,7 @@ export const HomeInformasiPage = () => {
                     ? "bg-white text-black shadow-sm"
                     : "text-gray-500",
                 )}
-                onClick={() => setSelectedTab("berita")}
+                onClick={() => handleTabChange("berita")}
               >
                 Berita
               </button>
@@ -206,7 +223,7 @@ export const HomeInformasiPage = () => {
             <div className="hidden sm:flex gap-6 lg:gap-10">
               <button
                 className="relative flex flex-col items-center bg-transparent border-none cursor-pointer pb-2"
-                onClick={() => setSelectedTab("acara")}
+                onClick={() => handleTabChange("acara")}
               >
                 <h2
                   className={cn(
@@ -225,7 +242,7 @@ export const HomeInformasiPage = () => {
 
               <button
                 className="relative flex flex-col items-center bg-transparent border-none cursor-pointer pb-2"
-                onClick={() => setSelectedTab("berita")}
+                onClick={() => handleTabChange("berita")}
               >
                 <h2
                   className={cn(

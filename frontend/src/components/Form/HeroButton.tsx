@@ -1,8 +1,12 @@
 import React from "react";
 import { Button as RACButton } from "react-aria-components";
+import { Link } from "react-router-dom";
 import { Spinner } from "@heroui/react";
 
 export interface ButtonProps {
+  as?: React.ElementType;
+  to?: string;
+  href?: string;
   isLoading?: boolean;
   isDisabled?: boolean;
   children?: React.ReactNode;
@@ -12,6 +16,7 @@ export interface ButtonProps {
   size?: "sm" | "md" | "lg";
   isIconOnly?: boolean;
   onPress?: (e: any) => void;
+  onClick?: (e: any) => void;
   type?: "button" | "submit" | "reset";
   [key: string]: any;
 }
@@ -118,8 +123,11 @@ const getButtonClasses = (
   return `${baseClass} ${sizeClass} ${variantClass} ${className}`.trim();
 };
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+export const Button = React.forwardRef<any, ButtonProps>((props, ref) => {
   const {
+    as,
+    to,
+    href,
     isLoading,
     isDisabled,
     children,
@@ -130,24 +138,67 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
     isIconOnly = false,
     startContent,
     endContent,
+    onPress,
+    onClick,
     ...rest
   } = props;
 
   const btnClasses = getButtonClasses(color, variant, size, isIconOnly, className);
+
+  const handleClick = (e: any) => {
+    if (isDisabled || isLoading) {
+      e.preventDefault();
+      return;
+    }
+    onPress?.(e);
+    onClick?.(e);
+  };
+
+  const Component = as || (to ? Link : href ? "a" : null);
+
+  if (Component) {
+    return (
+      <Component
+        ref={ref}
+        to={to}
+        href={href}
+        className={btnClasses}
+        onClick={handleClick}
+        aria-disabled={isDisabled || isLoading}
+        {...rest}
+      >
+        {isLoading && <Spinner size="sm" color="current" />}
+        {!isLoading && startContent && (
+          <span className="inline-flex items-center justify-center">{startContent}</span>
+        )}
+        {children}
+        {endContent && (
+          <span className="inline-flex items-center justify-center">{endContent}</span>
+        )}
+      </Component>
+    );
+  }
 
   return (
     <RACButton
       ref={ref}
       isDisabled={isDisabled || isLoading}
       className={btnClasses}
+      onPress={onPress}
+      onClick={onClick}
       {...rest}
     >
       {isLoading && <Spinner size="sm" color="current" />}
-      {!isLoading && startContent && <span className="inline-flex items-center justify-center">{startContent}</span>}
+      {!isLoading && startContent && (
+        <span className="inline-flex items-center justify-center">{startContent}</span>
+      )}
       {children}
-      {endContent && <span className="inline-flex items-center justify-center">{endContent}</span>}
+      {endContent && (
+        <span className="inline-flex items-center justify-center">{endContent}</span>
+      )}
     </RACButton>
   );
 });
 
 Button.displayName = "Button";
+
