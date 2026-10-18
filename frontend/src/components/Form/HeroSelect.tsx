@@ -104,7 +104,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>((props, ref)
 
   // Handle single select key string/number conversion
   if (selectedKey !== undefined && selectedKey !== null) {
-    selectedKey = String(selectedKey);
+    selectedKey = String(selectedKey).replace(/^\.\$/, "");
   } else {
     selectedKey = null;
   }
@@ -151,16 +151,21 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>((props, ref)
         {isInvalid && errorMessage && (
           <span className="text-xs text-red-500 pl-1">{errorMessage}</span>
         )}
-        <SelectPopover className="p-1 bg-white border border-gray-150 rounded-xl shadow-lg min-w-[200px]">
+        <SelectPopover className={`p-1 bg-white border border-gray-200 rounded-xl shadow-lg min-w-[120px] max-w-[90vw] z-50 ${classNames?.popover || ""}`}>
           <ListBox className="outline-none max-h-60 overflow-y-auto">
             {items.map((item, idx) => {
-              const itemKey = String(item.key !== null && item.key !== undefined ? item.key : (item.props.value || item.props.id || idx));
+              const rawKey = item.props?.value !== undefined && item.props?.value !== null
+                ? item.props.value
+                : (item.props?.id !== undefined && item.props?.id !== null
+                  ? item.props.id
+                  : (item.key !== null && item.key !== undefined ? item.key : idx));
+              const itemKey = String(rawKey).replace(/^\.\$/, "");
               return (
                 <ListBoxItem
                   id={itemKey}
                   key={itemKey}
-                  textValue={typeof item.props.children === "string" ? item.props.children : itemKey}
-                  className="px-3 py-2 text-sm rounded-lg cursor-pointer hover:bg-gray-100 outline-none text-gray-700 block w-full"
+                  textValue={item.props?.textValue || (typeof item.props?.children === "string" ? item.props.children : String(item.props?.children ?? itemKey))}
+                  className="px-3 py-2 text-sm rounded-lg cursor-pointer hover:bg-gray-100 outline-none text-gray-700 block w-full data-[selected=true]:bg-green-50 data-[selected=true]:text-green-700 data-[selected=true]:font-semibold"
                 >
                   {item.props.children}
                 </ListBoxItem>

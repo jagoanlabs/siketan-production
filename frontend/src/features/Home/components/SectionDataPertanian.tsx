@@ -1,4 +1,5 @@
 import { Chip as HeroChip } from "../../../components/Form/HeroChip";
+import { Select, SelectItem } from "../../../components/Form/HeroSelect";
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -214,29 +215,31 @@ export const SectionDataPertanian = () => {
             <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold">
               Produksi Pertanian Berdasarkan Komoditas ({selectedYear})
             </h1>
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                className="px-3 py-1 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(Number(e.target.value))}
+            <div className="w-28 sm:w-32">
+              <Select
+                aria-label="Pilih Tahun"
+                selectedKeys={[String(selectedYear)]}
+                variant="bordered"
+                classNames={{
+                  trigger: "min-h-[38px] py-1.5 px-3 border border-gray-300 rounded-lg text-sm sm:text-base font-medium bg-white focus:border-green-500",
+                }}
+                onSelectionChange={(keys: any) => {
+                  const selected = Array.from(keys)[0];
+                  if (selected) {
+                    setSelectedYear(Number(selected));
+                  }
+                }}
               >
                 {[...Array(5)].map((_, index) => {
                   const year = new Date().getFullYear() - index;
 
                   return (
-                    <option key={year} value={year}>
+                    <SelectItem key={String(year)} value={String(year)} textValue={String(year)}>
                       {year}
-                    </option>
+                    </SelectItem>
                   );
                 })}
-              </select>
-              <Link
-                className="text-red-500 bg-red-200 rounded-full hover:bg-red-300 hover:text-red-600 px-3.5 py-1 text-xs sm:text-sm font-semibold transition-colors inline-flex items-center"
-                to="/home/data"
-                onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "smooth" })}
-              >
-                Selengkapnya
-              </Link>
+              </Select>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-start gap-2 sm:gap-3 lg:gap-4 mb-4">
