@@ -14,8 +14,6 @@ import { ReusableTable } from "@/components/Table/ReusableTable";
 import { DateRangeFilter } from "@/components/DateRangeFilter";
 import { VerifikasiUserQueryParams } from "@/types/HakAkses/verifikasiUser";
 
-export type SortOption = "verified_desc" | "verified_asc" | "default";
-
 const useVerifikasiTableState = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -23,7 +21,6 @@ const useVerifikasiTableState = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Sorting state
-  const [sortOption, setSortOption] = useState<SortOption>("verified_asc"); // Default: unverified first
   const [sortConfig, setSortConfig] = useState<{
     key: string | null;
     direction: "ASC" | "DESC";
@@ -49,13 +46,12 @@ const useVerifikasiTableState = () => {
       page: currentPage,
       limit: itemsPerPage,
       search: debouncedSearch || undefined,
-      sort: sortConfig.key ? undefined : (sortOption === "default" ? undefined : sortOption),
       sortBy: sortConfig.key || undefined,
       sortDirection: sortConfig.key ? sortConfig.direction : undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     }),
-    [currentPage, itemsPerPage, debouncedSearch, sortOption, sortConfig, startDate, endDate],
+    [currentPage, itemsPerPage, debouncedSearch, sortConfig, startDate, endDate],
   );
 
   const handleSearchChange = (value: string) => {
@@ -96,44 +92,12 @@ const useVerifikasiTableState = () => {
     setCurrentPage(1);
   };
 
-  // Sorting handlers
-  const toggleVerifiedSort = () => {
-    if (sortOption === "verified_asc") {
-      setSortOption("verified_desc");
-    } else if (sortOption === "verified_desc") {
-      setSortOption("verified_asc");
-    } else {
-      setSortOption("verified_asc"); // Default to unverified first
-    }
-    setSortConfig({ key: null, direction: "ASC" });
-    setCurrentPage(1);
-  };
-
-  // Helper to get current sort display info
-  const getSortInfo = () => {
-    if (sortConfig.key) {
-      return {
-        label: `${sortConfig.key} (${sortConfig.direction})`,
-        icon: sortConfig.direction === "ASC" ? "↑" : "↓",
-      };
-    }
-    switch (sortOption) {
-      case "verified_desc":
-        return { label: "Terverifikasi Dulu", icon: "↓" };
-      case "verified_asc":
-        return { label: "Belum Verifikasi Dulu", icon: "↑" };
-      default:
-        return { label: "Default", icon: "" };
-    }
-  };
-
   return {
     // States
     currentPage,
     searchTerm,
     debouncedSearch,
     queryParams,
-    sortOption,
     sortConfig,
     startDate,
     endDate,
@@ -145,10 +109,6 @@ const useVerifikasiTableState = () => {
     handleSort,
     handleDateRangeChange,
     clearDateFilter,
-    toggleVerifiedSort,
-
-    // Helpers
-    getSortInfo,
   };
 };
 
@@ -186,7 +146,6 @@ export const VerifikasiUserPage = () => {
     searchTerm,
     debouncedSearch,
     queryParams,
-    sortOption,
     sortConfig,
     startDate,
     endDate,
@@ -196,8 +155,6 @@ export const VerifikasiUserPage = () => {
     handleSort,
     handleDateRangeChange,
     clearDateFilter,
-    toggleVerifiedSort,
-    getSortInfo,
   } = useVerifikasiTableState();
 
   // API Hooks
@@ -634,7 +591,7 @@ export const VerifikasiUserPage = () => {
       {
         key: "status",
         title: "Status Akun",
-        sortable: true,
+        sortable: false,
         render: (item) => <StatusBadge isVerified={item.isVerified} />,
         width: "140px",
         align: "center",
@@ -736,9 +693,6 @@ export const VerifikasiUserPage = () => {
       rejectMutation.isPending,
       approveDialog.user,
       rejectDialog.user,
-      sortOption,
-      toggleVerifiedSort,
-      getSortInfo,
     ],
   );
 

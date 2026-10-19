@@ -61,6 +61,7 @@ export const useApproveUser = () => {
     mutationFn: approveUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["verifikasi-user"] });
+      queryClient.invalidateQueries({ queryKey: ["metaVerifikasiUser"] });
     },
     onError: (error: any) => {
       console.error("Approve error:", error);
@@ -75,6 +76,7 @@ export const useRejectUser = () => {
     mutationFn: rejectUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["verifikasi-user"] });
+      queryClient.invalidateQueries({ queryKey: ["metaVerifikasiUser"] });
     },
     onError: (error: any) => {
       console.error("Reject error:", error);

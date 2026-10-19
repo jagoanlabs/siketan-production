@@ -27,10 +27,15 @@ import {
   useKecamatan,
 } from "@/hook/dashboard/infoPenyuluh/useCreatePenyuluh";
 import PageBreadcrumb from "@/components/Breadcrumb";
+import { useAuth } from "@/hook/UseAuth";
 
 export const EditInformasiPenyuluh = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canResetPassword = ["operator_admin", "operator_super_admin", "operator admin", "operator super admin"].includes(
+    user?.role?.name || user?.peran || "",
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -375,7 +380,7 @@ export const EditInformasiPenyuluh = () => {
         nama: formData.nama,
         email: formData.email,
         NoWa: formData.NoWa,
-        password: formData.password, // Will be empty if not changed
+        password: canResetPassword ? formData.password : "",
         alamat: formData.alamat,
         kecamatanId: formData.kecamatanId,
         kecamatan: formData.kecamatan,
@@ -570,7 +575,7 @@ export const EditInformasiPenyuluh = () => {
                   onChange={(e: any) => handleInputChange("NoWa", e.target.value)}
                 />
 
-                <Input
+                {canResetPassword && <Input
                   description="Kosongkan jika tidak ingin mengubah password"
                   label="Password Baru"
                   placeholder="Biarkan kosong jika tidak ingin mengubah"
@@ -580,7 +585,7 @@ export const EditInformasiPenyuluh = () => {
                   onChange={(e: any) =>
                     handleInputChange("password", e.target.value)
                   }
-                />
+                />}
 
                 {/* Tipe Penyuluh */}
                 <div>

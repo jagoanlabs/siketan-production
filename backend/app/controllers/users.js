@@ -176,6 +176,7 @@ const userVerify = async (req, res) => {
       ],
       where: {
         peran: { [Op.in]: allowedRoles },
+        isVerified: false,
         [Op.or]: [
           { '$petani.id$': { [Op.not]: null } },
           { '$penyuluh.id$': { [Op.not]: null } },
@@ -217,6 +218,7 @@ const userVerify = async (req, res) => {
       ],
       where: {
         peran: { [Op.in]: allowedRoles },
+        isVerified: false,
         [Op.or]: [
           { '$petani.id$': { [Op.not]: null } },
           { '$penyuluh.id$': { [Op.not]: null } },

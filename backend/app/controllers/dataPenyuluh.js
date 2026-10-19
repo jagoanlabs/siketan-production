@@ -1155,6 +1155,16 @@ const updatePenyuluh = async (req, res) => {
 
       if (!data) throw new ApiError(400, 'Data penyuluh tidak ditemukan.');
 
+      // Editing profile data does not grant permission to reset credentials.
+      const canResetPassword = ['operator_admin', 'operator_super_admin'].includes(req.user.role?.name) ||
+        ['operator admin', 'operator super admin', 'operator_admin', 'operator_super_admin'].includes(peran);
+      if (password && !canResetPassword) {
+        throw new ApiError(403, 'Hanya operator admin yang boleh mengganti password penyuluh.');
+      }
+      if (password && (typeof password !== 'string' || password.trim().length < 8 || password.length > 72)) {
+        throw new ApiError(400, 'Password baru harus terdiri dari 8–72 karakter.');
+      }
+
       let urlImg = data.foto; // ✅ Keep existing photo if no new upload
 
       // Handle file upload
@@ -1192,7 +1202,8 @@ const updatePenyuluh = async (req, res) => {
 
       // ✅ Handle password (only hash if provided)
       let hashedPassword = data.password; // Keep existing password
-      if (password && password.trim() !== '') {
+      const changingPassword = typeof password === 'string' && password.trim() !== '';
+      if (changingPassword) {
         hashedPassword = bcrypt.hashSync(password, 10);
       }
 
@@ -1206,7 +1217,7 @@ const updatePenyuluh = async (req, res) => {
         accountUpdate = await tbl_akun.update(
           {
             email,
-            password: hashedPassword,
+            ...(changingPassword ? { password: hashedPassword } : {}),
             no_wa: NoWa,
             nama,
             pekerjaan,
@@ -1226,7 +1237,7 @@ const updatePenyuluh = async (req, res) => {
         accountUpdate = await tbl_akun.update(
           {
             email,
-            password: hashedPassword,
+            ...(changingPassword ? { password: hashedPassword } : {}),
             no_wa: NoWa,
             nama,
             pekerjaan,
@@ -1283,7 +1294,7 @@ const updatePenyuluh = async (req, res) => {
           nama,
           foto: urlImg,
           kecamatan: inputKecamatan,
-          password: hashedPassword,
+          ...(changingPassword ? { password: hashedPassword } : {}),
           namaProduct,
           kecamatanBinaan,
           desaBinaan,
