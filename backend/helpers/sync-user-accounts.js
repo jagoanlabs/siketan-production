@@ -81,7 +81,7 @@ Available shortcuts:
   console.log('🔄 SIKETAN: Comprehensive User Synchronization & Purge');
   console.log(`Mode              : ${isExecute ? '⚡ LIVE EXECUTION (Writing to DB)' : '🔍 DRY-RUN PREVIEW (No DB Changes)'}`);
   console.log(`Delete Policy     : ${isSkipDelete ? 'NO (--skip-delete active)' : 'HARD DELETE (Accounts in "Akun yang Dihapus" and outside Fix sheets)'}`);
-  console.log(`Protected Roles   : Super Admins are strictly preserved`);
+  console.log('Protected Super Admin: ONLY jagoanlabs@gmail.com (All other accounts matched strictly to Fix sheets)');
   console.log(`Password Security : 🔒 STRICT PRESERVATION (Existing user passwords will NOT be touched)`);
   console.log(`Excel File        : ${EXCEL_PATH}`);
   console.log('================================================================\n');
@@ -223,10 +223,12 @@ Available shortcuts:
   // 5. Fetch Existing Accounts from Database
   console.log('Comparing with database records...');
   const [dbUsers] = await db.sequelize.query('SELECT id, accountID, email, no_wa, nama, peran, role_id, isVerified FROM tbl_akun');
-  const isSuperAdmin = u => u.role_id === 1 || ['operator super admin', 'operator_super_admin'].includes(String(u.peran).toLowerCase());
   
-  if (!dbUsers.some(u => isSuperAdmin(u) && !deleteAccountIds.has(u.accountID))) {
-    throw new Error('No super admin would survive this purge. Refusing to proceed.');
+  // Protected Super Admin: ONLY jagoanlabs@gmail.com
+  const isProtectedSuperAdmin = u => u.email && u.email.toLowerCase().trim() === 'jagoanlabs@gmail.com';
+  
+  if (!dbUsers.some(u => isProtectedSuperAdmin(u))) {
+    throw new Error('Super admin jagoanlabs@gmail.com not found in tbl_akun. Refusing to proceed.');
   }
 
   const usersByAccountId = new Map(dbUsers.map(user => [user.accountID, user]));
@@ -276,7 +278,7 @@ Available shortcuts:
       const candidates = dbByNik.get(item.nik).filter(u => 
         !processedDbAccountIDs.has(u.accountID) && 
         !deleteAccountIds.has(u.accountID) &&
-        !isSuperAdmin(u) &&
+        !isProtectedSuperAdmin(u) &&
         u.peran === item.peran
       );
       if (candidates.length === 1) {
@@ -285,8 +287,8 @@ Available shortcuts:
     }
 
     if (matchedDbUser) {
-      if (isSuperAdmin(matchedDbUser)) {
-        conflicts.push({ source: item.source, rowNumber: item.rowNumber, nik: item.nik, email: item.email, reason: 'Baris Fix mencoba menimpa super admin' });
+      if (isProtectedSuperAdmin(matchedDbUser)) {
+        conflicts.push({ source: item.source, rowNumber: item.rowNumber, nik: item.nik, email: item.email, reason: 'Baris Fix mencoba menimpa protected super admin' });
       } else {
         item.accountID = matchedDbUser.accountID;
         accountsToUpdate.push(item);
@@ -298,11 +300,11 @@ Available shortcuts:
   }
 
   // 7. Determine Accounts to Delete Permanently
-  // All accounts that are NOT super admin, and are either in deleteAccountIds OR unlisted (not in Fix sheets)
+  // All accounts that are NOT jagoanlabs@gmail.com, and are either in deleteAccountIds OR unlisted (not in Fix sheets)
   const accountsToDeleteFromDb = isSkipDelete
     ? []
     : dbUsers.filter(u => 
-        !isSuperAdmin(u) && (
+        !isProtectedSuperAdmin(u) && (
           deleteAccountIds.has(u.accountID) || 
           !processedDbAccountIDs.has(u.accountID)
         )
@@ -310,11 +312,11 @@ Available shortcuts:
 
   console.log('----------------------------------------------------------------');
   console.log('📊 DATABASE CHANGE SUMMARY:');
-  console.log(`🗑️ Accounts to HARD DELETE from DB    : ${accountsToDeleteFromDb.length} (Audit list + unlisted outside Fix sheets)`);
+  console.log(`🗑️ Accounts to HARD DELETE from DB    : ${accountsToDeleteFromDb.length} (Audit list + other superadmins + unlisted outside Fix sheets)`);
   console.log(`✔ Accounts to UPDATE in tbl_akun     : ${accountsToUpdate.length} (Passwords strictly preserved)`);
   console.log(`✔ Accounts to INSERT into tbl_akun   : ${accountsToInsert.length} (New accounts with default password)`);
-  console.log(`👑 Super Admins Preserved            : ${dbUsers.filter(isSuperAdmin).length}`);
-  console.log(`Total Surviving Accounts after sync  : ${accountsToUpdate.length + accountsToInsert.length + dbUsers.filter(isSuperAdmin).length}`);
+  console.log(`👑 Protected Super Admin             : 1 (jagoanlabs@gmail.com)`);
+  console.log(`Total Surviving Accounts after sync  : ${accountsToUpdate.length + accountsToInsert.length + 1} (Expected: 150)`);
   console.log('----------------------------------------------------------------\n');
 
   // 8. Save Preview JSON
@@ -327,8 +329,8 @@ Available shortcuts:
       accountsToDelete: accountsToDeleteFromDb.length,
       accountsToUpdate: accountsToUpdate.length,
       accountsToInsert: accountsToInsert.length,
-      superAdminsPreserved: dbUsers.filter(isSuperAdmin).length,
-      totalSurviving: accountsToUpdate.length + accountsToInsert.length + dbUsers.filter(isSuperAdmin).length,
+      superAdminsPreserved: 1,
+      totalSurviving: accountsToUpdate.length + accountsToInsert.length + 1,
       conflicts: conflicts.length,
     },
     sampleDeletes: accountsToDeleteFromDb.slice(0, 5),
@@ -379,7 +381,7 @@ Available shortcuts:
         { replacements: { delIds }, transaction }
       );
 
-      // 1c. Clean up profiles
+      // 1c. Clean up profiles of deleted accounts
       await db.sequelize.query('DELETE FROM `dataPetanis` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
       await db.sequelize.query('DELETE FROM `dataPenyuluhs` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
       await db.sequelize.query('DELETE FROM `dataOperators` WHERE `accountID` IN (:delIds)', { replacements: { delIds }, transaction });
@@ -391,6 +393,31 @@ Available shortcuts:
     } else {
       console.log('ℹ️  Step 1 SKIPPED: No accounts deleted.\n');
     }
+
+    // 1e. Clean up orphaned records in profile tables that have no matching tbl_akun
+    console.log('Step 1e: Cleaning up orphaned records and cross-role leftovers in profile tables...');
+    await db.sequelize.query('DELETE FROM `dataPenyuluhs` WHERE `accountID` NOT IN (SELECT `accountID` FROM `tbl_akun`)', { transaction });
+    await db.sequelize.query('DELETE FROM `dataOperators` WHERE `accountID` NOT IN (SELECT `accountID` FROM `tbl_akun`)', { transaction });
+    await db.sequelize.query('DELETE FROM `dataPetanis` WHERE `accountID` NOT IN (SELECT `accountID` FROM `tbl_akun`)', { transaction });
+    await db.sequelize.query('DELETE FROM `penjuals` WHERE `accountID` NOT IN (SELECT `accountID` FROM `tbl_akun`)', { transaction });
+
+    // 1f. Clean up mismatched profiles (Double-role leftovers):
+    // An account whose role in tbl_akun is NOT 'operator admin' should NOT have a row in dataOperators
+    await db.sequelize.query(
+      "DELETE FROM `dataOperators` WHERE `accountID` IN (SELECT `accountID` FROM `tbl_akun` WHERE `peran` != 'operator admin')",
+      { transaction }
+    );
+    // An account whose role in tbl_akun is NOT 'penyuluh' should NOT have a row in dataPenyuluhs
+    await db.sequelize.query(
+      "DELETE FROM `dataPenyuluhs` WHERE `accountID` IN (SELECT `accountID` FROM `tbl_akun` WHERE `peran` != 'penyuluh')",
+      { transaction }
+    );
+    // An account whose role in tbl_akun is NOT 'petani' should NOT have a row in dataPetanis
+    await db.sequelize.query(
+      "DELETE FROM `dataPetanis` WHERE `accountID` IN (SELECT `accountID` FROM `tbl_akun` WHERE `peran` != 'petani')",
+      { transaction }
+    );
+    console.log('✔ Profile tables cleaned of orphans and cross-role duplicate rows.\n');
 
     // STEP 2: Update Existing Valid Accounts in tbl_akun (Preserving existing password)
     console.log(`Step 2: Updating ${accountsToUpdate.length} existing accounts in tbl_akun...`);
@@ -593,6 +620,13 @@ Available shortcuts:
 
     // STEP 4: Auditing Database Integrity
     console.log('Step 4: Auditing database relational integrity...');
+    const [finalTblAkun] = await db.sequelize.query(
+      'SELECT peran, role_id, count(*) as count FROM `tbl_akun` GROUP BY peran, role_id',
+      { transaction }
+    );
+    const [finalTotalAkun] = await db.sequelize.query('SELECT count(*) as c FROM `tbl_akun`', { transaction });
+    const [finalOps] = await db.sequelize.query('SELECT count(*) as c FROM `dataOperators`', { transaction });
+    const [finalPens] = await db.sequelize.query('SELECT count(*) as c FROM `dataPenyuluhs`', { transaction });
     const [orphanPen] = await db.sequelize.query(
       'SELECT count(*) as c FROM `dataPenyuluhs` WHERE `accountID` IS NOT NULL AND `accountID` NOT IN (SELECT `accountID` FROM `tbl_akun`)',
       { transaction }
@@ -601,15 +635,17 @@ Available shortcuts:
       'SELECT count(*) as c FROM `dataOperators` WHERE `accountID` IS NOT NULL AND `accountID` NOT IN (SELECT `accountID` FROM `tbl_akun`)',
       { transaction }
     );
-    const [orphanPet] = await db.sequelize.query(
-      'SELECT count(*) as c FROM `dataPetanis` WHERE `accountID` IS NOT NULL AND `accountID` NOT IN (SELECT `accountID` FROM `tbl_akun`)',
-      { transaction }
-    );
 
-    console.log(`Orphaned Profiles:`);
-    console.log(`- Penyuluh : ${orphanPen[0].c}`);
-    console.log(`- Operator : ${orphanOp[0].c}`);
-    console.log(`- Petani   : ${orphanPet[0].c}\n`);
+    console.log(`================================================================`);
+    console.log(`📊 FINAL POST-SYNC DATABASE AUDIT:`);
+    console.log(`- tbl_akun Total : ${finalTotalAkun[0].c} (Target: 150)`);
+    for (const r of finalTblAkun) {
+      console.log(`  * ${r.peran} (role_id ${r.role_id}): ${r.count}`);
+    }
+    console.log(`- dataOperators  : ${finalOps[0].c} (Target: 19)`);
+    console.log(`- dataPenyuluhs  : ${finalPens[0].c} (Target: 130)`);
+    console.log(`- Orphan Profiles: ${orphanPen[0].c + orphanOp[0].c} (Target: 0)`);
+    console.log(`================================================================\n`);
 
     // Commit Transaction
     await transaction.commit();
