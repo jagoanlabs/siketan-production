@@ -41,8 +41,8 @@ module.exports = (sequelize, DataTypes) => {
       namaProduct: DataTypes.STRING,
       kecamatan: DataTypes.STRING,
       desa: DataTypes.STRING,
-      desaBinaan: DataTypes.STRING,
-      kecamatanBinaan: DataTypes.STRING,
+      desaBinaan: DataTypes.TEXT,
+      kecamatanBinaan: DataTypes.TEXT,
       accountID: DataTypes.UUID, // connect with tbl_akun
       // TAMBAHKAN FIELD INI:
       kecamatanId: {

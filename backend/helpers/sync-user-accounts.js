@@ -94,7 +94,10 @@ Available shortcuts:
   // 1. Connect to Database
   try {
     await db.sequelize.authenticate();
-    console.log('✅ Connected to database.\n');
+    // Ensure column types in dataPenyuluhs accommodate long village lists
+    await db.sequelize.query('ALTER TABLE `dataPenyuluhs` MODIFY COLUMN `desaBinaan` TEXT DEFAULT NULL');
+    await db.sequelize.query('ALTER TABLE `dataPenyuluhs` MODIFY COLUMN `kecamatanBinaan` TEXT DEFAULT NULL');
+    console.log('✅ Connected to database (Schema verified).\n');
   } catch (err) {
     console.error('❌ Cannot connect to database:', err.message);
     process.exit(1);
@@ -133,25 +136,47 @@ Available shortcuts:
   // 4. Parse Allowlist Sheets: "Akun Operator Fix" & "Akun Penyuluh Fix"
   const consolidated = [];
   const conflicts = [];
+  const allEmailsSeen = new Map();
 
   // 4a. Parse "Akun Operator Fix" (Official Operator Admin BPP)
   console.log('Parsing sheet "Akun Operator Fix"...');
   const wsOp = wb.getWorksheet('Akun Operator Fix');
   let opAdded = 0;
+  const opNiksSeen = new Set();
+  const opEmailsSeen = new Set();
 
   if (wsOp) {
     wsOp.eachRow((row, rowNumber) => {
       if (rowNumber > 1) {
         const peran = 'operator admin';
         const role_id = 4;
-        const nik = cleanString(row.getCell(2).value);
-        const nama = cleanString(row.getCell(3).value);
-        const email = cleanString(row.getCell(4).value)?.toLowerCase();
-        const no_wa = cleanPhone(row.getCell(5).value);
-        const kec = cleanString(row.getCell(6).value);
-        const alamat = cleanString(row.getCell(7).value);
+        const rawNik = cleanString(row.getCell(2).value);
+        const noUnikAlt = cleanString(row.getCell(3).value);
+        // Rule 4: jika data tidak memiliki NIK maka ganti NIK menggunakan No Unik Alternatif
+        const nik = rawNik || noUnikAlt;
+        const nama = cleanString(row.getCell(4).value);
+        const email = cleanString(row.getCell(5).value)?.toLowerCase();
+        const no_wa = cleanPhone(row.getCell(6).value);
+        const kec = cleanString(row.getCell(8).value);
+        const alamat = cleanString(row.getCell(9).value);
 
         if (!nama && !email) return;
+
+        // Rule 1: NIK/NIP & Email dibuat unique
+        if (nik) {
+          if (opNiksSeen.has(nik)) {
+            conflicts.push({ source: 'Akun Operator Fix', rowNumber, nik, email, reason: `Duplicate Operator NIK detected: ${nik}` });
+          }
+          opNiksSeen.add(nik);
+        }
+
+        if (email) {
+          if (opEmailsSeen.has(email)) {
+            conflicts.push({ source: 'Akun Operator Fix', rowNumber, nik, email, reason: `Duplicate Operator Email detected: ${email}` });
+          }
+          opEmailsSeen.add(email);
+          allEmailsSeen.set(email, { source: 'Akun Operator Fix', rowNumber, nama });
+        }
 
         consolidated.push({
           source: 'Akun Operator Fix',
@@ -172,26 +197,53 @@ Available shortcuts:
       }
     });
   }
-  console.log(`Akun Operator Fix: Loaded ${opAdded} accounts.\n`);
+  console.log(`Akun Operator Fix: Loaded ${opAdded} accounts (Unique NIKs: ${opNiksSeen.size}, Unique Emails: ${opEmailsSeen.size}).\n`);
 
   // 4b. Parse "Akun Penyuluh Fix" (Official Penyuluh)
   console.log('Parsing sheet "Akun Penyuluh Fix"...');
   const wsPen = wb.getWorksheet('Akun Penyuluh Fix');
   let penAdded = 0;
+  const penNiksSeen = new Set();
+  const penEmailsSeen = new Set();
 
   if (wsPen) {
     wsPen.eachRow((row, rowNumber) => {
       if (rowNumber > 1) {
         const peran = 'penyuluh';
         const role_id = 3;
-        const nik = cleanString(row.getCell(2).value);
-        const nama = cleanString(row.getCell(3).value);
-        const email = cleanString(row.getCell(4).value)?.toLowerCase();
-        const no_wa = cleanPhone(row.getCell(5).value);
-        const kecBinaan = cleanString(row.getCell(6).value);
-        const desaBinaan = cleanString(row.getCell(7).value);
+        const rawNik = cleanString(row.getCell(2).value);
+        const rawNip = cleanString(row.getCell(3).value);
+        // NIK or NIP
+        const nik = rawNik || rawNip;
+        const nama = cleanString(row.getCell(4).value);
+        const email = cleanString(row.getCell(5).value)?.toLowerCase();
+        const no_wa = cleanPhone(row.getCell(6).value);
+        const kecBinaan = cleanString(row.getCell(7).value);
+        const desaBinaan = cleanString(row.getCell(8).value);
 
         if (!nama && !email) return;
+
+        // Rule 1: NIK/NIP & Email dibuat unique
+        if (nik) {
+          if (penNiksSeen.has(nik)) {
+            conflicts.push({ source: 'Akun Penyuluh Fix', rowNumber, nik, email, reason: `Duplicate Penyuluh NIK/NIP detected: ${nik}` });
+          }
+          penNiksSeen.add(nik);
+        }
+
+        if (email) {
+          if (penEmailsSeen.has(email)) {
+            conflicts.push({ source: 'Akun Penyuluh Fix', rowNumber, nik, email, reason: `Duplicate Penyuluh Email detected: ${email}` });
+          }
+          if (allEmailsSeen.has(email)) {
+            const existing = allEmailsSeen.get(email);
+            if (existing.source !== 'Akun Penyuluh Fix') {
+              conflicts.push({ source: 'Akun Penyuluh Fix', rowNumber, nik, email, reason: `Cross-sheet Duplicate Email with ${existing.source} row ${existing.rowNumber} (${existing.nama})` });
+            }
+          }
+          penEmailsSeen.add(email);
+          allEmailsSeen.set(email, { source: 'Akun Penyuluh Fix', rowNumber, nama });
+        }
 
         consolidated.push({
           source: 'Akun Penyuluh Fix',
@@ -213,7 +265,8 @@ Available shortcuts:
       }
     });
   }
-  console.log(`Akun Penyuluh Fix: Loaded ${penAdded} accounts.\n`);
+  console.log(`Akun Penyuluh Fix: Loaded ${penAdded} accounts (Unique NIK/NIPs: ${penNiksSeen.size}, Unique Emails: ${penEmailsSeen.size}).\n`);
+  console.log('ℹ️  Sheet "Verifikasi Akun": IGNORED (sementara) as instructed.\n');
   console.log(`Total Official Accounts Consolidated from Fix sheets: ${consolidated.length}\n`);
 
   if (opAdded === 0 || penAdded === 0) {
@@ -236,10 +289,14 @@ Available shortcuts:
     'SELECT accountID, nik FROM dataOperators UNION ALL SELECT accountID, nik FROM dataPenyuluhs UNION ALL SELECT accountID, nik FROM dataPetanis'
   );
 
-  const dbByNik = new Map();
+  const nikByAccountId = new Map();
   for (const profile of dbProfiles) {
-    const nik = cleanString(profile.nik);
-    const user = usersByAccountId.get(profile.accountID);
+    if (profile.nik) nikByAccountId.set(profile.accountID, cleanString(profile.nik));
+  }
+
+  const dbByNik = new Map();
+  for (const [accountID, nik] of nikByAccountId.entries()) {
+    const user = usersByAccountId.get(accountID);
     if (!nik || !user) continue;
     if (!dbByNik.has(nik)) dbByNik.set(nik, []);
     if (!dbByNik.get(nik).some(u => u.accountID === user.accountID)) dbByNik.get(nik).push(user);
@@ -263,14 +320,18 @@ Available shortcuts:
     let matchedDbUser = null;
     const cleanEmail = item.email ? item.email.toLowerCase().trim() : null;
 
-    // 1. Primary match: by exact Email and Role
+    // 1. Primary match: by exact Email and Role (if multiple DB users share email, disambiguate with NIK)
     if (cleanEmail && dbByEmail.has(cleanEmail)) {
-      const list = dbByEmail.get(cleanEmail);
-      let cand = list.find(u => !processedDbAccountIDs.has(u.accountID) && !deleteAccountIds.has(u.accountID) && u.peran === item.peran);
-      if (!cand) {
-        cand = list.find(u => !processedDbAccountIDs.has(u.accountID) && !deleteAccountIds.has(u.accountID));
+      const candidates = dbByEmail.get(cleanEmail).filter(u => 
+        !processedDbAccountIDs.has(u.accountID) && 
+        !deleteAccountIds.has(u.accountID) && 
+        u.peran === item.peran
+      );
+      if (candidates.length === 1) {
+        matchedDbUser = candidates[0];
+      } else if (candidates.length > 1 && item.nik) {
+        matchedDbUser = candidates.find(u => nikByAccountId.get(u.accountID) === item.nik);
       }
-      if (cand) matchedDbUser = cand;
     }
 
     // 2. Secondary match: by NIK and Role (handles email updates in Excel for existing user)
@@ -316,7 +377,7 @@ Available shortcuts:
   console.log(`✔ Accounts to UPDATE in tbl_akun     : ${accountsToUpdate.length} (Passwords strictly preserved)`);
   console.log(`✔ Accounts to INSERT into tbl_akun   : ${accountsToInsert.length} (New accounts with default password)`);
   console.log(`👑 Protected Super Admin             : 1 (jagoanlabs@gmail.com)`);
-  console.log(`Total Surviving Accounts after sync  : ${accountsToUpdate.length + accountsToInsert.length + 1} (Expected: 150)`);
+  console.log(`Total Surviving Accounts after sync  : ${accountsToUpdate.length + accountsToInsert.length + 1} (Expected: 153)`);
   console.log('----------------------------------------------------------------\n');
 
   // 8. Save Preview JSON
@@ -460,7 +521,7 @@ Available shortcuts:
              SET \`nama\` = COALESCE(:nama, \`nama\`),
                  \`email\` = COALESCE(:email, \`email\`),
                  \`noTelp\` = COALESCE(:no_wa, \`noTelp\`),
-                 \`nik\` = COALESCE(:nik, \`nik\`),
+                 \`nik\` = :nik,
                  \`alamat\` = COALESCE(:alamat, \`alamat\`),
                  \`kecamatanBinaan\` = COALESCE(:kecamatanBinaan, \`kecamatanBinaan\`),
                  \`desaBinaan\` = COALESCE(:desaBinaan, \`desaBinaan\`),
@@ -510,7 +571,7 @@ Available shortcuts:
              SET \`nama\` = COALESCE(:nama, \`nama\`),
                  \`email\` = COALESCE(:email, \`email\`),
                  \`noTelp\` = COALESCE(:no_wa, \`noTelp\`),
-                 \`nik\` = COALESCE(:nik, \`nik\`),
+                 \`nik\` = :nik,
                  \`alamat\` = COALESCE(:alamat, \`alamat\`),
                  \`updatedAt\` = NOW()
              WHERE \`accountID\` = :accountID`,
@@ -638,12 +699,12 @@ Available shortcuts:
 
     console.log(`================================================================`);
     console.log(`📊 FINAL POST-SYNC DATABASE AUDIT:`);
-    console.log(`- tbl_akun Total : ${finalTotalAkun[0].c} (Target: 150)`);
+    console.log(`- tbl_akun Total : ${finalTotalAkun[0].c} (Target: 153)`);
     for (const r of finalTblAkun) {
       console.log(`  * ${r.peran} (role_id ${r.role_id}): ${r.count}`);
     }
     console.log(`- dataOperators  : ${finalOps[0].c} (Target: 19)`);
-    console.log(`- dataPenyuluhs  : ${finalPens[0].c} (Target: 130)`);
+    console.log(`- dataPenyuluhs  : ${finalPens[0].c} (Target: 133)`);
     console.log(`- Orphan Profiles: ${orphanPen[0].c + orphanOp[0].c} (Target: 0)`);
     console.log(`================================================================\n`);
 
