@@ -36,7 +36,7 @@ This project uses Docker Compose to manage multiple services including the front
 ## Services
 
 - **Web Access**: Available at http://localhost (handled by Nginx reverse proxy)
-- **Backend API**: Available internally at http://backend:5000 (proxied via /api/ path)
+- **Backend API**: Available internally at http://backend:5001 (proxied via /api/ path)
 - **Database**: MySQL on port 3306 (internal usage)
 - **Nginx**: Reverse proxy handling routing between frontend and backend
 

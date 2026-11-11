@@ -1,13 +1,14 @@
-import { Card, CardBody } from "../Form/HeroCard";
-import { Button } from "../Form/HeroButton";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../Form/HeroModal";
+import type { Row } from "write-excel-file/browser";
 
 // components/ReusableUploadModal.tsx
 import React, { useState, useRef } from "react";
 import { RiUploadLine, RiFileExcelLine, RiDownloadLine } from "react-icons/ri";
 import { toast } from "sonner";
+import writeXlsxFile from "write-excel-file/browser";
 
-import * as XLSX from "xlsx";
+import { Card, CardBody } from "../Form/HeroCard";
+import { Button } from "../Form/HeroButton";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "../Form/HeroModal";
 
 interface UploadFileConfig {
   accept: string;
@@ -118,45 +119,27 @@ export const ReusableUploadModal: React.FC<ReusableUploadModalProps> = ({
   };
 
   // Fungsi untuk membuat template XLSX
-  const createXlsxTemplate = () => {
+  const createXlsxTemplate = async () => {
     if (!templateConfig) return;
 
-    // Buat workbook baru
-    const wb = XLSX.utils.book_new();
+    const headerRow: Row = templateConfig.headers.map((header) => ({
+      value: header,
+      fontWeight: "bold",
+      textColor: "#FFFFFF",
+      backgroundColor: "#4F81BD",
+      align: "center",
+    }));
 
-    // Siapkan data untuk worksheet
-    const data = [];
-
-    // Tambahkan header
-    data.push(templateConfig.headers);
+    const sheetData: Row[] = [headerRow];
 
     // Tambahkan sample data jika tersedia
     if (templateConfig.sampleData) {
-      data.push(templateConfig.sampleData);
+      sheetData.push(templateConfig.sampleData);
     }
 
-    // Buat worksheet
-    const ws = XLSX.utils.aoa_to_sheet(data);
-
-    // Styling untuk header (opsional - tergantung versi xlsx)
-    const headerRange = XLSX.utils.decode_range(ws["!ref"] || "A1");
-
-    for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-      const address = XLSX.utils.encode_cell({ r: 0, c: C });
-
-      if (!ws[address]) continue;
-      ws[address].s = {
-        font: { bold: true, color: { rgb: "FFFFFF" } },
-        fill: { fgColor: { rgb: "4F81BD" } },
-        alignment: { horizontal: "center" },
-      };
-    }
-
-    // Tambahahkan worksheet ke workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Template Data");
-
-    // Generate dan download file
-    XLSX.writeFile(wb, templateConfig.filename.replace(".csv", ".xlsx"));
+    await writeXlsxFile(sheetData, {
+      sheet: "Template Data",
+    }).toFile(templateConfig.filename.replace(".csv", ".xlsx"));
   };
 
   const handleDownloadTemplate = () => {
@@ -166,7 +149,9 @@ export const ReusableUploadModal: React.FC<ReusableUploadModalProps> = ({
     const format = templateConfig.format || "xlsx";
 
     if (format === "xlsx") {
-      createXlsxTemplate();
+      void createXlsxTemplate().catch(() => {
+        toast.error("Gagal membuat template Excel");
+      });
     } else {
       // Format CSV (original)
       const headers = templateConfig.headers.join(",");

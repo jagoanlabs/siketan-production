@@ -1,6 +1,8 @@
-import * as XLSX from "xlsx";
+import type { Row, Sheet } from "write-excel-file/browser";
+
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
+import writeXlsxFile from "write-excel-file/browser";
 
 import { axiosClient } from "@/service/app-service";
 
@@ -119,9 +121,6 @@ export const exportAllDataToExcel = async (tahun?: string | null) => {
       return;
     }
 
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-
     // Group data by kategori
     const groupedData: { [key: string]: DataTanaman[] } = {};
 
@@ -134,94 +133,107 @@ export const exportAllDataToExcel = async (tahun?: string | null) => {
       groupedData[kategoriMapped].push(item);
     });
 
-    let sheetsCreated = 0;
+    const headers: Row = [
+      "NO",
+      "POKTAN",
+      "KECAMATAN",
+      "DESA",
+      "LAHAN BAKU",
+      "GAPOKTAN",
+      "NAMA POKTAN",
+      "KOMODITAS",
+      "LUAS TANAM (HA)",
+      "BULAN TANAM",
+      "PRAKIRAAN BULAN PANEN",
+      "PRAKIRAAN LUAS PANEN (HA)",
+      "PRAKIRAAN HASIL PANEN (TON)",
+      "REALISASI LUAS PANEN (HA)",
+      "REALISASI PRODUKSI PANEN (TON)",
+      "CREATED AT",
+      "UPDATED AT",
+    ];
+
+    const columns = [
+      5, // NO
+      20, // POKTAN
+      20, // KECAMATAN
+      20, // DESA
+      15, // LAHAN BAKU
+      20, // GAPOKTAN
+      20, // NAMA POKTAN
+      25, // KOMODITAS
+      15, // LUAS TANAM (HA)
+      20, // BULAN TANAM
+      25, // PRAKIRAAN BULAN PANEN
+      25, // PRAKIRAAN LUAS PANEN (HA)
+      28, // PRAKIRAAN HASIL PANEN (TON)
+      25, // REALISASI LUAS PANEN (HA)
+      30, // REALISASI PRODUKSI PANEN (TON)
+      22, // CREATED AT
+      22, // UPDATED AT
+    ].map((width) => ({ width }));
+
+    const sheets: Sheet<Blob>[] = [];
 
     // Create sheets for each kategori
     KATEGORI_TANAMAN.forEach((kategori) => {
       const dataKategori = groupedData[kategori] || [];
 
-      // Prepare data for this kategori
-      const excelData = dataKategori.map((item, index) => ({
-        NO: index + 1,
-        POKTAN: item.dataPetani?.kelompok?.namaKelompok || "-",
-        KECAMATAN: item.dataPetani?.kecamatanData?.nama || "-",
-        DESA: item.dataPetani?.desaData?.nama || "-",
-        "LAHAN BAKU": item.luasLahan,
-        GAPOKTAN: item.dataPetani?.kelompok?.gapoktan || "-",
-        "NAMA POKTAN": item.dataPetani?.kelompok?.namaKelompok || "-",
-        KOMODITAS: item.komoditas || "-",
-        "LUAS TANAM (HA)": item.luasLahan,
-        "BULAN TANAM": formatBulanTanam(item.periodeBulanTanam),
-        "PRAKIRAAN BULAN PANEN": item.prakiraanBulanPanen || "-",
-        "PRAKIRAAN LUAS PANEN (HA)":
-          item.prakiraanLuasPanen !== null &&
-          item.prakiraanLuasPanen !== undefined
-            ? item.prakiraanLuasPanen
-            : "0",
-        "PRAKIRAAN HASIL PANEN (TON)":
-          item.prakiraanProduksiPanen !== null &&
-          item.prakiraanProduksiPanen !== undefined
-            ? item.prakiraanProduksiPanen
-            : "0",
-        "REALISASI LUAS PANEN (HA)":
-          item.realisasiLuasPanen !== null &&
-          item.realisasiLuasPanen !== undefined
-            ? item.realisasiLuasPanen
-            : "0",
-        "REALISASI PRODUKSI PANEN (TON)":
-          item.realisasiProduksiPanen !== null &&
-          item.realisasiProduksiPanen !== undefined
-            ? item.realisasiProduksiPanen
-            : "0",
-        "CREATED AT": item.createdAt
+      if (dataKategori.length === 0) return;
+
+      const rows: Row[] = dataKategori.map((item, index) => [
+        index + 1,
+        item.dataPetani?.kelompok?.namaKelompok || "-",
+        item.dataPetani?.kecamatanData?.nama || "-",
+        item.dataPetani?.desaData?.nama || "-",
+        item.luasLahan,
+        item.dataPetani?.kelompok?.gapoktan || "-",
+        item.dataPetani?.kelompok?.namaKelompok || "-",
+        item.komoditas || "-",
+        item.luasLahan,
+        formatBulanTanam(item.periodeBulanTanam),
+        item.prakiraanBulanPanen || "-",
+        item.prakiraanLuasPanen !== null &&
+        item.prakiraanLuasPanen !== undefined
+          ? item.prakiraanLuasPanen
+          : "0",
+        item.prakiraanProduksiPanen !== null &&
+        item.prakiraanProduksiPanen !== undefined
+          ? item.prakiraanProduksiPanen
+          : "0",
+        item.realisasiLuasPanen !== null &&
+        item.realisasiLuasPanen !== undefined
+          ? item.realisasiLuasPanen
+          : "0",
+        item.realisasiProduksiPanen !== null &&
+        item.realisasiProduksiPanen !== undefined
+          ? item.realisasiProduksiPanen
+          : "0",
+        item.createdAt
           ? new Date(item.createdAt).toLocaleString("id-ID")
           : "-",
-        "UPDATED AT": item.updatedAt
+        item.updatedAt
           ? new Date(item.updatedAt).toLocaleString("id-ID")
           : "-",
-      }));
+      ]);
 
-      // Only create sheet if there's data
-      if (excelData.length > 0) {
-        const ws = XLSX.utils.json_to_sheet(excelData);
+      // Add worksheet to workbook with shortened name if necessary
+      let sheetName = kategori;
 
-        // Set column widths
-        const columnWidths = [
-          { wch: 5 }, // NO
-          { wch: 20 }, // POKTAN
-          { wch: 20 }, // KECAMATAN
-          { wch: 20 }, // DESA
-          { wch: 15 }, // LAHAN BAKU
-          { wch: 20 }, // GAPOKTAN
-          { wch: 20 }, // NAMA POKTAN
-          { wch: 25 }, // KOMODITAS
-          { wch: 15 }, // LUAS TANAM (HA)
-          { wch: 20 }, // BULAN TANAM
-          { wch: 25 }, // PRAKIRAAN BULAN PANEN
-          { wch: 25 }, // PRAKIRAAN LUAS PANEN (HA)
-          { wch: 28 }, // PRAKIRAAN HASIL PANEN (TON)
-          { wch: 25 }, // REALISASI LUAS PANEN (HA)
-          { wch: 30 }, // REALISASI PRODUKSI PANEN (TON)
-          { wch: 22 }, // CREATED AT
-          { wch: 22 }, // UPDATED AT
-        ];
-
-        ws["!cols"] = columnWidths;
-
-        // Add worksheet to workbook with shortened name if necessary
-        let sheetName = kategori;
-
-        if (sheetName.length > 31) {
-          // Excel sheet name limit
-          sheetName = sheetName.substring(0, 31);
-        }
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
-        sheetsCreated++;
+      if (sheetName.length > 31) {
+        // Excel sheet name limit
+        sheetName = sheetName.substring(0, 31);
       }
+
+      sheets.push({
+        sheet: sheetName,
+        data: [headers, ...rows],
+        columns,
+      });
     });
 
     // Check if workbook has any sheets
-    if (sheetsCreated === 0) {
+    if (sheets.length === 0) {
       toast.error("Tidak ada data tanaman yang sesuai dengan kategori", {
         id: toastId,
       });
@@ -229,17 +241,7 @@ export const exportAllDataToExcel = async (tahun?: string | null) => {
       return;
     }
 
-    // Generate buffer
-    const wbout = XLSX.write(wb, {
-      bookType: "xlsx",
-      type: "array",
-      bookSST: false,
-    });
-
-    // Create blob and save
-    const blob = new Blob([wbout], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
+    const blob = await writeXlsxFile(sheets).toBlob();
 
     const yearSuffix = tahun ? `_${tahun}` : "";
     const fileName = `Data_Tanaman_Petani${yearSuffix}_${new Date().toISOString().split("T")[0]}.xlsx`;

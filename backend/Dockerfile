@@ -8,5 +8,5 @@ RUN bun install
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 5001
 CMD ["bun", "run", "index.js"]

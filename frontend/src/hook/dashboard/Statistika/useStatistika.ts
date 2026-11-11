@@ -1,6 +1,9 @@
 // hooks/statistika/useStatistikaData.ts
+import type { Row } from "write-excel-file/browser";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import writeXlsxFile from "write-excel-file/browser";
 
 import { axiosClient } from "@/service/app-service";
 import {
@@ -8,7 +11,6 @@ import {
   CreateStatistikaFormData,
   CreateStatistikaPayload,
 } from "@/types/Statistika/statistika.d";
-import * as XLSX from "xlsx";
 
 interface UseStatistikaDataParams {
   poktanId: number | null;
@@ -250,7 +252,7 @@ export const useExportStatistika = () => {
 
       return response.data;
     },
-    onSuccess: (responseBody) => {
+    onSuccess: async (responseBody) => {
       const rawData = responseBody?.data?.data || [];
 
       if (rawData.length === 0) {
@@ -258,7 +260,7 @@ export const useExportStatistika = () => {
         return;
       }
 
-      const headers = [
+      const headers: Row = [
         "ID",
         "ID Poktan",
         "Nama Poktan",
@@ -279,7 +281,7 @@ export const useExportStatistika = () => {
         "Updated At",
       ];
 
-      const rows = rawData.map((item: any) => [
+      const rows: Row[] = rawData.map((item: any) => [
         item.id,
         item.kelompok?.id || item.fk_kelompokId || "",
         item.kelompok?.namaKelompok || "",
@@ -300,33 +302,29 @@ export const useExportStatistika = () => {
         item.updatedAt ? new Date(item.updatedAt).toLocaleString("id-ID") : "",
       ]);
 
-      const aoaData = [headers, ...rows];
-      const worksheet = XLSX.utils.aoa_to_sheet(aoaData);
+      const sheetData: Row[] = [headers, ...rows];
 
       // Auto column widths
-      worksheet["!cols"] = [
-        { wch: 8 },  // ID
-        { wch: 12 }, // ID Poktan
-        { wch: 25 }, // Nama Poktan
-        { wch: 25 }, // Gapoktan
-        { wch: 20 }, // Kecamatan
-        { wch: 20 }, // Desa
-        { wch: 15 }, // Kategori
-        { wch: 25 }, // Komoditas
-        { wch: 22 }, // Periode Tanam (Bulan)
-        { wch: 22 }, // Luas Lahan Tanam (Ha)
-        { wch: 24 }, // Prakiraan Luas Panen (Ha)
-        { wch: 26 }, // Prakiraan Hasil Panen (Ton)
-        { wch: 22 }, // Prakiraan Bulan Panen
-        { wch: 24 }, // Realisasi Luas Panen (Ha)
-        { wch: 26 }, // Realisasi Hasil Panen (Ton)
-        { wch: 22 }, // Realisasi Bulan Panen
-        { wch: 22 }, // Created At
-        { wch: 22 }, // Updated At
+      const columns = [
+        { width: 8 },  // ID
+        { width: 12 }, // ID Poktan
+        { width: 25 }, // Nama Poktan
+        { width: 25 }, // Gapoktan
+        { width: 20 }, // Kecamatan
+        { width: 20 }, // Desa
+        { width: 15 }, // Kategori
+        { width: 25 }, // Komoditas
+        { width: 22 }, // Periode Tanam (Bulan)
+        { width: 22 }, // Luas Lahan Tanam (Ha)
+        { width: 24 }, // Prakiraan Luas Panen (Ha)
+        { width: 26 }, // Prakiraan Hasil Panen (Ton)
+        { width: 22 }, // Prakiraan Bulan Panen
+        { width: 24 }, // Realisasi Luas Panen (Ha)
+        { width: 26 }, // Realisasi Hasil Panen (Ton)
+        { width: 22 }, // Realisasi Bulan Panen
+        { width: 22 }, // Created At
+        { width: 22 }, // Updated At
       ];
-
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Statistika");
 
       // Generate filename dengan timestamp
       const timestamp = new Date()
@@ -336,8 +334,16 @@ export const useExportStatistika = () => {
       const filename = `data-statistika-pertanian-${timestamp}.xlsx`;
 
       // Download file
-      XLSX.writeFile(workbook, filename);
-      toast.success(`Data berhasil diexport: ${filename}`);
+      try {
+        await writeXlsxFile(sheetData, {
+          sheet: "Statistika",
+          columns,
+        }).toFile(filename);
+        toast.success(`Data berhasil diexport: ${filename}`);
+      } catch (error) {
+        console.error("Export error:", error);
+        toast.error("Gagal mengexport data statistika");
+      }
     },
     onError: (error: any) => {
       const message =
