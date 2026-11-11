@@ -174,8 +174,6 @@ export const EditInformasiPenyuluh = () => {
   // Load initial data when penyuluhDetail is available
   useEffect(() => {
     if (penyuluhDetail && !dataLoaded) {
-      console.log("Loading penyuluh detail:", penyuluhDetail);
-
       // Find kecamatan binaan ID from kecamatanBinaanData or match with kecamatanData
       let kecamatanBinaanId = null;
 
@@ -395,8 +393,6 @@ export const EditInformasiPenyuluh = () => {
         foto: selectedFile || undefined,
         tipe: formData.tipe,
       };
-
-      console.log("Update data:", submitData);
 
       toast.loading("Mengupdate data penyuluh...", { id: "update" });
       await updateMutation.mutateAsync({ id: id!, data: submitData });

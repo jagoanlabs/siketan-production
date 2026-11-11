@@ -36,14 +36,6 @@ const updateAcara = async (
     formData.append("fotoKegiatan", data.fotoKegiatan);
   }
 
-  console.log("Updating acara with data:", {
-    namaKegiatan: data.namaKegiatan,
-    tanggalAcara: data.tanggalAcara,
-    waktuAcara: data.waktuAcara,
-    createdBy: data.createdBy,
-    hasNewImage: !!data.fotoKegiatan,
-  });
-
   const response = await axiosClient.put(`/event-tani/${id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",

@@ -45,21 +45,7 @@ export const getAllDataTanaman = async (
 
     const url = `/statistik?${queryParams.toString()}`;
 
-    // ✅ DEBUG LOG
-    console.log("🚀 API Request:", {
-      url,
-      params,
-      hasSearch: !!params.search,
-      searchTerm: params.search,
-    });
-
     const response = await axiosClient.get(url);
-
-    console.log("✅ API Response:", {
-      dataCount: response.data?.data?.data?.length || 0,
-      total: response.data?.data?.total || 0,
-      searchTerm: params.search,
-    });
 
     return response.data;
   } catch (error) {

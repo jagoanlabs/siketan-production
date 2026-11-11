@@ -52,38 +52,6 @@ const updatePenyuluh = async (
     formData.append("file", data.foto);
   }
 
-  // Debug: Log what we're sending
-  console.log("=== Update FormData Debug ===");
-  console.log("ID:", id);
-  console.log("kecamatanId:", data.kecamatanId, "(ID)");
-  console.log("kecamatan:", data.kecamatan, "(nama)");
-  console.log("desaId:", data.desaId, "(ID)");
-  console.log("desa:", data.desa, "(nama)");
-  console.log(
-    "kecamatanBinaan:",
-    data.kecamatanBinaan,
-    "(nama kecamatan binaan)",
-  );
-  console.log("desaBinaan:", data.desaBinaan, "(array nama desa, bukan ID)");
-  console.log(
-    "selectedKelompokIds:",
-    data.selectedKelompokIds,
-    "(array ID kelompok)",
-  );
-
-  for (let [key, value] of formData.entries()) {
-    if (value instanceof File) {
-      console.log(`${key}:`, {
-        name: value.name,
-        size: value.size,
-        type: value.type,
-      });
-    } else {
-      console.log(`${key}:`, value);
-    }
-  }
-  console.log("=== End Update FormData Debug ===");
-
   try {
     const response = await axiosClient.put(`/daftar-penyuluh/${id}`, formData, {
       headers: {

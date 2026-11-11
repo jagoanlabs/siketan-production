@@ -66,8 +66,6 @@ const cleanImageUrl = (url: string): string => {
   // Handle multiple consecutive quotes
   cleanUrl = cleanUrl.replace(/["""''']+/g, "");
 
-  console.log("🧹 URL cleaning:", { original: url, cleaned: cleanUrl });
-
   return cleanUrl;
 };
 
@@ -125,12 +123,6 @@ const ImageWithFallback: React.FC<{
   useEffect(() => {
     const cleanUrl = cleanImageUrl(src);
 
-    console.log("🖼️ Processing image:", {
-      original: src,
-      cleaned: cleanUrl,
-      isValid: isValidImageUrl(src),
-    });
-
     if (isValidImageUrl(src)) {
       setImageSrc(cleanUrl);
       setImageError(false);
@@ -154,7 +146,6 @@ const ImageWithFallback: React.FC<{
     if (fallbackSrc && imageSrc !== cleanImageUrl(fallbackSrc)) {
       const cleanFallback = cleanImageUrl(fallbackSrc);
 
-      console.log("🔄 Trying fallback image:", cleanFallback);
       setImageSrc(cleanFallback);
       setImageError(false);
       setIsLoading(true);
@@ -166,7 +157,6 @@ const ImageWithFallback: React.FC<{
   };
 
   const handleImageLoad = () => {
-    console.log("✅ Image loaded successfully:", imageSrc);
     setIsLoading(false);
     setImageError(false);
   };
@@ -311,13 +301,9 @@ export const DetailNews = () => {
     setError(null);
 
     try {
-      console.log("🚀 Fetching news detail for ID:", id);
-
       const response = await axiosClient.get(`/info-tani/${id}`, {
         params: { _t: Date.now() },
       });
-
-      console.log("✅ Raw API Response:", response.data);
 
       const data = response.data;
       let detailData: NewsDetail | null = null;
@@ -334,14 +320,6 @@ export const DetailNews = () => {
       if (!detailData) {
         throw new Error("Data berita tidak ditemukan dalam response");
       }
-
-      // Log and clean image URL
-      console.log("🖼️ Raw image URL from API:", detailData.fotoBerita);
-      console.log(
-        "🖼️ Cleaned image URL:",
-        cleanImageUrl(detailData.fotoBerita),
-      );
-      console.log("🖼️ URL validation:", isValidImageUrl(detailData.fotoBerita));
 
       setNewsDetail(detailData);
     } catch (err: any) {

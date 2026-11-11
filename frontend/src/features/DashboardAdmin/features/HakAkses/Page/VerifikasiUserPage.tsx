@@ -191,7 +191,7 @@ export const VerifikasiUserPage = () => {
   const showApproveDialog = (user: VerifikasiUserData) => {
     confirmDialog({
       accept: () => handleApprove(user),
-      reject: () => console.log("Approve cancelled"),
+      reject: () => {},
       acceptClassName: "confirm-btn-approve",
       acceptIcon: approveMutation.isPending
         ? "pi pi-spin pi-spinner"
@@ -254,7 +254,7 @@ export const VerifikasiUserPage = () => {
   const showRejectDialog = (user: VerifikasiUserData) => {
     confirmDialog({
       accept: () => handleReject(user),
-      reject: () => console.log("Reject cancelled"),
+      reject: () => {},
       acceptClassName: "confirm-btn-delete",
       acceptIcon: rejectMutation.isPending
         ? "pi pi-spin pi-spinner"
@@ -310,8 +310,6 @@ export const VerifikasiUserPage = () => {
 
   // Approve handler
   const handleApprove = async (user: VerifikasiUserData) => {
-    console.log("approve", user);
-
     try {
       await approveMutation.mutateAsync(user.id);
       toast.success(`🎉 User "${user.nama}" berhasil diverifikasi`);
@@ -325,7 +323,6 @@ export const VerifikasiUserPage = () => {
 
   // Reject handler
   const handleReject = async (user: VerifikasiUserData) => {
-    console.log("reject", user);
     try {
       await rejectMutation.mutateAsync(user.id);
       toast.success(`✅ User "${user.nama}" berhasil ditolak dan dihapus`);

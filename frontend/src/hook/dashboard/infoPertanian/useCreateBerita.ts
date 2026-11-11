@@ -59,9 +59,8 @@ export const useCreateBerita = () => {
 
   return useMutation({
     mutationFn: createBerita,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["berita-data"] });
-      console.log("Create berita success:", data);
     },
     onError: (error: any) => {
       console.error("Create berita mutation error:", error);

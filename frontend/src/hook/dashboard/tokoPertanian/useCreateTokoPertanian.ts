@@ -45,13 +45,6 @@ const createProduct = async (
     formData.append("fotoTanaman", data.fotoTanaman);
   }
 
-  console.log("Creating product with data:", {
-    nik: data.nik,
-    profesiPenjual: data.profesiPenjual,
-    namaProducts: data.namaProducts,
-    hasImage: !!data.fotoTanaman,
-  });
-
   const response = await axiosClient.post("/daftar-penjual/add", formData, {
     headers: {
       "Content-Type": "multipart/form-data",

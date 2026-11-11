@@ -15,10 +15,6 @@ export const LoginRedirect = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (isAuthenticated) {
-    console.log(
-      "LoginRedirect: Already authenticated, redirecting to dashboard",
-    );
-
     return <Navigate replace to="/dashboard-admin" />;
   }
 

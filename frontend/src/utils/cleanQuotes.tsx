@@ -25,7 +25,5 @@ export const cleanImageUrl = (url: string): string => {
   // Handle multiple consecutive quotes
   cleanUrl = cleanUrl.replace(/["""''']+/g, "");
 
-  console.log("🧹 URL cleaning:", { original: url, cleaned: cleanUrl });
-
   return cleanUrl;
 };

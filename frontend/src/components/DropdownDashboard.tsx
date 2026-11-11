@@ -14,10 +14,11 @@ export const DropdownDashboard = () => {
 
   return (
     <Dropdown>
-      <Dropdown.Trigger>
-        <button className="p-2 transition rounded-full hover:bg-gray-100 flex items-center justify-center outline-none">
-          <FaChevronDown size={16} className="text-gray-600 dark:text-gray-300" />
-        </button>
+      <Dropdown.Trigger
+        aria-label="Menu akun"
+        className="p-2 transition rounded-full hover:bg-gray-100 flex items-center justify-center outline-none"
+      >
+        <FaChevronDown size={16} className="text-gray-600 dark:text-gray-300" />
       </Dropdown.Trigger>
       <Dropdown.Popover className="p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg min-w-[200px] z-50">
         <Dropdown.Menu aria-label="User Actions" className="outline-none">

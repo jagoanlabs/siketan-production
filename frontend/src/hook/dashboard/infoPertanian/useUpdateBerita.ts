@@ -60,12 +60,6 @@ const updateBerita = async (
     formData.append("fotoBeritaBaru", payload.file, payload.file.name);
   }
 
-  // Debug log
-  console.log("Update FormData contents:");
-  for (let [key, value] of formData.entries()) {
-    console.log(key, value);
-  }
-
   const { data } = await axiosClient.put(`/info-tani/${payload.id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -99,13 +93,12 @@ export const useUpdateBerita = () => {
 
   return useMutation({
     mutationFn: updateBerita,
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ["berita-data"] });
       queryClient.invalidateQueries({
         queryKey: ["berita-detail", variables.id],
       });
-      console.log("Update berita success:", data);
     },
     onError: (error: any) => {
       console.error("Update berita error:", error);

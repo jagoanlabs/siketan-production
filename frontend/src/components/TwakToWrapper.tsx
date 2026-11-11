@@ -34,7 +34,6 @@ export default function TawkToWrapper() {
 
         if (unwantedIframe) {
           unwantedIframe.remove();
-          console.log("Unwanted iframe removed");
 
           return true;
         }
@@ -51,7 +50,6 @@ export default function TawkToWrapper() {
             style.includes("right:20px")
           ) {
             iframe.remove();
-            console.log("Unwanted iframe removed by attributes");
 
             return true;
           }
@@ -94,9 +92,8 @@ export default function TawkToWrapper() {
 
           if (referralLink) referralLink.remove();
         });
-      } catch (e) {
+      } catch {
         // Error kemungkinan karena kebijakan CORS, kita perlu pendekatan lain
-        console.log("Cannot access iframe content directly due to CORS");
       }
     };
 

@@ -219,17 +219,12 @@ export const useImportDataTanaman = () => {
 
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Data berhasil diimport!");
 
       // Invalidate queries untuk refresh data
       queryClient.invalidateQueries({ queryKey: ["dataPetani"] });
       queryClient.invalidateQueries({ queryKey: ["dataPetaniMeta"] });
-
-      // Log hasil import jika ada informasi
-      if (data.imported_count) {
-        console.log(`Successfully imported ${data.imported_count} records`);
-      }
     },
     onError: (error: any) => {
       const message =
@@ -259,17 +254,12 @@ export const useImportDataPetani = () => {
 
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Data berhasil diimport!");
 
       // Invalidate queries untuk refresh data
       queryClient.invalidateQueries({ queryKey: ["dataPetani"] });
       queryClient.invalidateQueries({ queryKey: ["dataPetaniMeta"] });
-
-      // Log hasil import jika ada informasi
-      if (data.imported_count) {
-        console.log(`Successfully imported ${data.imported_count} records`);
-      }
     },
     onError: (error: any) => {
       const message =

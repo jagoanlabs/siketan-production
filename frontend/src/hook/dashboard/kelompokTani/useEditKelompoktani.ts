@@ -85,11 +85,10 @@ export const useUpdateKelompok = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateKelompokData }) =>
       updateKelompok(id, data),
-    onSuccess: (data, { id }) => {
+    onSuccess: (_, { id }) => {
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ["kelompok-detail", id] });
       queryClient.invalidateQueries({ queryKey: ["kelompok-tani"] });
-      console.log("Update success:", data);
     },
     onError: (error: any) => {
       console.error("Update error:", error);

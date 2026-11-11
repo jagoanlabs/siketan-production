@@ -55,7 +55,6 @@ export const usePetaniLogin = () => {
       }
 
       // Login normal - simpan token dan user data
-      console.log("Login berhasil!", data);
       if (data.token && data.user) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
@@ -65,7 +64,6 @@ export const usePetaniLogin = () => {
         });
 
         // Redirect ke dashboard petani
-        console.log("redirect to profile");
         window.location.replace("/dashboard"); // tanpa simpan history
       }
     },

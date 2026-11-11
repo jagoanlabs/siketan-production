@@ -26,8 +26,6 @@ export const useTanamanData = (params: TanamanQueryParams = {}) => {
     },
   ];
 
-  console.log("🔧 TanStack Query Key:", queryKey);
-
   return useQuery<TanamanApiResponse, Error>({
     queryKey,
     queryFn: () => getAllDataTanaman(params),

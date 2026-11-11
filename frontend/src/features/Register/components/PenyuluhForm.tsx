@@ -306,7 +306,6 @@ export const PenyuluhForm: React.FC<PenyuluhFormProps> = ({ onSuccess }) => {
 
   // Handle form submission
   const handlePenyuluhSubmit = async (e: React.FormEvent) => {
-    console.log(formData);
     e.preventDefault();
 
     const result = penyuluhRegisterSchema.safeParse(formData);

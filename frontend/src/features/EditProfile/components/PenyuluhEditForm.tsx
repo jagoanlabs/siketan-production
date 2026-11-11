@@ -83,8 +83,6 @@ export const PenyuluhEditForm = () => {
   // Load initial data when penyuluhDetail is available
   useEffect(() => {
     if (penyuluhDetail && !dataLoaded) {
-      console.log("Loading penyuluh detail:", penyuluhDetail);
-
       // Find kecamatan binaan ID from kecamatanBinaanData
       let kecamatanBinaanId = null;
 
@@ -218,8 +216,6 @@ export const PenyuluhEditForm = () => {
     }
   };
 
-  console.log("Form data:", formData);
-
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,8 +272,6 @@ export const PenyuluhEditForm = () => {
         foto: selectedFile || undefined,
         tipe: formData.tipe,
       };
-
-      console.log("Update data:", submitData);
 
       toast.loading("Mengupdate data penyuluh...", { id: "update" });
       await updateMutation.mutateAsync({

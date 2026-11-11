@@ -40,8 +40,6 @@ export function useLogin() {
     mutationFn: loginApi,
     onSuccess: (data) => {
       try {
-        console.log("useLogin: API Response received", data);
-
         // Validasi response data
         if (!data?.data?.token) {
           console.error("useLogin: No token in response:", data);
@@ -59,31 +57,19 @@ export function useLogin() {
 
         const { user, token } = data.data;
 
-        console.log("useLogin: Extracted user and token", { user, token });
-
         // Update AuthContext
         authLogin(user, token);
 
-        console.log("useLogin: AuthContext updated");
-
         // Tentukan redirect path berdasarkan role
         const redirectPath = getRedirectPath(user);
-
-        console.log("useLogin: Determined redirect path", {
-          redirectPath,
-          userRole: user?.role?.name,
-        });
 
         // Show success toast
         toast.success("Login berhasil!", {
           description: `Selamat datang, ${user.nama || user.name || user.email}`,
         });
 
-        console.log("useLogin: About to navigate to", redirectPath);
-
         // Gunakan setTimeout untuk memastikan state ter-update dulu
         setTimeout(() => {
-          console.log("useLogin: Executing navigation to", redirectPath);
           navigate(redirectPath, { replace: true });
 
           // Double check navigation
@@ -112,24 +98,13 @@ export function useLogin() {
         description: errorMessage,
       });
     },
-    onMutate: () => {
-      console.log("useLogin: Login mutation started");
-    },
-    onSettled: (data, error) => {
-      console.log("useLogin: Login mutation completed", {
-        success: !!data,
-        error: !!error,
-      });
-    },
   });
 }
 
 export function useRegister() {
   return useMutation<RegisterResponse, Error, RegisterPayload>({
     mutationFn: registerApi,
-    onSuccess: (data, variables) => {
-      console.log("useRegister: Registration successful:", data);
-
+    onSuccess: (_data, variables) => {
       toast.success("Registrasi Berhasil!", {
         description: `Akun untuk ${variables.nama} telah berhasil dibuat. Silakan login untuk melanjutkan.`,
         duration: 5000,

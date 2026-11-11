@@ -116,16 +116,11 @@ export const useImportKelompokTani = () => {
 
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Data berhasil diimport!");
 
       // Invalidate queries untuk refresh data
       queryClient.invalidateQueries({ queryKey: ["kelompok"] });
-
-      // Log hasil import jika ada informasi
-      if (data.imported_count) {
-        console.log(`Successfully imported ${data.imported_count} records`);
-      }
     },
     onError: (error: any) => {
       const message =

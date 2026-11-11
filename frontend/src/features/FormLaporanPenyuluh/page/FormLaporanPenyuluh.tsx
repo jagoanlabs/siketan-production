@@ -47,7 +47,6 @@ export const FormLaporanPenyuluhPage = () => {
   const handleSubmit = (e: any) => {
     e.preventDefault();
     // validasi dan kirim data
-    console.log(form);
   };
 
   return (
