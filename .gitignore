@@ -16,3 +16,4 @@ backend/extracted_images.zip
 seaweedfs/data/
 .DS_Store
 
+*.sql

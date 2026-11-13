@@ -11,6 +11,7 @@
     "swagger": "node ./swagger.js",
     "migrate:poktan": "node ./helpers/migration-kelompok.js",
     "restore:poktan": "node ./helpers/restore-kelompok.js",
+    "migrate:ownership": "node ./helpers/migrate-ownership.js",
     "migrate:s3": "node ./helpers/migrate-imagekit-to-s3.js",
     "sync:users": "node ./helpers/sync-user-accounts.js --execute",
     "sync:users:dry": "node ./helpers/sync-user-accounts.js",

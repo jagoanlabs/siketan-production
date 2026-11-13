@@ -82,7 +82,7 @@ Available shortcuts:
   console.log(`Mode              : ${isExecute ? '⚡ LIVE EXECUTION (Writing to DB)' : '🔍 DRY-RUN PREVIEW (No DB Changes)'}`);
   console.log(`Delete Policy     : ${isSkipDelete ? 'NO (--skip-delete active)' : 'HARD DELETE (Accounts in "Akun yang Dihapus" and outside Fix sheets)'}`);
   console.log('Protected Super Admin: ONLY jagoanlabs@gmail.com (All other accounts matched strictly to Fix sheets)');
-  console.log(`Password Security : 🔒 STRICT PRESERVATION (Existing user passwords will NOT be touched)`);
+  console.log(`Password Security : 🔒 Preserve valid passwords; initialize only NULL/empty passwords`);
   console.log(`Excel File        : ${EXCEL_PATH}`);
   console.log('================================================================\n');
 
@@ -275,7 +275,9 @@ Available shortcuts:
 
   // 5. Fetch Existing Accounts from Database
   console.log('Comparing with database records...');
-  const [dbUsers] = await db.sequelize.query('SELECT id, accountID, email, no_wa, nama, peran, role_id, isVerified FROM tbl_akun');
+  const [dbUsers] = await db.sequelize.query(
+    'SELECT id, accountID, email, no_wa, nama, peran, role_id, isVerified, password FROM tbl_akun'
+  );
   
   // Protected Super Admin: ONLY jagoanlabs@gmail.com
   const isProtectedSuperAdmin = u => u.email && u.email.toLowerCase().trim() === 'jagoanlabs@gmail.com';
@@ -352,6 +354,7 @@ Available shortcuts:
         conflicts.push({ source: item.source, rowNumber: item.rowNumber, nik: item.nik, email: item.email, reason: 'Baris Fix mencoba menimpa protected super admin' });
       } else {
         item.accountID = matchedDbUser.accountID;
+        item.resetMissingPassword = !matchedDbUser.password || matchedDbUser.password.trim() === '';
         accountsToUpdate.push(item);
         processedDbAccountIDs.add(matchedDbUser.accountID);
       }
@@ -374,7 +377,9 @@ Available shortcuts:
   console.log('----------------------------------------------------------------');
   console.log('📊 DATABASE CHANGE SUMMARY:');
   console.log(`🗑️ Accounts to HARD DELETE from DB    : ${accountsToDeleteFromDb.length} (Audit list + other superadmins + unlisted outside Fix sheets)`);
-  console.log(`✔ Accounts to UPDATE in tbl_akun     : ${accountsToUpdate.length} (Passwords strictly preserved)`);
+  const accountsWithMissingPasswords = accountsToUpdate.filter((account) => account.resetMissingPassword).length;
+  console.log(`✔ Accounts to UPDATE in tbl_akun     : ${accountsToUpdate.length} (Existing passwords preserved)`);
+  console.log(`🔐 Empty passwords to initialize      : ${accountsWithMissingPasswords} (Default password)`);
   console.log(`✔ Accounts to INSERT into tbl_akun   : ${accountsToInsert.length} (New accounts with default password)`);
   console.log(`👑 Protected Super Admin             : 1 (jagoanlabs@gmail.com)`);
   console.log(`Total Surviving Accounts after sync  : ${accountsToUpdate.length + accountsToInsert.length + 1} (Expected: 153)`);
@@ -389,6 +394,7 @@ Available shortcuts:
       totalConsolidatedFix: consolidated.length,
       accountsToDelete: accountsToDeleteFromDb.length,
       accountsToUpdate: accountsToUpdate.length,
+      accountsWithMissingPasswords,
       accountsToInsert: accountsToInsert.length,
       superAdminsPreserved: 1,
       totalSurviving: accountsToUpdate.length + accountsToInsert.length + 1,
@@ -426,6 +432,10 @@ Available shortcuts:
   const transaction = await db.sequelize.transaction();
 
   try {
+    // Existing non-empty passwords are preserved. This hash is only used for
+    // newly created accounts and legacy records whose password is NULL/empty.
+    const defaultPasswordHash = await bcrypt.hash(defaultPassword, 10);
+
     // STEP 1: Delete Audit List & Unlisted Accounts (Hard Delete)
     if (!isSkipDelete && accountsToDeleteFromDb.length > 0) {
       console.log(`Step 1: Permanently deleting ${accountsToDeleteFromDb.length} accounts from database...`);
@@ -480,7 +490,7 @@ Available shortcuts:
     );
     console.log('✔ Profile tables cleaned of orphans and cross-role duplicate rows.\n');
 
-    // STEP 2: Update Existing Valid Accounts in tbl_akun (Preserving existing password)
+    // STEP 2: Update existing accounts while preserving valid passwords.
     console.log(`Step 2: Updating ${accountsToUpdate.length} existing accounts in tbl_akun...`);
     let updatedCount = 0;
     for (const acc of accountsToUpdate) {
@@ -491,8 +501,9 @@ Available shortcuts:
              \`no_wa\` = :no_wa,
              \`isVerified\` = :isVerified,
              \`peran\` = :peran,
-             \`role_id\` = :role_id,
-             \`updatedAt\` = NOW()
+              \`role_id\` = :role_id,
+              \`password\` = CASE WHEN :resetMissingPassword THEN :defaultPasswordHash ELSE \`password\` END,
+              \`updatedAt\` = NOW()
          WHERE \`accountID\` = :accountID`,
         {
           replacements: {
@@ -502,6 +513,8 @@ Available shortcuts:
             isVerified: acc.isVerified,
             peran: acc.peran,
             role_id: acc.role_id,
+            resetMissingPassword: acc.resetMissingPassword ? 1 : 0,
+            defaultPasswordHash,
             accountID: acc.accountID,
           },
           transaction,
@@ -522,10 +535,11 @@ Available shortcuts:
                  \`email\` = COALESCE(:email, \`email\`),
                  \`noTelp\` = COALESCE(:no_wa, \`noTelp\`),
                  \`nik\` = :nik,
-                 \`alamat\` = COALESCE(:alamat, \`alamat\`),
-                 \`kecamatanBinaan\` = COALESCE(:kecamatanBinaan, \`kecamatanBinaan\`),
-                 \`desaBinaan\` = COALESCE(:desaBinaan, \`desaBinaan\`),
-                 \`updatedAt\` = NOW()
+                  \`alamat\` = COALESCE(:alamat, \`alamat\`),
+                  \`kecamatanBinaan\` = COALESCE(:kecamatanBinaan, \`kecamatanBinaan\`),
+                  \`desaBinaan\` = COALESCE(:desaBinaan, \`desaBinaan\`),
+                  \`password\` = COALESCE(NULLIF(\`password\`, ''), :defaultPasswordHash),
+                  \`updatedAt\` = NOW()
              WHERE \`accountID\` = :accountID`,
             {
               replacements: {
@@ -536,6 +550,7 @@ Available shortcuts:
                 alamat: acc.alamat,
                 kecamatanBinaan: acc.kecamatanBinaan || null,
                 desaBinaan: acc.desaBinaan || null,
+                defaultPasswordHash,
                 accountID: acc.accountID,
               },
               transaction,
@@ -570,10 +585,11 @@ Available shortcuts:
             `UPDATE \`dataOperators\`
              SET \`nama\` = COALESCE(:nama, \`nama\`),
                  \`email\` = COALESCE(:email, \`email\`),
-                 \`noTelp\` = COALESCE(:no_wa, \`noTelp\`),
-                 \`nik\` = :nik,
-                 \`alamat\` = COALESCE(:alamat, \`alamat\`),
-                 \`updatedAt\` = NOW()
+                  \`noTelp\` = COALESCE(:no_wa, \`noTelp\`),
+                  \`nik\` = :nik,
+                  \`alamat\` = COALESCE(:alamat, \`alamat\`),
+                  \`password\` = COALESCE(NULLIF(\`password\`, ''), :defaultPasswordHash),
+                  \`updatedAt\` = NOW()
              WHERE \`accountID\` = :accountID`,
             {
               replacements: {
@@ -582,6 +598,7 @@ Available shortcuts:
                 no_wa: acc.no_wa,
                 nik: acc.nik,
                 alamat: acc.alamat,
+                defaultPasswordHash,
                 accountID: acc.accountID,
               },
               transaction,
@@ -611,8 +628,6 @@ Available shortcuts:
     // STEP 3: Insert Brand New Accounts into tbl_akun & Create Profiles
     if (accountsToInsert.length > 0) {
       console.log(`Step 3: Creating ${accountsToInsert.length} brand new accounts with default password...`);
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(defaultPassword, salt);
       let insertedCount = 0;
 
       for (const acc of accountsToInsert) {
@@ -627,7 +642,7 @@ Available shortcuts:
               nama: acc.nama,
               email: acc.email,
               no_wa: acc.no_wa,
-              password: hashedPassword,
+              password: defaultPasswordHash,
               peran: acc.peran,
               role_id: acc.role_id,
               isVerified: acc.isVerified,
@@ -650,7 +665,7 @@ Available shortcuts:
                 email: acc.email || null,
                 noTelp: acc.no_wa || null,
                 alamat: acc.alamat || null,
-                password: hashedPassword,
+                password: defaultPasswordHash,
               },
               transaction,
             }
@@ -669,7 +684,7 @@ Available shortcuts:
                 alamat: acc.alamat || null,
                 kecamatanBinaan: acc.kecamatanBinaan || null,
                 desaBinaan: acc.desaBinaan || null,
-                password: hashedPassword,
+                password: defaultPasswordHash,
               },
               transaction,
             }
