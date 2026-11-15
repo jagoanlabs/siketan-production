@@ -1,0 +1,230 @@
+{
+  "createdAt": "2026-11-15T13:12:55.954Z",
+  "restoredFrom": "/Users/user/Data/siketan-production/backend/backups/berita_imagekit_before_webp_2026-11-15T12-15-17-947Z.json",
+  "rows": [
+    {
+      "id": 162,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-162-IMG-1792460758031_CVoCR-VZz.webp"
+    },
+    {
+      "id": 163,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-163-IMG-1792461403307_rVJ6ftM1t.webp"
+    },
+    {
+      "id": 164,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-164-IMG-1792464065653_SkwxHpjX5.webp"
+    },
+    {
+      "id": 165,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-165-IMG-1792465286588_tjnVERnTv.webp"
+    },
+    {
+      "id": 166,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-166-IMG-1792548030941_K76txPRkB.webp"
+    },
+    {
+      "id": 167,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-167-IMG-1792548212103_eJelzNKSQ.webp"
+    },
+    {
+      "id": 168,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-168-IMG-1792554660401_AvcpfmCvP.webp"
+    },
+    {
+      "id": 169,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-169-IMG-1792725324766_vX8ql-VqE.webp"
+    },
+    {
+      "id": 170,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-170-IMG-1792726915840_goQOEdP_Y.webp"
+    },
+    {
+      "id": 171,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-171-IMG-1792728057646_bBoWbhtIS.webp"
+    },
+    {
+      "id": 172,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-172-IMG-1792829476511_IDfoBG4cCx.webp"
+    },
+    {
+      "id": 173,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-173-IMG-1792994688324_5bZcrhR4P.webp"
+    },
+    {
+      "id": 174,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-174-IMG-1793153653562_n8Sgyc-2T.webp"
+    },
+    {
+      "id": 175,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-175-IMG-1793155880748_GzaO9yLtn.webp"
+    },
+    {
+      "id": 176,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-176-IMG-1793158840242_S3rtiAjnU.webp"
+    },
+    {
+      "id": 177,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-177-IMG-1793239171845_vTAnEjJmh.webp"
+    },
+    {
+      "id": 178,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-178-IMG-1793325260143_Igwp6IEyJ.webp"
+    },
+    {
+      "id": 179,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-179-IMG-1793325464094_jhXlQNQUX.webp"
+    },
+    {
+      "id": 180,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-180-IMG-1793325625985_WRtnzlZGN.webp"
+    },
+    {
+      "id": 181,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-181-IMG-1793325783667_qtIbcRM-w.webp"
+    },
+    {
+      "id": 182,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-182-IMG-1793331632675_TIBqrHnMe.webp"
+    },
+    {
+      "id": 183,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-183-IMG-1793346221835_NSdrlly-7.webp"
+    },
+    {
+      "id": 184,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-184-IMG-1793679450103_VAJWzbta8.webp"
+    },
+    {
+      "id": 185,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-185-IMG-1793680403595_qiGJEwgpj.webp"
+    },
+    {
+      "id": 186,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-186-IMG-1793680686274_DU3ZCju3n.webp"
+    },
+    {
+      "id": 187,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-187-IMG-1793680861634_dVtZT2cmQ.webp"
+    },
+    {
+      "id": 188,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-188-IMG-1793681120794_IJ_geEBI8.webp"
+    },
+    {
+      "id": 189,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-189-IMG-1793687292212_nx_OFDsS3.webp"
+    },
+    {
+      "id": 190,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-190-IMG-1793687555436_RiRYrIQe5.webp"
+    },
+    {
+      "id": 191,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-191-IMG-1793861037162_qIbNRgx3D.webp"
+    },
+    {
+      "id": 192,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-192-IMG-1793867109821_KFNde-YrG.webp"
+    },
+    {
+      "id": 193,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-193-IMG-1793867740114_L8zbqV8f3_.webp"
+    },
+    {
+      "id": 194,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-194-IMG-1793930395621_s_YTZOtWI.webp"
+    },
+    {
+      "id": 195,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-195-IMG-1793934221919_UhhdZ_wMw.webp"
+    },
+    {
+      "id": 196,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-196-IMG-1793937748331_RYOK3KneA.webp"
+    },
+    {
+      "id": 197,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-197-IMG-1793937973690_5a4HFzYeO.webp"
+    },
+    {
+      "id": 198,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-198-IMG-1794197330325_-CDJcK3vR.webp"
+    },
+    {
+      "id": 199,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-199-IMG-1794203047874_8T4tnBiRJ.webp"
+    },
+    {
+      "id": 200,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-200-IMG-1794203372802_Jz6q6-Xd3.webp"
+    },
+    {
+      "id": 201,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-201-IMG-1794205769570_kIVV25tcr.webp"
+    },
+    {
+      "id": 202,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-202-IMG-1794207185831_Mr4cPOhxe.webp"
+    },
+    {
+      "id": 203,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-203-IMG-1794208141602_ildazh6CY.webp"
+    },
+    {
+      "id": 204,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-204-IMG-1794280784607_cSGuKwHo6.webp"
+    },
+    {
+      "id": 205,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-205-IMG-1794280943186_9GvKvnLIG.webp"
+    },
+    {
+      "id": 206,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-206-IMG-1794281478738_SOwbpa4Y7.webp"
+    },
+    {
+      "id": 207,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-207-IMG-1794282762472_TiKWOwR2i.webp"
+    },
+    {
+      "id": 208,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-208-IMG-1794285392571_yKYyQ12fL.webp"
+    },
+    {
+      "id": 209,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-209-IMG-1794288737703_llIr3k154.webp"
+    },
+    {
+      "id": 210,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-210-IMG-1794289718182_2WOlVZKqh.webp"
+    },
+    {
+      "id": 211,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-211-IMG-1794310144257_GKzlFtpbC.webp"
+    },
+    {
+      "id": 212,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-212-IMG-1794310273264_1uCYwsQSu.webp"
+    },
+    {
+      "id": 213,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-213-IMG-1794310643938_k4tmUPB-C.webp"
+    },
+    {
+      "id": 214,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-214-IMG-1794311655151_KwM3O1Gr3.webp"
+    },
+    {
+      "id": 215,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-215-IMG-1794371706748_oyBS-Ncie.webp"
+    },
+    {
+      "id": 216,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-216-IMG-1794379708977_3dQIOPvdE.webp"
+    },
+    {
+      "id": 217,
+      "fotoBerita": "https://siketan.ngawikab.go.id/storage/siketan/berita-217-IMG-1794380233545_ZHijUgGmx.webp"
+    }
+  ]
+}

@@ -4,6 +4,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: siketan_backend
+    environment:
+      S3_ENDPOINT: http://seaweedfs:8333
     restart: unless-stopped
     networks:
       - siketan-network
