@@ -479,7 +479,10 @@ const daftarTani = async (req, res) => {
         },
         {
           model: tbl_akun,
-          required: true
+          // Historical farmer profiles may be retained after their login account
+          // is purged by user synchronization. Keep those records visible to
+          // operators instead of turning this association into an inner join.
+          required: false
         },
         {
           model: kecamatan,
