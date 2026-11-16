@@ -201,7 +201,7 @@ export const DataPetaniPage: React.FC = () => {
       onClick: async (selectedItems: DataPetaniItem[]) => {
         try {
           const unverifiedItems = selectedItems.filter(
-            (item) => !item.tbl_akun?.isVerified,
+            (item) => item.tbl_akun && !item.tbl_akun.isVerified,
           );
 
           if (unverifiedItems.length === 0) {
@@ -222,13 +222,15 @@ export const DataPetaniPage: React.FC = () => {
           // Sequential verification with progress tracking
           for (let i = 0; i < unverifiedItems.length; i++) {
             const item = unverifiedItems[i];
+            const account = item.tbl_akun;
+            if (!account) continue;
 
             // Update progress message
             setLoadingMessage(`Memverifikasi: ${item.nama}`);
 
             try {
               await bulkVerificationMutation.mutateAsync({
-                accountId: item.tbl_akun.id,
+                accountId: account.id,
                 isVerified: true,
               });
               successCount++;
@@ -282,7 +284,7 @@ export const DataPetaniPage: React.FC = () => {
       },
       // Only enable if there are unverified farmers
       disabled: (selectedItems: DataPetaniItem[]) =>
-        !selectedItems.some((item) => !item.tbl_akun?.isVerified),
+        !selectedItems.some((item) => item.tbl_akun && !item.tbl_akun.isVerified),
       confirmMessage: "Verifikasi {count} petani yang dipilih?",
     },
   ];
@@ -396,7 +398,13 @@ export const DataPetaniPage: React.FC = () => {
   };
 
   const handleToggleVerification = (petani: DataPetaniItem) => {
-    const newStatus = !petani.tbl_akun.isVerified;
+    const account = petani.tbl_akun;
+    if (!account) {
+      toast.info("Petani historis ini tidak memiliki akun login untuk diverifikasi.");
+      return;
+    }
+
+    const newStatus = !account.isVerified;
     const action = newStatus ? "verifikasi" : "batalkan verifikasi";
 
     confirmDialog({
@@ -406,8 +414,8 @@ export const DataPetaniPage: React.FC = () => {
       acceptLabel: newStatus ? "Verifikasi" : "Batalkan",
       rejectLabel: "Batal",
       accept: async () => {
-        await updateVerificationMutation.mutateAsync({
-          accountId: petani.tbl_akun.id,
+          await updateVerificationMutation.mutateAsync({
+            accountId: account.id,
           isVerified: newStatus,
         });
       },
@@ -541,20 +549,25 @@ export const DataPetaniPage: React.FC = () => {
       key: "status",
       title: "STATUS",
       align: "center",
-      render: (petani: DataPetaniItem) => (
-        <Chip
-          color={getVerificationColor(petani.tbl_akun?.isVerified || false)}
-          size="sm"
-          startContent={
-            petani.tbl_akun?.isVerified ? (
-              <MdVerified className="w-4 h-4" />
-            ) : undefined
-          }
-          variant="flat"
-        >
-          {getVerificationLabel(petani.tbl_akun?.isVerified || false)}
-        </Chip>
-      ),
+      render: (petani: DataPetaniItem) =>
+        petani.tbl_akun ? (
+          <Chip
+            color={getVerificationColor(petani.tbl_akun.isVerified)}
+            size="sm"
+            startContent={
+              petani.tbl_akun.isVerified ? (
+                <MdVerified className="w-4 h-4" />
+              ) : undefined
+            }
+            variant="flat"
+          >
+            {getVerificationLabel(petani.tbl_akun.isVerified)}
+          </Chip>
+        ) : (
+          <Chip color="warning" size="sm" variant="flat">
+            Tanpa Akun
+          </Chip>
+        ),
     },
     {
       key: "aksi",
@@ -601,7 +614,7 @@ export const DataPetaniPage: React.FC = () => {
             </Tooltip>
           </PermissionWrapper>
 
-          {!petani.tbl_akun.isVerified && (
+          {petani.tbl_akun && !petani.tbl_akun.isVerified && (
             <PermissionWrapper permissions={[PERMISSIONS.DATA_PETANI_APPROVE]}>
               <Tooltip>
                 <Tooltip.Trigger>
@@ -620,7 +633,7 @@ export const DataPetaniPage: React.FC = () => {
             </PermissionWrapper>
           )}
 
-          {petani.tbl_akun.isVerified && (
+          {petani.tbl_akun?.isVerified && (
             <Tooltip>
               <Tooltip.Trigger>
                 <div className="p-2 rounded-lg">

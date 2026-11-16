@@ -52,7 +52,8 @@ export interface DataPetaniItem {
   desaId: number;
   kelompok: any | null;
   dataPenyuluh: any | null;
-  tbl_akun: DataPetaniAccount;
+  // Historical farmer records can remain after their login account is removed.
+  tbl_akun: DataPetaniAccount | null;
   kecamatanData: KecamatanData;
   desaData: DesaData;
 }
